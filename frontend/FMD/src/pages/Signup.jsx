@@ -17,6 +17,9 @@ export default function Signup() {
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [agreeTerms, setAgreeTerms] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleChange = (e) => {
     setForm({
@@ -41,6 +44,10 @@ export default function Signup() {
 
     if (form.password !== form.confirmPassword) {
       return "Passwords do not match.";
+    }
+
+    if (!agreeTerms) {
+      return "Please agree to Terms & Conditions.";
     }
 
     return null;
@@ -74,84 +81,135 @@ export default function Signup() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
-      <div className="w-full max-w-md bg-white border border-slate-200 rounded-xl p-8 shadow-sm">
+    <div className="min-h-screen bg-slate-100 px-4 py-6 sm:px-6 md:py-10">
+      <div className="mx-auto w-full max-w-md md:max-w-lg lg:max-w-2xl">
+        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg">
+          <div className="relative bg-gradient-to-r from-emerald-900 via-emerald-700 to-emerald-600 px-4 py-8 text-center sm:px-6 sm:py-10">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.35),transparent_60%)]" />
+            <h2 className="relative text-xl font-bold text-white sm:text-2xl">
+              FMD Detection & Classification System
+            </h2>
+          </div>
 
-        <h1 className="text-2xl font-semibold text-slate-800 mb-1">
-          Create account
-        </h1>
-        <p className="text-sm text-slate-500 mb-6">
-          Register for CattleCare AI access
-        </p>
+          <div className="px-5 py-6 sm:px-8 sm:py-8 md:px-10">
+            <h1 className="text-center text-3xl font-bold text-slate-800">Create Your Account</h1>
+            <p className="mt-1 text-center text-slate-500">Join us to detect and manage FMD</p>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="mt-6 space-y-3 sm:space-y-4">
+              <div className="relative">
+                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">👤</span>
+                <input
+                  name="name"
+                  value={form.name}
+                  placeholder="Full Name"
+                  autoComplete="name"
+                  required
+                  onChange={handleChange}
+                  className="w-full rounded-lg border border-slate-300 py-2.5 pl-10 pr-3 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                />
+              </div>
 
-          <input
-            name="name"
-            placeholder="Full name"
-            autoComplete="name"
-            required
-            onChange={handleChange}
-            className="w-full px-3 py-2.5 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-600 focus:outline-none"
-          />
+              <div className="relative">
+                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">✉</span>
+                <input
+                  type="email"
+                  name="email"
+                  value={form.email}
+                  placeholder="Email Address"
+                  autoComplete="email"
+                  required
+                  onChange={handleChange}
+                  className="w-full rounded-lg border border-slate-300 py-2.5 pl-10 pr-3 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                />
+              </div>
 
-          <input
-            type="email"
-            name="email"
-            placeholder="Email address"
-            autoComplete="email"
-            required
-            onChange={handleChange}
-            className="w-full px-3 py-2.5 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-600 focus:outline-none"
-          />
+              <div className="relative">
+                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">🔒</span>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  value={form.password}
+                  placeholder="Create Password"
+                  autoComplete="new-password"
+                  required
+                  onChange={handleChange}
+                  className="w-full rounded-lg border border-slate-300 py-2.5 pl-10 pr-16 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded px-2 py-1 text-xs font-medium text-slate-500 hover:bg-slate-100"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? "Hide" : "Show"}
+                </button>
+              </div>
 
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            autoComplete="new-password"
-            required
-            onChange={handleChange}
-            className="w-full px-3 py-2.5 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-600 focus:outline-none"
-          />
+              <div className="relative">
+                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">🔒</span>
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  name="confirmPassword"
+                  value={form.confirmPassword}
+                  placeholder="Confirm Password"
+                  autoComplete="new-password"
+                  required
+                  onChange={handleChange}
+                  className="w-full rounded-lg border border-slate-300 py-2.5 pl-10 pr-16 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded px-2 py-1 text-xs font-medium text-slate-500 hover:bg-slate-100"
+                  aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
+                >
+                  {showConfirmPassword ? "Hide" : "Show"}
+                </button>
+              </div>
 
-          <p className="text-xs text-slate-500">
-            Must be 8+ chars, include uppercase, lowercase, number & symbol
-          </p>
+              <p className="text-xs text-slate-500">
+                Must be 8+ chars, include uppercase, lowercase, number & symbol
+              </p>
 
-          <input
-            type="password"
-            name="confirmPassword"
-            placeholder="Confirm password"
-            autoComplete="new-password"
-            required
-            onChange={handleChange}
-            className="w-full px-3 py-2.5 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-600 focus:outline-none"
-          />
+              <label className="mt-1 inline-flex items-center gap-2 text-sm text-slate-600">
+                <input
+                  type="checkbox"
+                  checked={agreeTerms}
+                  onChange={(e) => {
+                    setAgreeTerms(e.target.checked);
+                    setError("");
+                  }}
+                  className="h-4 w-4 rounded border-slate-300 text-emerald-700 focus:ring-emerald-600"
+                />
+                I agree to the <span className="font-semibold text-emerald-700">Terms & Conditions</span>
+              </label>
 
-          {error && (
-            <p className="text-sm text-red-600 bg-red-50 border border-red-200 px-3 py-2 rounded">
-              {error}
-            </p>
-          )}
+              {error && (
+                <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
+                  {error}
+                </p>
+              )}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-emerald-700 text-white py-2.5 rounded-md font-medium hover:bg-emerald-800 transition disabled:opacity-60"
-          >
-            {loading ? "Creating account…" : "Create account"}
-          </button>
-        </form>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full rounded-lg bg-gradient-to-r from-emerald-700 to-emerald-600 py-2.5 text-lg font-semibold text-white shadow-md transition hover:from-emerald-800 hover:to-emerald-700 disabled:opacity-60"
+              >
+                {loading ? "Creating account..." : "Sign Up"}
+              </button>
+            </form>
 
-        <div className="mt-6 border-t pt-4 text-xs text-slate-400">
-          Already registered?{" "}
-          <span
-            onClick={() => navigate("/")}
-            className="text-emerald-700 cursor-pointer hover:underline"
-          >
-            Sign in
-          </span>
+            <div className="mt-6 border-t border-slate-200 pt-4 text-center text-sm text-slate-500">
+              Already have an account?{" "}
+              <button
+                type="button"
+                onClick={() => navigate("/")}
+                className="font-semibold text-emerald-700 hover:underline"
+              >
+                Login
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
