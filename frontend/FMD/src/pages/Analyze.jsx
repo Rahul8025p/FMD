@@ -12,6 +12,8 @@ export default function Analyze() {
   const [preview, setPreview] = useState(null);
   const [cameraOn, setCameraOn] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [mode, setMode] = useState("upload"); // 'upload' | 'camera'
+  const [error, setError] = useState("");
 
   const [form, setForm] = useState({
     rfid: "",
@@ -48,6 +50,7 @@ export default function Analyze() {
   /* 🧠 Input handler */
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    setError("");
   };
 
   /* 📁 File upload */
@@ -56,6 +59,7 @@ export default function Analyze() {
     if (!file) return;
     setImage(file);
     setPreview(URL.createObjectURL(file));
+    setError("");
   };
 
   /* 📸 Camera */
@@ -64,6 +68,7 @@ export default function Analyze() {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
       videoRef.current.srcObject = stream;
       setCameraOn(true);
+      setMode("camera");
     } catch {
       alert("Camera permission denied");
     }
@@ -73,6 +78,7 @@ export default function Analyze() {
     const stream = videoRef.current?.srcObject;
     stream?.getTracks().forEach((t) => t.stop());
     setCameraOn(false);
+    setMode("upload");
   };
 
   const capturePhoto = () => {
@@ -94,7 +100,7 @@ export default function Analyze() {
   /* 🚀 Submit */
   const analyzeImage = async () => {
     if (!image || !form.rfid) {
-      alert("RFID number and cattle image are required");
+      setError("RFID number and cattle image are required.");
       return;
     }
 
@@ -115,146 +121,194 @@ export default function Analyze() {
       navigate("/result", { state: res.data });
     } catch (err) {
       console.error(err);
-      alert("Analysis failed. Please try again.");
+      setError("Analysis failed. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
-      <div className="w-full max-w-xl bg-white rounded-2xl border shadow-sm p-8 space-y-6">
-
+    <div className="min-h-screen bg-gradient-to-br from-lime-50 via-emerald-50 to-white px-4 py-6 sm:px-6 md:py-10">
+      <div className="mx-auto w-full max-w-3xl overflow-hidden rounded-2xl border border-emerald-100 bg-white shadow-sm">
         {/* Header */}
-        <div className="text-center">
-          <h2 className="text-2xl font-semibold text-slate-800">
-            Cattle Health Analysis
-          </h2>
-          <p className="text-sm text-slate-500 mt-1">
-            Upload or capture an image to detect diseases using AI
-          </p>
+        <div className="relative bg-gradient-to-r from-emerald-800 via-emerald-700 to-lime-700 px-5 py-7 text-white sm:px-8">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.25),transparent_55%)]" />
+          <div className="relative">
+            <p className="text-xs uppercase tracking-widest text-emerald-100">
+              CattleCare AI
+            </p>
+            <h2 className="mt-1 text-2xl font-semibold">Cattle Health Analysis</h2>
+            <p className="text-sm text-emerald-100">
+              Upload or capture an image to detect diseases using AI
+            </p>
+          </div>
         </div>
 
-        {/* 🧾 Metadata */}
-        <div className="grid grid-cols-2 gap-4">
-          <input
-            name="rfid"
-            placeholder="RFID Number (e.g. RFID-10234)"
-            onChange={handleChange}
-            className="input"
-          />
+        <div className="px-5 py-6 sm:px-8 sm:py-8 space-y-6">
+          {/* Segmented media controls */}
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div className="inline-flex rounded-lg border border-slate-200 p-1 bg-slate-50">
+              <button
+                type="button"
+                onClick={() => setMode("upload")}
+                className={`px-3 py-2 text-sm font-medium rounded-md transition ${
+                  mode === "upload" ? "bg-white text-emerald-700 shadow-sm" : "text-slate-600 hover:text-slate-800"
+                }`}
+              >
+                From device
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setMode("camera");
+                  if (!cameraOn) startCamera();
+                }}
+                className={`px-3 py-2 text-sm font-medium rounded-md transition ${
+                  mode === "camera" ? "bg-white text-emerald-700 shadow-sm" : "text-slate-600 hover:text-slate-800"
+                }`}
+              >
+                Use camera
+              </button>
+            </div>
 
-          <input
-            name="breed"
-            placeholder="Breed (e.g. Jersey, Holstein)"
-            onChange={handleChange}
-            className="input"
-          />
+            <button
+              type="button"
+              onClick={() => navigate("/user")}
+              className="text-sm font-medium text-emerald-700 hover:underline"
+            >
+              Back to dashboard
+            </button>
+          </div>
 
-          <input
-            name="age"
-            type="number"
-            placeholder="Age in years (e.g. 3)"
-            onChange={handleChange}
-            className="input"
-          />
-
-          <select name="sex" onChange={handleChange} className="input">
-            <option value="Female">Female</option>
-            <option value="Male">Male</option>
-          </select>
-
-          <select name="fever" onChange={handleChange} className="input">
-            <option value="No">Fever: No</option>
-            <option value="Yes">Fever: Yes</option>
-          </select>
-
-          {form.fever === "Yes" && (
+          {/* Metadata */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <input
-              name="temperature"
-              placeholder="Body temperature (°C) e.g. 39.5"
+              name="rfid"
+              placeholder="RFID Number (e.g. RFID-10234)"
               onChange={handleChange}
-              className="input col-span-2"
+              className="input"
+            />
+            <input
+              name="breed"
+              placeholder="Breed (e.g. Jersey, Holstein)"
+              onChange={handleChange}
+              className="input"
+            />
+            <input
+              name="age"
+              type="number"
+              placeholder="Age in years (e.g. 3)"
+              onChange={handleChange}
+              className="input"
+            />
+            <select name="sex" onChange={handleChange} className="input">
+              <option value="Female">Female</option>
+              <option value="Male">Male</option>
+            </select>
+            <select name="fever" onChange={handleChange} className="input">
+              <option value="No">Fever: No</option>
+              <option value="Yes">Fever: Yes</option>
+            </select>
+            {form.fever === "Yes" && (
+              <input
+                name="temperature"
+                placeholder="Body temperature (°C) e.g. 39.5"
+                onChange={handleChange}
+                className="input"
+              />
+            )}
+          </div>
+
+          {/* Location (Auto) */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-xs text-slate-500">Latitude</label>
+              <input
+                value={form.latitude}
+                readOnly
+                placeholder="Detecting latitude…"
+                className="input bg-slate-100 cursor-not-allowed"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-slate-500">Longitude</label>
+              <input
+                value={form.longitude}
+                readOnly
+                placeholder="Detecting longitude…"
+                className="input bg-slate-100 cursor-not-allowed"
+              />
+            </div>
+          </div>
+
+          {/* Media section */}
+          {mode === "upload" && (
+            <div>
+              <label className="text-sm font-medium text-slate-700">
+                Upload cattle image
+              </label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImage}
+                className="mt-1"
+              />
+            </div>
+          )}
+
+          {mode === "camera" && (
+            <div className="space-y-3">
+              {!cameraOn && (
+                <button onClick={startCamera} className="btn-secondary w-full">
+                  📸 Start Camera
+                </button>
+              )}
+              {cameraOn && (
+                <>
+                  <video ref={videoRef} autoPlay className="rounded-xl border w-full" />
+                  <div className="grid grid-cols-2 gap-3">
+                    <button onClick={capturePhoto} className="btn-primary w-full">
+                      Capture Photo
+                    </button>
+                    <button onClick={stopCamera} className="btn-secondary w-full">
+                      Stop Camera
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* Preview */}
+          {preview && (
+            <img
+              src={preview}
+              alt="Preview"
+              className="h-64 w-full rounded-xl border object-cover"
             />
           )}
 
-          {/* 📍 Location (Auto-detected) */}
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="text-xs text-slate-500">Latitude</label>
-            <input
-              value={form.latitude}
-              readOnly
-              placeholder="Detecting latitude…"
-              className="input bg-slate-100 cursor-not-allowed"
-            />
-          </div>
+          {error && (
+            <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
+              {error}
+            </p>
+          )}
 
-          <div>
-            <label className="text-xs text-slate-500">Longitude</label>
-            <input
-              value={form.longitude}
-              readOnly
-              placeholder="Detecting longitude…"
-              className="input bg-slate-100 cursor-not-allowed"
-            />
-          </div>
-        </div>
-
-        </div>
-
-        {/* 📁 Upload */}
-        <div>
-          <label className="text-sm font-medium text-slate-700">
-            Upload cattle image
-          </label>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleImage}
-            className="mt-1"
-          />
-        </div>
-
-        {!cameraOn && (
-          <button onClick={startCamera} className="btn-secondary w-full">
-            📸 Capture using Camera
+          {/* Submit */}
+          <button
+            onClick={analyzeImage}
+            disabled={loading}
+            className={`btn-primary w-full ${loading && "opacity-60"}`}
+          >
+            {loading ? "Analyzing cattle…" : "Analyze Cattle Health"}
           </button>
-        )}
 
-        {/* 🎥 Camera */}
-        {cameraOn && (
-          <div className="space-y-2">
-            <video ref={videoRef} autoPlay className="rounded-xl border" />
-            <button onClick={capturePhoto} className="btn-primary w-full">
-              Capture Photo
-            </button>
-          </div>
-        )}
+          <p className="text-center text-xs text-slate-400">
+            Clear, well-lit images of mouth/hoof areas improve prediction accuracy.
+          </p>
 
-        {/* 🖼 Preview */}
-        {preview && !cameraOn && (
-          <img
-            src={preview}
-            alt="Preview"
-            className="rounded-xl border h-60 w-full object-cover"
-          />
-        )}
-
-        {/* 🚀 Submit */}
-        <button
-          onClick={analyzeImage}
-          disabled={loading}
-          className={`btn-primary w-full ${loading && "opacity-60"}`}
-        >
-          {loading ? "Analyzing cattle…" : "Analyze Cattle Health"}
-        </button>
-
-        <p className="text-xs text-center text-slate-400">
-          Clear images and accurate details improve prediction accuracy
-        </p>
-
-        <canvas ref={canvasRef} className="hidden" />
+          <canvas ref={canvasRef} className="hidden" />
+        </div>
       </div>
     </div>
   );
