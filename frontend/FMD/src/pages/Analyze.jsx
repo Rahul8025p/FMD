@@ -121,7 +121,7 @@ export default function Analyze() {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      navigate("/result", { state: res.data });
+      navigate("/result", { state: { ...res.data, uploadedImage: preview } });
     } catch (err) {
       console.error(err);
       setError("Analysis failed. Please try again.");

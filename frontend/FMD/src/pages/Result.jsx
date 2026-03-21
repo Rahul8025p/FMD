@@ -6,58 +6,129 @@ export default function Result() {
 
   if (!state?.result) {
     return (
-      <div className="container">
-        <p>No result found</p>
-        <button className="btn btn-primary" onClick={() => navigate("/analyze")}>
-          Go Back
-        </button>
+      <div className="min-h-screen bg-slate-50 px-4 py-10 sm:px-6">
+        <div className="mx-auto max-w-xl rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm">
+          <p className="text-slate-600">No analysis result found.</p>
+          <button
+            className="mt-4 rounded-lg bg-emerald-700 px-4 py-2 font-medium text-white transition hover:bg-emerald-800"
+            onClick={() => navigate("/analyze")}
+          >
+            Go to Analyze
+          </button>
+        </div>
       </div>
     );
   }
 
   const { disease, confidence, severity, explanation, recommendations } =
     state.result;
+  const uploadedImage = state.uploadedImage;
+
+  const normalizedDisease = (disease || "").toLowerCase();
+  const diseaseStyles = normalizedDisease.includes("fmd")
+    ? "bg-red-50 text-red-700 border-red-200"
+    : normalizedDisease.includes("healthy")
+      ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+      : "bg-amber-50 text-amber-700 border-amber-200";
 
   return (
-    <div className="container">
-      <h2>Analysis Result</h2>
+    <div className="min-h-screen bg-gradient-to-br from-lime-50 via-emerald-50 to-white px-4 py-6 sm:px-6 md:py-10">
+      <div className="mx-auto w-full max-w-5xl space-y-6">
+        <div className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">
+                Analysis Complete
+              </p>
+              <h2 className="mt-1 text-2xl font-semibold text-slate-800">
+                Cattle Health Result
+              </h2>
+            </div>
+            <button
+              onClick={() => navigate("/analyze")}
+              className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+            >
+              Analyze another image
+            </button>
+          </div>
+        </div>
 
-      <div className="card">
-        <h3 style={{ color: "var(--danger)" }}>{disease}</h3>
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <section className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
+            <h3 className="text-lg font-semibold text-slate-800">Uploaded image</h3>
+            <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
+              {uploadedImage ? (
+                <img
+                  src={uploadedImage}
+                  alt="Uploaded cattle"
+                  className="h-64 w-full object-cover sm:h-72"
+                />
+              ) : (
+                <div className="grid h-64 place-content-center text-sm text-slate-500 sm:h-72">
+                  Image preview unavailable
+                </div>
+              )}
+            </div>
+          </section>
 
-        <p><strong>Confidence:</strong> {(confidence * 100).toFixed(2)}%</p>
-        <p><strong>Severity:</strong> {severity}</p>
+          <section className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
+            <h3 className="text-lg font-semibold text-slate-800">Prediction result</h3>
+            <div className={`mt-4 inline-flex rounded-full border px-3 py-1 text-sm font-semibold ${diseaseStyles}`}>
+              Disease detected: {disease || "Unknown"}
+            </div>
+            <div className="mt-4 space-y-3">
+              <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                <p className="text-xs uppercase tracking-wide text-slate-500">Confidence score</p>
+                <p className="mt-1 text-2xl font-semibold text-slate-800">
+                  {typeof confidence === "number" ? `${(confidence * 100).toFixed(2)}%` : "N/A"}
+                </p>
+              </div>
+              <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                <p className="text-xs uppercase tracking-wide text-slate-500">Severity</p>
+                <p className="mt-1 text-base font-medium text-slate-700">{severity || "N/A"}</p>
+              </div>
+            </div>
+          </section>
+        </div>
 
-        <h4>Why this was detected</h4>
-        <ul>
-          {explanation.visual.map((v, i) => (
-            <li key={i}>{v}</li>
-          ))}
-          {explanation.texture.map((t, i) => (
-            <li key={i}>{t}</li>
-          ))}
-          {explanation.thermal.map((t, i) => (
-            <li key={i}>{t}</li>
-          ))}
-        </ul>
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <section className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
+            <h4 className="text-base font-semibold text-slate-800">Why this was detected</h4>
+            <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-slate-600">
+              {explanation?.visual?.map((v, i) => (
+                <li key={`v-${i}`}>{v}</li>
+              ))}
+              {explanation?.texture?.map((t, i) => (
+                <li key={`t-${i}`}>{t}</li>
+              ))}
+              {explanation?.thermal?.map((th, i) => (
+                <li key={`th-${i}`}>{th}</li>
+              ))}
+            </ul>
+          </section>
 
-        <h4>Recommended Actions</h4>
+          <section className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
+            <h4 className="text-base font-semibold text-slate-800">Recommended actions</h4>
+            <p className="mt-3 text-sm font-semibold text-slate-700">Precautions</p>
+            <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-slate-600">
+              {recommendations?.precautions?.map((p, i) => (
+                <li key={`p-${i}`}>{p}</li>
+              ))}
+            </ul>
 
-        <strong>Precautions</strong>
-        <ul>
-          {recommendations.precautions.map((p, i) => (
-            <li key={i}>{p}</li>
-          ))}
-        </ul>
+            <p className="mt-4 text-sm font-semibold text-slate-700">Treatment</p>
+            <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-slate-600">
+              {recommendations?.treatment?.map((t, i) => (
+                <li key={`tr-${i}`}>{t}</li>
+              ))}
+            </ul>
 
-        <strong>Treatment</strong>
-        <ul>
-          {recommendations.treatment.map((t, i) => (
-            <li key={i}>{t}</li>
-          ))}
-        </ul>
-
-        <p><strong>Vaccination:</strong> {recommendations.vaccination}</p>
+            <p className="mt-4 text-sm text-slate-700">
+              <span className="font-semibold">Vaccination:</span>{" "}
+              {recommendations?.vaccination || "N/A"}
+            </p>
+          </section>
+        </div>
       </div>
     </div>
   );
