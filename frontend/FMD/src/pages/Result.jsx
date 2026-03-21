@@ -1,8 +1,13 @@
+import { useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 
 export default function Result() {
   const { state } = useLocation();
   const navigate = useNavigate();
+  const reportRef = useRef(null);
+  const [downloading, setDownloading] = useState(false);
 
   if (!state?.result) {
     return (
@@ -31,6 +36,38 @@ export default function Result() {
       ? "bg-emerald-50 text-emerald-700 border-emerald-200"
       : "bg-amber-50 text-amber-700 border-amber-200";
 
+  const generatePdfReport = async () => {
+    if (!reportRef.current) return;
+
+    try {
+      setDownloading(true);
+      const canvas = await html2canvas(reportRef.current, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#ffffff"
+      });
+
+      const imageData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF("p", "mm", "a4");
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      const pageHeight = pdf.internal.pageSize.getHeight();
+
+      let yPosition = 0;
+      pdf.addImage(imageData, "PNG", 0, yPosition, pdfWidth, pdfHeight);
+
+      while (yPosition + pdfHeight > pageHeight) {
+        yPosition -= pageHeight;
+        pdf.addPage();
+        pdf.addImage(imageData, "PNG", 0, yPosition, pdfWidth, pdfHeight);
+      }
+
+      pdf.save(`fmd-diagnosis-report-${Date.now()}.pdf`);
+    } finally {
+      setDownloading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-lime-50 via-emerald-50 to-white px-4 py-6 sm:px-6 md:py-10">
       <div className="mx-auto w-full max-w-5xl space-y-6">
@@ -50,19 +87,34 @@ export default function Result() {
             >
               Analyze another image
             </button>
+            <button
+              onClick={generatePdfReport}
+              disabled={downloading}
+              className="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-800 disabled:opacity-60"
+            >
+              {downloading ? "Preparing PDF..." : "Download PDF Report"}
+            </button>
           </div>
         </div>
 
+        <div ref={reportRef} className="space-y-6 rounded-2xl border border-slate-200 bg-white/40 p-3 sm:p-4">
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <section className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
             <h3 className="text-lg font-semibold text-slate-800">Uploaded image</h3>
             <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
               {uploadedImage ? (
-                <img
-                  src={uploadedImage}
-                  alt="Uploaded cattle"
-                  className="h-64 w-full object-cover sm:h-72"
-                />
+                <div className="relative">
+                  <img
+                    src={uploadedImage}
+                    alt="Uploaded cattle"
+                    className="h-64 w-full object-cover sm:h-72"
+                    crossOrigin="anonymous"
+                  />
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-red-500/20 via-yellow-400/10 to-transparent" />
+                  <div className="absolute right-2 top-2 rounded bg-black/60 px-2 py-1 text-[11px] font-medium text-white">
+                    Heatmap Overlay (Visual)
+                  </div>
+                </div>
               ) : (
                 <div className="grid h-64 place-content-center text-sm text-slate-500 sm:h-72">
                   Image preview unavailable
@@ -128,6 +180,7 @@ export default function Result() {
               {recommendations?.vaccination || "N/A"}
             </p>
           </section>
+        </div>
         </div>
       </div>
     </div>
