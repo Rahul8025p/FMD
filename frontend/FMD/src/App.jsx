@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login";
 import Landing from "./pages/Landing";
 import Signup from "./pages/Signup";
+import DiseaseInfo from "./pages/DiseaseInfo";
 
 import UserDashboard from "./pages/UserDashboard";
 import Profile from "./pages/Profile";
@@ -20,6 +21,7 @@ export default function App() {
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Signup />} />
+      <Route path="/disease-info" element={<DiseaseInfo />} />
 
       {/* User routes */}
       <Route

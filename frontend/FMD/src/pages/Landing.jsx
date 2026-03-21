@@ -70,6 +70,12 @@ export default function Landing() {
               Analyze Image
             </button>
             <button
+              onClick={() => navigate("/disease-info")}
+              className="rounded-lg border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+            >
+              Learn about FMD
+            </button>
+            <button
               onClick={() => navigate("/register")}
               className="rounded-lg border border-emerald-200 bg-emerald-50 px-5 py-3 text-sm font-semibold text-emerald-800 hover:bg-emerald-100"
             >
