@@ -1,7 +1,7 @@
 const User = require("../models/User");
 const Cow = require("../models/cow");
 const ImageRecord = require("../models/ImageRecord");
-const { mockInference } = require("../services/inference.service");
+const { inferWithML } = require("../services/inference.service");
 const { getMockRecommendations } = require("../services/recommendation.service");
 
 exports.verifyUser = async (req, res) => {
@@ -66,8 +66,8 @@ exports.analyzeCow = async (req, res) => {
       });
     }
 
-    // Mock inference pipeline until ML endpoint is integrated.
-    const inference = mockInference();
+    const imagePath = req.file.path;
+    const inference = await inferWithML(imagePath);
     const rawDisease = (inference?.disease || "").toLowerCase();
     const disease = rawDisease.includes("mouth")
       ? "FMD"
@@ -126,7 +126,9 @@ exports.analyzeCow = async (req, res) => {
       message: "Image uploaded and analyzed successfully",
       cowId: cow._id,
       imageRecordId: imageRecord._id,
-      result
+      result,
+      imageUrl: `/uploads/${req.file.filename}`,
+      inferenceSource: inference.source
     });
 
   } catch (err) {

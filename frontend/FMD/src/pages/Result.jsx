@@ -6,6 +6,7 @@ import jsPDF from "jspdf";
 export default function Result() {
   const { state } = useLocation();
   const navigate = useNavigate();
+  const backendHost = "http://localhost:5000";
   const reportRef = useRef(null);
   const [downloading, setDownloading] = useState(false);
 
@@ -27,7 +28,8 @@ export default function Result() {
 
   const { disease, confidence, severity, explanation, recommendations } =
     state.result;
-  const uploadedImage = state.uploadedImage;
+  const uploadedImage = state.uploadedImage
+    || (state.imageUrl ? `${backendHost}${state.imageUrl}` : null);
 
   const normalizedDisease = (disease || "").toLowerCase();
   const diseaseStyles = normalizedDisease.includes("fmd")
