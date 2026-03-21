@@ -14,6 +14,8 @@ export default function Analyze() {
   const [loading, setLoading] = useState(false);
   const [mode, setMode] = useState("upload"); // 'upload' | 'camera'
   const [error, setError] = useState("");
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [userName, setUserName] = useState(localStorage.getItem("name") || "U");
 
   const [form, setForm] = useState({
     rfid: "",
@@ -30,6 +32,7 @@ export default function Analyze() {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) navigate("/login");
+    setUserName(localStorage.getItem("name") || "User");
 
     navigator.geolocation.getCurrentPosition(
       (pos) => {
@@ -127,8 +130,62 @@ export default function Analyze() {
     }
   };
 
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate("/login");
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-lime-50 via-emerald-50 to-white px-4 py-6 sm:px-6 md:py-10">
+    <div className="min-h-screen bg-gradient-to-br from-lime-50 via-emerald-50 to-white">
+      {/* Header like dashboard */}
+      <header className="sticky top-0 z-10 border-b border-emerald-100 bg-white/95 px-4 py-3 backdrop-blur sm:px-6">
+        <div className="mx-auto flex max-w-6xl items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="grid h-9 w-9 place-content-center rounded-md bg-emerald-600 font-bold text-white">
+              CC
+            </div>
+            <span className="text-lg font-semibold text-emerald-800">
+              CattleCare AI
+            </span>
+          </div>
+
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-600 font-semibold text-white focus:outline-none focus:ring-2 focus:ring-emerald-600"
+              aria-haspopup="menu"
+              aria-expanded={menuOpen}
+            >
+              {userName.charAt(0).toUpperCase()}
+            </button>
+            {menuOpen && (
+              <div className="absolute right-0 mt-2 w-52 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg">
+                <div className="px-4 py-3 text-sm text-slate-700">
+                  <p className="font-medium">{userName}</p>
+                </div>
+                <button
+                  onClick={() => {
+                    setMenuOpen(false);
+                    navigate("/profile");
+                  }}
+                  className="w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"
+                >
+                  Profile
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50"
+                >
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </header>
+
+      <div className="px-4 py-6 sm:px-6 md:py-10">
       <div className="mx-auto w-full max-w-3xl overflow-hidden rounded-2xl border border-emerald-100 bg-white shadow-sm">
         {/* Header */}
         <div className="relative bg-gradient-to-r from-emerald-800 via-emerald-700 to-lime-700 px-5 py-7 text-white sm:px-8">
@@ -309,6 +366,7 @@ export default function Analyze() {
 
           <canvas ref={canvasRef} className="hidden" />
         </div>
+      </div>
       </div>
     </div>
   );
