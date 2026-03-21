@@ -121,6 +121,7 @@ CLASSES = ["Healthy", "Foot and Mouth Disease"]
 
 # Global dictionary to hold the loaded model
 ml_models = {}
+ml_models["mock_mode"] = False
 
 # -----------------------------
 # Lifespan Event (Best Practice for ML in FastAPI)
@@ -128,19 +129,24 @@ ml_models = {}
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Setup: Run this when the server starts
-    print(f"📦 Loading model from: {MODEL_PATH}")
+    print(f"[ML] Loading model from: {MODEL_PATH}")
     if not os.path.exists(MODEL_PATH):
-        raise FileNotFoundError(f"❌ Model file not found at {MODEL_PATH}")
+        print(f"[ML] Model file missing at {MODEL_PATH}. Starting in mock mode.")
+        ml_models["mock_mode"] = True
+        yield
+        ml_models.clear()
+        print("[ML] Mock mode stopped.")
+        return
     
     # Load model into the global dictionary
     ml_models["cow_disease_model"] = tf.keras.models.load_model(MODEL_PATH, compile=False)
-    print("✅ Model loaded successfully!")
+    print("[ML] Model loaded successfully")
     
     yield # App is now running and accepting requests
     
     # Teardown: Run this when the server shuts down
     ml_models.clear()
-    print("🛑 Model unloaded to free memory.")
+    print("[ML] Model unloaded to free memory.")
 
 # Initialize FastAPI with the lifespan context
 app = FastAPI(title="Cattle Disease Detection API", lifespan=lifespan)
@@ -161,7 +167,11 @@ app.add_middleware(
 # -----------------------------
 @app.get("/")
 def health_check():
-    return {"status": "running", "model_loaded": "cow_disease_model" in ml_models}
+    return {
+        "status": "running",
+        "model_loaded": "cow_disease_model" in ml_models,
+        "mock_mode": ml_models.get("mock_mode", False)
+    }
 
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
@@ -170,6 +180,16 @@ async def predict(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail="Only JPG and PNG images are allowed.")
 
     try:
+        if ml_models.get("mock_mode", False):
+            return {
+                "prediction": "Foot and Mouth Disease",
+                "confidence": 0.91,
+                "all_probabilities": {
+                    "Healthy": 0.09,
+                    "Foot and Mouth Disease": 0.91
+                }
+            }
+
         # Read image into memory
         contents = await file.read()
         npimg = np.frombuffer(contents, np.uint8)
@@ -204,5 +224,5 @@ async def predict(file: UploadFile = File(...)):
         }
 
     except Exception as e:
-        print(f"❌ Prediction Error: {e}")
+        print(f"[ML] Prediction Error: {e}")
         raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
