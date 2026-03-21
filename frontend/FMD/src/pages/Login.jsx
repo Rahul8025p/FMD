@@ -9,8 +9,7 @@ export default function Login() {
 
   const [form, setForm] = useState({
     email: "",
-    password: "",
-    rememberMe: false
+    password: ""
   });
 
   const [error, setError] = useState("");
@@ -18,8 +17,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e) => {
-    const { name, type, checked, value } = e.target;
-    setForm({ ...form, [name]: type === "checkbox" ? checked : value });
+    setForm({ ...form, [e.target.name]: e.target.value });
     setError("");
   };
 
@@ -58,122 +56,60 @@ export default function Login() {
     }
   };
 
-  const handleAltSignIn = (provider) => {
-    setError(`${provider} sign-in will be available soon.`);
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-lime-100 via-emerald-50 to-stone-100 px-4 py-6 sm:px-6 md:py-10">
-      <div className="mx-auto grid w-full max-w-6xl overflow-hidden rounded-3xl border border-emerald-100 bg-white shadow-xl lg:grid-cols-2">
-        <aside className="relative hidden bg-gradient-to-br from-emerald-800 via-emerald-700 to-lime-700 p-8 text-white lg:flex lg:flex-col lg:justify-between">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.32),transparent_55%)]" />
-          <div className="relative">
-            <p className="inline-block rounded-full border border-white/30 px-3 py-1 text-xs uppercase tracking-wider text-emerald-50">
-              FMD Care
-            </p>
-            <h2 className="mt-4 text-3xl font-bold leading-tight">
-              Healthy herd,
-              <br />
-              smarter farming.
-            </h2>
-            <p className="mt-3 text-sm text-emerald-50/90">
-              Monitor livestock health, view disease analysis, and make confident decisions faster.
+    <div className="min-h-screen bg-gradient-to-b from-emerald-50 via-white to-slate-50 px-4 py-6 sm:px-6 md:px-8 md:py-10 lg:py-14">
+      <div className="mx-auto w-full max-w-md md:max-w-lg lg:max-w-xl">
+        <div className="rounded-2xl border border-slate-200/80 bg-white/95 p-5 shadow-sm backdrop-blur sm:p-6 md:p-8 lg:p-9">
+          <div className="mb-6 md:mb-7">
+            <h1 className="text-xl font-semibold text-slate-800 sm:text-2xl md:text-3xl">
+              Sign in
+            </h1>
+            <p className="mt-1 text-sm text-slate-500 sm:text-base">
+              Access CattleCare AI diagnostic system
             </p>
           </div>
-          <div className="relative grid grid-cols-2 gap-3 text-sm">
-            <div className="rounded-xl border border-white/20 bg-white/10 px-3 py-2">Fast diagnosis</div>
-            <div className="rounded-xl border border-white/20 bg-white/10 px-3 py-2">Farm-friendly UI</div>
-            <div className="rounded-xl border border-white/20 bg-white/10 px-3 py-2">Any device</div>
-            <div className="rounded-xl border border-white/20 bg-white/10 px-3 py-2">Secure records</div>
-          </div>
-        </aside>
 
-        <section className="px-5 py-6 sm:px-8 sm:py-8 md:px-10 lg:px-12 lg:py-10">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">Welcome back</p>
-          <h1 className="mt-2 text-3xl font-bold text-slate-800">Sign in to your farm dashboard</h1>
-          <p className="mt-1 text-sm text-slate-500">Use email/password or quick sign-in options below.</p>
-
-          <div className="mt-5 grid grid-cols-1 gap-2 sm:grid-cols-3">
-            <button
-              type="button"
-              onClick={() => handleAltSignIn("Google")}
-              className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
-            >
-              Continue with Google
-            </button>
-            <button
-              type="button"
-              onClick={() => handleAltSignIn("Phone OTP")}
-              className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
-            >
-              Continue with OTP
-            </button>
-            <button
-              type="button"
-              onClick={() => navigate("/register")}
-              className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700 transition hover:bg-emerald-100"
-            >
-              Create new account
-            </button>
-          </div>
-
-          <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">Email</label>
+              <label className="mb-1 block text-sm font-medium text-slate-700">
+              Email address
+              </label>
               <input
                 type="email"
                 name="email"
-                value={form.email}
-                placeholder="farmer@example.com"
+                placeholder="you@example.com"
                 autoComplete="email"
                 required
                 onChange={handleChange}
-                className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-600 sm:text-base md:py-3"
               />
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">Password</label>
+              <label className="mb-1 block text-sm font-medium text-slate-700">
+                Password
+              </label>
+
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
                   name="password"
-                  value={form.password}
                   placeholder="Enter your password"
                   autoComplete="current-password"
                   required
                   onChange={handleChange}
-                  className="w-full rounded-xl border border-slate-300 px-3 py-2.5 pr-16 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2.5 pr-14 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-600 sm:text-base md:py-3"
                 />
+
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md px-2 py-1 text-xs font-medium text-slate-500 transition hover:bg-slate-100"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded px-2 py-1 text-xs font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-600 sm:text-sm"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? "Hide" : "Show"}
                 </button>
               </div>
-            </div>
-
-            <div className="flex items-center justify-between text-sm">
-              <label className="inline-flex items-center gap-2 text-slate-700">
-                <input
-                  type="checkbox"
-                  name="rememberMe"
-                  checked={form.rememberMe}
-                  onChange={handleChange}
-                  className="h-4 w-4 rounded border-slate-300 text-emerald-700 focus:ring-emerald-600"
-                />
-                Keep me signed in
-              </label>
-              <button
-                type="button"
-                onClick={() => handleAltSignIn("Password reset")}
-                className="font-medium text-emerald-700 hover:underline"
-              >
-                Forgot password?
-              </button>
             </div>
 
             {error && (
@@ -185,23 +121,23 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-xl bg-gradient-to-r from-emerald-700 to-lime-700 py-3 text-base font-semibold text-white shadow-md transition hover:from-emerald-800 hover:to-lime-800 disabled:opacity-60"
+              className="w-full rounded-lg bg-emerald-700 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 sm:text-base md:py-3"
             >
               {loading ? "Signing in..." : "Sign in"}
             </button>
           </form>
 
-          <div className="mt-6 border-t border-slate-200 pt-4 text-center text-sm text-slate-500">
-            New to CattleCare?{" "}
+          <div className="mt-6 border-t border-slate-200 pt-4 text-center text-xs text-slate-500 sm:text-sm">
+            Don&apos;t have an account?{" "}
             <button
               type="button"
               onClick={() => navigate("/register")}
-              className="font-semibold text-emerald-700 hover:underline"
+              className="font-medium text-emerald-700 transition hover:underline focus:outline-none focus:ring-2 focus:ring-emerald-600"
             >
-              Sign up here
+              Create account
             </button>
           </div>
-        </section>
+        </div>
       </div>
     </div>
   );

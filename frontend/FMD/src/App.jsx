@@ -1,11 +1,9 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 
 import Login from "./pages/Login";
-import Landing from "./pages/Landing";
 import Signup from "./pages/Signup";
 
 import UserDashboard from "./pages/UserDashboard";
-import Profile from "./pages/Profile";
 import AdminDashboard from "./pages/AdminDashboard";
 import Analyze from "./pages/Analyze";
 import Result from "./pages/Result";
@@ -17,8 +15,7 @@ export default function App() {
     <Routes>
 
       {/* Public routes */}
-      <Route path="/" element={<Landing />} />
-      <Route path="/login" element={<Login />} />
+      <Route path="/" element={<Login />} />
       <Route path="/register" element={<Signup />} />
 
       {/* User routes */}
@@ -45,15 +42,6 @@ export default function App() {
         element={
           <ProtectedRoute role="USER">
             <Result />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/profile"
-        element={
-          <ProtectedRoute role="USER">
-            <Profile />
           </ProtectedRoute>
         }
       />
