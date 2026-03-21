@@ -8,6 +8,7 @@ const upload = require("../middleware/upload.middleware");
 const {
   verifyUser,
   analyzeCow,
+  getHistory
 } = require("../controllers/user.controller");
 
 /* 🔐 Verify user */
@@ -25,6 +26,13 @@ router.post(
   roleMiddleware("USER"),
   upload.single("image"),
   analyzeCow
+);
+
+router.get(
+  "/history",
+  authMiddleware,
+  roleMiddleware("USER"),
+  getHistory
 );
 
 module.exports = router;

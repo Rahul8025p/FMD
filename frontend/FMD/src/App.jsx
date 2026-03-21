@@ -7,6 +7,7 @@ import DiseaseInfo from "./pages/DiseaseInfo";
 
 import UserDashboard from "./pages/UserDashboard";
 import Profile from "./pages/Profile";
+import History from "./pages/History";
 import AdminDashboard from "./pages/AdminDashboard";
 import Analyze from "./pages/Analyze";
 import Result from "./pages/Result";
@@ -56,6 +57,15 @@ export default function App() {
         element={
           <ProtectedRoute role="USER">
             <Profile />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/history"
+        element={
+          <ProtectedRoute role="USER">
+            <History />
           </ProtectedRoute>
         }
       />

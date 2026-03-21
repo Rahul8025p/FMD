@@ -58,6 +58,19 @@ const ImageRecordSchema = new mongoose.Schema(
         required: true,
       },
     },
+    prediction: {
+      type: String,
+      trim: true
+    },
+    confidence: {
+      type: Number,
+      min: 0,
+      max: 1
+    },
+    severity: {
+      type: String,
+      trim: true
+    }
   },
   { timestamps: true }
 );

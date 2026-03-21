@@ -193,6 +193,12 @@ export default function UserDashboard() {
                 Profile
               </button>
               <button
+                onClick={() => navigate("/history")}
+                className="rounded-lg border border-slate-200 px-3 py-2 text-slate-700 transition hover:bg-slate-50"
+              >
+                History
+              </button>
+              <button
                 onClick={() => navigate("/disease-info")}
                 className="rounded-lg border border-slate-200 px-3 py-2 text-slate-700 transition hover:bg-slate-50"
               >
