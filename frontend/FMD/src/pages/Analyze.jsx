@@ -124,7 +124,11 @@ export default function Analyze() {
       navigate("/result", { state: { ...res.data, uploadedImage: preview } });
     } catch (err) {
       console.error(err);
-      setError("Analysis failed. Please try again.");
+      setError(
+        err?.response?.data?.message ||
+        err?.response?.data?.detail ||
+        "Analysis failed. Please try again."
+      );
     } finally {
       setLoading(false);
     }
