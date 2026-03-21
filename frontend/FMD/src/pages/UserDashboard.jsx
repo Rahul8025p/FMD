@@ -12,7 +12,7 @@ export default function UserDashboard() {
 
   const handleLogout = () => {
     localStorage.clear();
-    navigate("/");
+    navigate("/login");
   };
 
   useEffect(() => {
@@ -20,7 +20,7 @@ export default function UserDashboard() {
       const token = localStorage.getItem("token");
 
       if (!token) {
-        navigate("/");
+        navigate("/login");
         return;
       }
 
@@ -38,7 +38,7 @@ export default function UserDashboard() {
       } catch (err) {
         setSessionError("Your session has expired. Please sign in again.");
         localStorage.clear();
-        navigate("/");
+        navigate("/login");
       } finally {
         setLoading(false);
       }
@@ -178,7 +178,7 @@ export default function UserDashboard() {
                 My herd
               </button>
               <button
-                onClick={() => navigate("/")}
+                onClick={() => navigate("/login")}
                 className="rounded-lg border border-slate-200 px-3 py-2 text-slate-700 transition hover:bg-slate-50"
               >
                 Help

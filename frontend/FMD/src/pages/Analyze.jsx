@@ -29,7 +29,7 @@ export default function Analyze() {
   /* 🔐 Protect route + GPS */
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (!token) navigate("/");
+    if (!token) navigate("/login");
 
     navigator.geolocation.getCurrentPosition(
       (pos) => {
