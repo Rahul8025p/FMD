@@ -4,6 +4,7 @@ import Login from "./pages/Login";
 import Landing from "./pages/Landing";
 import Signup from "./pages/Signup";
 import DiseaseInfo from "./pages/DiseaseInfo";
+import AdminLogin from "./pages/AdminLogin";
 
 import UserDashboard from "./pages/UserDashboard";
 import Profile from "./pages/Profile";
@@ -23,6 +24,7 @@ export default function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Signup />} />
       <Route path="/disease-info" element={<DiseaseInfo />} />
+      <Route path="/admin/login" element={<AdminLogin />} />
 
       {/* User routes */}
       <Route

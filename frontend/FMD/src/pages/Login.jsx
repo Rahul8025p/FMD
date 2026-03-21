@@ -200,6 +200,16 @@ export default function Login() {
             >
               Sign up here
             </button>
+            <p className="mt-2 text-xs text-slate-400">
+              Admin access?{" "}
+              <button
+                type="button"
+                onClick={() => navigate("/admin/login")}
+                className="font-medium text-emerald-700 hover:underline"
+              >
+                Use admin login
+              </button>
+            </p>
           </div>
         </section>
       </div>

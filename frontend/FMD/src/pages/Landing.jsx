@@ -34,6 +34,12 @@ export default function Landing() {
         </div>
         <div className="flex items-center gap-3">
           <button
+            onClick={() => navigate("/admin/login")}
+            className="rounded-md px-4 py-2 text-sm font-medium text-slate-700 hover:underline"
+          >
+            Admin
+          </button>
+          <button
             onClick={() => navigate("/login")}
             className="rounded-md px-4 py-2 text-sm font-medium text-emerald-800 hover:underline"
           >
