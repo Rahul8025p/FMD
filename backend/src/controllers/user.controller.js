@@ -144,8 +144,9 @@ exports.getHistory = async (req, res) => {
     const records = await ImageRecord.find({ user: req.user.id })
       .sort({ createdAt: -1 })
       .select(
-        "imageUrl prediction confidence severity createdAt breed age sex fever temperature"
-      );
+        "imageUrl prediction confidence severity createdAt breed age sex fever temperature cow"
+      )
+      .populate("cow", "rfidTag");
 
     return res.status(200).json({
       success: true,
