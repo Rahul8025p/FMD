@@ -18,13 +18,6 @@ export default function AdminDashboard() {
   const [page, setPage] = useState(1);
   const pageSize = 25;
 
-  const formatCoord = (v) => {
-    if (v === null || v === undefined || v === "") return "N/A";
-    const n = typeof v === "number" ? v : Number(v);
-    if (Number.isNaN(n)) return "N/A";
-    return n.toFixed(4);
-  };
-
   const totalRecent = recentDetections.length;
   const fmdRecent = recentDetections.filter((x) => x?.prediction === "FMD").length;
   const healthyRecent = recentDetections.filter((x) => x?.prediction === "Healthy").length;
@@ -289,18 +282,6 @@ export default function AdminDashboard() {
                         <p className="text-slate-600">
                           Fever:{" "}
                           {item.fever === true ? "Yes" : item.fever === false ? "No" : "N/A"}
-                        </p>
-                        <p className="text-xs text-slate-500">
-                          Geo:{" "}
-                          {item?.location?.latitude !== undefined ||
-                          item?.location?.longitude !== undefined ? (
-                            <>
-                              Lat {formatCoord(item?.location?.latitude)}, Long{" "}
-                              {formatCoord(item?.location?.longitude)}
-                            </>
-                          ) : (
-                            "N/A"
-                          )}
                         </p>
                           <p className="text-xs text-slate-500">
                             {item.createdAt

@@ -7,19 +7,11 @@ export default function History() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [items, setItems] = useState([]);
-  const [rfidQuery, setRfidQuery] = useState("");
   const [predictionFilter, setPredictionFilter] = useState("ALL");
   const [feverFilter, setFeverFilter] = useState("ALL");
   const [sortOrder, setSortOrder] = useState("DESC"); // createdAt
   const [page, setPage] = useState(1);
   const pageSize = 25;
-
-  const formatCoord = (v) => {
-    if (v === null || v === undefined || v === "") return "N/A";
-    const n = typeof v === "number" ? v : Number(v);
-    if (Number.isNaN(n)) return "N/A";
-    return n.toFixed(4);
-  };
 
   useEffect(() => {
     const loadHistory = async () => {
@@ -43,15 +35,11 @@ export default function History() {
 
   useEffect(() => {
     setPage(1);
-  }, [rfidQuery, predictionFilter, feverFilter, sortOrder]);
+  }, [predictionFilter, feverFilter, sortOrder]);
 
   const filteredItems = useMemo(() => {
-    const q = rfidQuery.trim().toLowerCase();
-
     return items
       .filter((item) => {
-        const rfid = (item?.rfidTag || item?.cow?.rfidTag || "").toLowerCase();
-        if (q && !rfid.includes(q)) return false;
         if (
           predictionFilter !== "ALL" &&
           (item?.prediction || "").toUpperCase() !== predictionFilter
@@ -71,7 +59,7 @@ export default function History() {
         const tb = new Date(b.createdAt || 0).getTime();
         return sortOrder === "DESC" ? tb - ta : ta - tb;
       });
-  }, [feverFilter, items, predictionFilter, rfidQuery, sortOrder]);
+  }, [feverFilter, items, predictionFilter, sortOrder]);
 
   const totalPages = Math.max(1, Math.ceil(filteredItems.length / pageSize));
   const paginatedItems = useMemo(() => {
@@ -110,19 +98,7 @@ export default function History() {
           </div>
 
           {/* Search + filters */}
-          <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
-            <div>
-              <label className="mb-1 block text-xs font-medium text-slate-600">
-                Search by RFID
-              </label>
-              <input
-                value={rfidQuery}
-                onChange={(e) => setRfidQuery(e.target.value)}
-                placeholder="e.g. RFID-10234"
-                className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-600"
-              />
-            </div>
-
+          <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <label className="mb-1 block text-xs font-medium text-slate-600">
                 Prediction
@@ -227,10 +203,9 @@ export default function History() {
 
         {!loading && !error && filteredItems.length === 0 ? (
           <div className="rounded-2xl border border-emerald-100 bg-white p-8 text-center shadow-sm">
-            <p className="text-slate-600">No records match your search.</p>
+            <p className="text-slate-600">No records match your filters.</p>
             <button
               onClick={() => {
-                setRfidQuery("");
                 setPredictionFilter("ALL");
                 setFeverFilter("ALL");
                 setSortOrder("DESC");
@@ -257,14 +232,7 @@ export default function History() {
                   className="rounded-2xl border border-emerald-100 bg-white p-4 shadow-sm"
                 >
                   <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                        RFID
-                      </p>
-                      <p className="mt-1 text-sm font-semibold text-slate-800">
-                        {item?.rfidTag || item?.cow?.rfidTag || "N/A"}
-                      </p>
-                    </div>
+                    {/* Prediction badge */}
                     <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-1 text-[11px] font-semibold text-slate-700">
                       {item?.prediction || "N/A"}
                     </span>
@@ -280,18 +248,6 @@ export default function History() {
                     <p className="text-sm text-slate-600">
                       Fever:{" "}
                       {item.fever === true ? "Yes" : item.fever === false ? "No" : "N/A"}
-                    </p>
-                    <p className="text-sm text-slate-600">
-                      Geo:{" "}
-                      {item?.location?.latitude !== undefined ||
-                      item?.location?.longitude !== undefined ? (
-                        <>
-                          Lat {formatCoord(item?.location?.latitude)}, Long{" "}
-                          {formatCoord(item?.location?.longitude)}
-                        </>
-                      ) : (
-                        "N/A"
-                      )}
                     </p>
                     <p className="text-sm text-slate-600">
                       Date/Time:{" "}
