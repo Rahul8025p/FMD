@@ -25,6 +25,13 @@ export default function Landing() {
       {/* Header */}
       <header className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
         <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="hidden rounded-md border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-50 sm:block"
+          >
+            Back
+          </button>
           <div className="grid h-9 w-9 place-content-center rounded-md bg-emerald-700 text-white font-bold">
             CC
           </div>

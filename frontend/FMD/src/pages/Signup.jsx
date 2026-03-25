@@ -88,6 +88,15 @@ export default function Signup() {
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-lime-50 to-emerald-100 px-4 py-6 sm:px-6 md:py-10">
       <div className="mx-auto grid w-full max-w-6xl overflow-hidden rounded-3xl border border-emerald-100 bg-white shadow-xl lg:grid-cols-2">
         <section className="px-5 py-6 sm:px-8 sm:py-8 md:px-10 lg:px-12 lg:py-10">
+          <div className="mb-3">
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              className="inline-flex items-center rounded-md border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-50 sm:text-sm"
+            >
+              Back
+            </button>
+          </div>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">Create account</p>
           <h1 className="mt-2 text-3xl font-bold text-slate-800">Start managing herd health smarter</h1>
           <p className="mt-1 text-sm text-slate-500">Quick setup for farmers, vets, and farm teams.</p>

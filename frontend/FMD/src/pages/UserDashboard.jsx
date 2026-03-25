@@ -72,6 +72,13 @@ export default function UserDashboard() {
       <header className="sticky top-0 z-10 border-b border-emerald-100 bg-white/95 px-4 py-3 backdrop-blur sm:px-6">
         <div className="mx-auto flex max-w-6xl items-center justify-between">
           <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-50 sm:text-sm"
+            >
+              Back
+            </button>
             <div className="h-9 w-9 rounded-md bg-emerald-600 text-white grid place-content-center font-bold">
               CC
             </div>

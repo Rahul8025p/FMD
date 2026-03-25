@@ -89,6 +89,15 @@ export default function Login() {
         </aside>
 
         <section className="px-5 py-6 sm:px-8 sm:py-8 md:px-10 lg:px-12 lg:py-10">
+          <div className="mb-3">
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              className="inline-flex items-center rounded-md border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-50 sm:text-sm"
+            >
+              Back
+            </button>
+          </div>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">Welcome back</p>
           <h1 className="mt-2 text-3xl font-bold text-slate-800">Sign in to your farm dashboard</h1>
           <p className="mt-1 text-sm text-slate-500">Use email/password or quick sign-in options below.</p>

@@ -43,6 +43,15 @@ export default function AdminLogin() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-100 via-emerald-50 to-white px-4 py-6 sm:px-6 md:py-10">
       <div className="mx-auto w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+        <div className="mb-3">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="inline-flex items-center rounded-md border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-50 sm:text-sm"
+          >
+            Back
+          </button>
+        </div>
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">
           Admin Access
         </p>
