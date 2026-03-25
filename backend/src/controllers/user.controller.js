@@ -145,14 +145,21 @@ exports.getHistory = async (req, res) => {
     const records = await ImageRecord.find({ user: req.user.id })
       .sort({ createdAt: -1 })
       .select(
-        "imageUrl rfidTag prediction confidence severity createdAt breed age sex fever temperature cow"
+        "imageUrl rfidTag prediction confidence severity createdAt breed age sex fever temperature location.latitude location.longitude cow"
       )
-      .populate("cow", "rfidTag");
+      .populate("cow", "rfidTag")
+      .lean();
+
+    // Backfill denormalized RFID for older documents where `rfidTag` might be missing.
+    const normalized = records.map((rec) => ({
+      ...rec,
+      rfidTag: rec?.rfidTag || rec?.cow?.rfidTag || undefined
+    }));
 
     return res.status(200).json({
       success: true,
-      count: records.length,
-      history: records
+      count: normalized.length,
+      history: normalized
     });
   } catch (err) {
     console.error("History fetch error:", err);
