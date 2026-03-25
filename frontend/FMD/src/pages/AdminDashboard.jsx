@@ -15,6 +15,8 @@ export default function AdminDashboard() {
     healthyCases: 0
   });
   const [recentDetections, setRecentDetections] = useState([]);
+  const [page, setPage] = useState(1);
+  const pageSize = 25;
 
   const totalRecent = recentDetections.length;
   const fmdRecent = recentDetections.filter((x) => x?.prediction === "FMD").length;
@@ -51,6 +53,12 @@ export default function AdminDashboard() {
 
   const maxDayTotal = Math.max(...days.map((x) => x.total), 1);
 
+  const totalPages = Math.max(1, Math.ceil(recentDetections.length / pageSize));
+  const paginatedDetections = recentDetections.slice(
+    (page - 1) * pageSize,
+    (page - 1) * pageSize + pageSize
+  );
+
   useEffect(() => {
     const loadOverview = async () => {
       try {
@@ -72,11 +80,9 @@ export default function AdminDashboard() {
     loadOverview();
   }, [navigate]);
 
-  const getImageUrl = (url) => {
-    if (!url) return "";
-    if (url.startsWith("http")) return url;
-    return `${API_HOST}${url}`;
-  };
+  useEffect(() => {
+    setPage(1);
+  }, [recentDetections.length]);
 
   const handleLogout = () => {
     localStorage.clear();
@@ -242,48 +248,75 @@ export default function AdminDashboard() {
               {recentDetections.length === 0 ? (
                 <p className="mt-4 text-sm text-slate-600">No detections available yet.</p>
               ) : (
-                <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-                  {recentDetections.map((item) => (
-                    <article
-                      key={item._id}
-                      className="overflow-hidden rounded-xl border border-slate-200 bg-white"
-                    >
-                      <div className="h-40 bg-slate-100">
-                        {item.imageUrl ? (
-                          <img
-                            src={getImageUrl(item.imageUrl)}
-                            alt="Detection"
-                            className="h-full w-full object-cover"
-                          />
-                        ) : (
-                          <div className="grid h-full place-content-center text-xs text-slate-500">
-                            No image
+                <>
+                  <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+                    {paginatedDetections.map((item) => (
+                      <article
+                        key={item._id}
+                        className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <p className="text-sm font-semibold text-slate-800">
+                              {item.user?.name || "Unknown user"}
+                            </p>
+                            <p className="text-xs text-slate-500">
+                              {item.user?.email || "No email"}
+                            </p>
                           </div>
-                        )}
-                      </div>
-                      <div className="space-y-1 p-4 text-sm">
-                        <p className="font-semibold text-slate-800">
-                          {item.user?.name || "Unknown user"}
-                        </p>
-                        <p className="text-slate-600">{item.user?.email || "No email"}</p>
-                        <p className="text-slate-700">
-                          Prediction: <span className="font-medium">{item.prediction || "N/A"}</span>
-                        </p>
-                        <p className="text-slate-600">
-                          Confidence:{" "}
-                          {typeof item.confidence === "number"
-                            ? `${(item.confidence * 100).toFixed(2)}%`
-                            : "N/A"}
-                        </p>
-                        <p className="text-xs text-slate-500">
-                          {item.createdAt
-                            ? new Date(item.createdAt).toLocaleString()
-                            : "N/A"}
-                        </p>
-                      </div>
-                    </article>
-                  ))}
-                </div>
+                          <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-1 text-[11px] font-semibold text-slate-700">
+                            {item.prediction || "N/A"}
+                          </span>
+                        </div>
+
+                        <div className="mt-3 space-y-1 text-sm">
+                          <p className="text-slate-600">
+                            Confidence:{" "}
+                            {typeof item.confidence === "number"
+                              ? `${(item.confidence * 100).toFixed(2)}%`
+                              : "N/A"}
+                          </p>
+                          <p className="text-slate-600">
+                            Severity: <span className="font-medium">{item.severity || "N/A"}</span>
+                          </p>
+                          <p className="text-xs text-slate-500">
+                            {item.createdAt
+                              ? new Date(item.createdAt).toLocaleString()
+                              : "N/A"}
+                          </p>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+
+                  {/* Pagination */}
+                  <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+                    <p className="text-sm text-slate-600">
+                      Page{" "}
+                      <span className="font-semibold">
+                        {page}/{totalPages}
+                      </span>
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setPage((p) => Math.max(1, p - 1))}
+                        disabled={page === 1}
+                        className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
+                      >
+                        Prev
+                      </button>
+                      <button
+                        onClick={() =>
+                          setPage((p) => Math.min(totalPages, p + 1))
+                        }
+                        disabled={page === totalPages}
+                        className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
+                      >
+                        Next
+                      </button>
+                    </div>
+                  </div>
+                </>
               )}
             </section>
           </>

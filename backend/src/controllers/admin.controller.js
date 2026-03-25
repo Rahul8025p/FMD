@@ -11,7 +11,7 @@ exports.getAdminOverview = async (req, res) => {
         ImageRecord.countDocuments({ prediction: "Healthy" }),
         ImageRecord.find()
           .sort({ createdAt: -1 })
-          .limit(10)
+          .limit(100)
           .populate("user", "name email")
           .select("imageUrl prediction confidence severity createdAt user")
       ]);
