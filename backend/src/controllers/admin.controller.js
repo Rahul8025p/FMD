@@ -14,7 +14,7 @@ exports.getAdminOverview = async (req, res) => {
           .limit(100)
           .populate("user", "name email")
           .select(
-            "imageUrl prediction confidence severity fever location.latitude location.longitude createdAt user"
+            "imageUrl prediction confidence severity fever location createdAt user"
           )
       ]);
 
