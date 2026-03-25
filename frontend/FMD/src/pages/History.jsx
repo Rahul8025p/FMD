@@ -77,7 +77,6 @@ export default function History() {
   const healthyCount = filteredItems.filter(
     (x) => (x.prediction || "") === "Healthy"
   ).length;
-  const otherCount = Math.max(0, filteredItems.length - fmdCount - healthyCount);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-lime-50 via-emerald-50 to-white px-4 py-6 sm:px-6 md:py-10">
@@ -129,7 +128,6 @@ export default function History() {
                 <option value="ALL">All</option>
                 <option value="FMD">FMD</option>
                 <option value="HEALTHY">Healthy</option>
-                <option value="OTHER">Other</option>
               </select>
             </div>
 
@@ -190,10 +188,9 @@ export default function History() {
           <div className="mt-4 flex items-end justify-start gap-4">
             {[
               { label: "FMD", value: fmdCount, bg: "bg-red-600" },
-              { label: "Healthy", value: healthyCount, bg: "bg-emerald-600" },
-              { label: "Other", value: otherCount, bg: "bg-amber-600" }
+              { label: "Healthy", value: healthyCount, bg: "bg-emerald-600" }
             ].map((bar) => {
-              const max = Math.max(fmdCount, healthyCount, otherCount, 1);
+              const max = Math.max(fmdCount, healthyCount, 1);
               const heightPct = (bar.value / max) * 100;
               return (
                 <div key={bar.label} className="w-24 text-center">
