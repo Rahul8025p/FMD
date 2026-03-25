@@ -13,7 +13,9 @@ exports.getAdminOverview = async (req, res) => {
           .sort({ createdAt: -1 })
           .limit(100)
           .populate("user", "name email")
-          .select("imageUrl prediction confidence severity createdAt user")
+          .select(
+            "imageUrl prediction confidence severity fever location.latitude location.longitude createdAt user"
+          )
       ]);
 
     return res.status(200).json({
