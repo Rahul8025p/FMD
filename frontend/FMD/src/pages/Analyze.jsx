@@ -12,6 +12,7 @@ export default function Analyze() {
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState(null);
   const [cameraOn, setCameraOn] = useState(false);
+  const [cameraReady, setCameraReady] = useState(false);
   const [loading, setLoading] = useState(false);
   const [mode, setMode] = useState("upload"); // 'upload' | 'camera'
   const [error, setError] = useState("");
@@ -76,6 +77,7 @@ export default function Analyze() {
       streamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
+        setCameraReady(false);
         // Ensure playback starts on mobile
         videoRef.current.play().catch(() => {});
       }
@@ -94,6 +96,7 @@ export default function Analyze() {
     if (videoRef.current) videoRef.current.srcObject = null;
     streamRef.current = null;
     setCameraOn(false);
+    setCameraReady(false);
     setMode("upload");
   };
 
@@ -110,8 +113,8 @@ export default function Analyze() {
     const video = videoRef.current;
     const canvas = canvasRef.current;
     if (!video || !canvas) return;
-    if (!video.videoWidth || !video.videoHeight) {
-      setError("Camera not ready yet. Please try again.");
+    if (!cameraReady) {
+      setError("Preparing camera. Please try again in a moment.");
       return;
     }
 
@@ -359,10 +362,16 @@ export default function Analyze() {
                     playsInline
                     muted
                     className="rounded-xl border w-full"
+                    onLoadedMetadata={() => setCameraReady(true)}
+                    onCanPlay={() => setCameraReady(true)}
                   />
                   <div className="grid grid-cols-2 gap-3">
-                    <button onClick={capturePhoto} className="btn-primary w-full">
-                      Capture Photo
+                    <button
+                      onClick={capturePhoto}
+                      disabled={!cameraReady}
+                      className="btn-primary w-full disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                      {cameraReady ? "Capture Photo" : "Preparing camera..."}
                     </button>
                     <button onClick={stopCamera} className="btn-secondary w-full">
                       Stop Camera
