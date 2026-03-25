@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { api } from "../services/api";
 
 export default function UserDashboard() {
   const navigate = useNavigate();
@@ -9,6 +10,9 @@ export default function UserDashboard() {
   const [loading, setLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
   const [sessionError, setSessionError] = useState("");
+  const [historyItems, setHistoryItems] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyError, setHistoryError] = useState("");
 
   const handleLogout = () => {
     localStorage.clear();
@@ -35,6 +39,16 @@ export default function UserDashboard() {
 
         localStorage.setItem("name", res.data.user.name);
         localStorage.setItem("role", res.data.user.role);
+        // Load history for graphs (best-effort; dashboard stays usable if it fails)
+        try {
+          setHistoryLoading(true);
+          const historyRes = await api.get("/user/history");
+          setHistoryItems(historyRes.data?.history || []);
+        } catch (err) {
+          setHistoryError("Unable to load dashboard charts.");
+        } finally {
+          setHistoryLoading(false);
+        }
       } catch (err) {
         setSessionError("Your session has expired. Please sign in again.");
         localStorage.clear();
@@ -65,6 +79,46 @@ export default function UserDashboard() {
       </div>
     );
   }
+
+  const now = new Date();
+  const start7 = new Date(now);
+  start7.setDate(now.getDate() - 6);
+
+  const last7Items = historyItems.filter((x) => {
+    const t = x?.createdAt ? new Date(x.createdAt).getTime() : 0;
+    return t >= start7.getTime();
+  });
+
+  const last7Total = last7Items.length;
+  const last7Fmd = last7Items.filter((x) => x?.prediction === "FMD").length;
+  const last7Healthy = last7Items.filter((x) => x?.prediction === "Healthy").length;
+  const last7Flagged = Math.max(0, last7Total - last7Healthy);
+
+  const last7Days = Array.from({ length: 7 }).map((_, idx) => {
+    const d = new Date(now);
+    d.setDate(now.getDate() - (6 - idx));
+    const key = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+    const label = d.toLocaleDateString(undefined, { weekday: "short" });
+    return { key, label, fmd: 0, healthy: 0, other: 0, total: 0 };
+  });
+
+  for (const item of historyItems) {
+    if (!item?.createdAt) continue;
+    const d = new Date(item.createdAt);
+    const key = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+    const bucket = last7Days.find((x) => x.key === key);
+    if (!bucket) continue;
+
+    bucket.total += 1;
+    if (item.prediction === "FMD") bucket.fmd += 1;
+    else if (item.prediction === "Healthy") bucket.healthy += 1;
+    else bucket.other += 1;
+  }
+
+  const maxDayTotal = Math.max(
+    ...last7Days.map((x) => x.total),
+    1
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-lime-50 via-emerald-50 to-white">
@@ -139,22 +193,118 @@ export default function UserDashboard() {
         </div>
 
         {/* Stats / Highlights */}
-        <section className="mb-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <section className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div className="rounded-xl border border-emerald-100 bg-white p-5 shadow-sm">
-            <p className="text-sm text-slate-500">Scans this week</p>
-            <p className="mt-2 text-2xl font-semibold text-slate-800">12</p>
+            <p className="text-sm text-slate-500">Scans (7 days)</p>
+            <p className="mt-2 text-2xl font-semibold text-slate-800">
+              {historyLoading ? "…" : last7Total}
+            </p>
           </div>
           <div className="rounded-xl border border-emerald-100 bg-white p-5 shadow-sm">
             <p className="text-sm text-slate-500">Healthy scans</p>
-            <p className="mt-2 text-2xl font-semibold text-slate-800">9</p>
+            <p className="mt-2 text-2xl font-semibold text-slate-800">
+              {historyLoading ? "…" : last7Healthy}
+            </p>
           </div>
           <div className="rounded-xl border border-emerald-100 bg-white p-5 shadow-sm">
             <p className="text-sm text-slate-500">Cases flagged</p>
-            <p className="mt-2 text-2xl font-semibold text-slate-800">3</p>
+            <p className="mt-2 text-2xl font-semibold text-slate-800">
+              {historyLoading ? "…" : last7Flagged}
+            </p>
           </div>
           <div className="rounded-xl border border-emerald-100 bg-white p-5 shadow-sm">
-            <p className="text-sm text-slate-500">Vaccinations due</p>
-            <p className="mt-2 text-2xl font-semibold text-slate-800">5</p>
+            <p className="text-sm text-slate-500">FMD cases</p>
+            <p className="mt-2 text-2xl font-semibold text-slate-800">
+              {historyLoading ? "…" : last7Fmd}
+            </p>
+          </div>
+        </section>
+
+        {/* Graphs */}
+        <section className="mb-10 grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <div className="lg:col-span-1 rounded-2xl border border-emerald-100 bg-white p-6 shadow-sm">
+            <h3 className="text-base font-semibold text-slate-800">
+              FMD vs Healthy (7 days)
+            </h3>
+            <p className="mt-1 text-sm text-slate-600">
+              Auto from your detection history.
+            </p>
+            <div className="mt-4 flex items-end gap-4">
+              {(() => {
+                const max = Math.max(last7Fmd, last7Healthy, 1);
+                const bars = [
+                  { label: "FMD", value: last7Fmd, bg: "bg-red-600" },
+                  { label: "Healthy", value: last7Healthy, bg: "bg-emerald-600" }
+                ];
+
+                return bars.map((b) => {
+                  const heightPct = (b.value / max) * 100;
+                  return (
+                    <div key={b.label} className="w-24 text-center">
+                      <div className="mx-auto h-32 flex items-end justify-center bg-slate-50 rounded-lg border border-slate-200 p-2">
+                        <div
+                          className={`w-full rounded-lg ${b.bg}`}
+                          style={{ height: `${Math.max(8, heightPct)}%` }}
+                        />
+                      </div>
+                      <p className="mt-2 text-xs font-semibold text-slate-700">
+                        {b.label}
+                      </p>
+                      <p className="text-xs text-slate-500">{b.value}</p>
+                    </div>
+                  );
+                });
+              })()}
+            </div>
+            {historyError ? (
+              <p className="mt-3 text-xs text-red-600">{historyError}</p>
+            ) : null}
+          </div>
+
+          <div className="lg:col-span-2 rounded-2xl border border-emerald-100 bg-white p-6 shadow-sm">
+            <h3 className="text-base font-semibold text-slate-800">
+              Trend (last 7 days)
+            </h3>
+            <p className="mt-1 text-sm text-slate-600">
+              Each bar shows total uploads; segments show prediction type.
+            </p>
+            <div className="mt-5 h-36 flex items-end gap-2 overflow-x-auto pb-1">
+              {last7Days.map((d) => {
+                const total = d.total;
+                const h = (total / maxDayTotal) * 120;
+                const heightPx = Math.max(12, h);
+                return (
+                  <div key={d.key} className="w-10 flex flex-col items-center">
+                    <div
+                      className="w-9 rounded-lg border border-slate-200 bg-white overflow-hidden flex flex-col-reverse"
+                      style={{ height: `${heightPx}px` }}
+                      aria-label={`Total: ${total}`}
+                    >
+                      <div style={{ flex: d.other || 0 }} className="bg-amber-500/20" />
+                      <div style={{ flex: d.healthy || 0 }} className="bg-emerald-600/80" />
+                      <div style={{ flex: d.fmd || 0 }} className="bg-red-600/90" />
+                    </div>
+                    <p className="mt-2 text-[11px] font-semibold text-slate-600">
+                      {d.label}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-slate-600">
+              <div className="inline-flex items-center gap-2">
+                <span className="h-2.5 w-2.5 rounded bg-red-600/90" />
+                FMD
+              </div>
+              <div className="inline-flex items-center gap-2">
+                <span className="h-2.5 w-2.5 rounded bg-emerald-600/80" />
+                Healthy
+              </div>
+              <div className="inline-flex items-center gap-2">
+                <span className="h-2.5 w-2.5 rounded bg-amber-500/20" />
+                Other
+              </div>
+            </div>
           </div>
         </section>
 

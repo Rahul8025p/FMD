@@ -16,6 +16,41 @@ export default function AdminDashboard() {
   });
   const [recentDetections, setRecentDetections] = useState([]);
 
+  const totalRecent = recentDetections.length;
+  const fmdRecent = recentDetections.filter((x) => x?.prediction === "FMD").length;
+  const healthyRecent = recentDetections.filter((x) => x?.prediction === "Healthy").length;
+  const otherRecent = Math.max(0, totalRecent - fmdRecent - healthyRecent);
+
+  const now = new Date();
+  const start7 = new Date(now);
+  start7.setDate(now.getDate() - 6);
+  const trendItems = recentDetections.filter((x) => {
+    const t = x?.createdAt ? new Date(x.createdAt).getTime() : 0;
+    return t >= start7.getTime();
+  });
+
+  const days = Array.from({ length: 7 }).map((_, idx) => {
+    const d = new Date(now);
+    d.setDate(now.getDate() - (6 - idx));
+    const key = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+    const label = d.toLocaleDateString(undefined, { weekday: "short" });
+    return { key, label, fmd: 0, healthy: 0, other: 0, total: 0 };
+  });
+
+  for (const item of trendItems) {
+    if (!item?.createdAt) continue;
+    const d = new Date(item.createdAt);
+    const key = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+    const bucket = days.find((x) => x.key === key);
+    if (!bucket) continue;
+    bucket.total += 1;
+    if (item.prediction === "FMD") bucket.fmd += 1;
+    else if (item.prediction === "Healthy") bucket.healthy += 1;
+    else bucket.other += 1;
+  }
+
+  const maxDayTotal = Math.max(...days.map((x) => x.total), 1);
+
   useEffect(() => {
     const loadOverview = async () => {
       try {
@@ -123,6 +158,78 @@ export default function AdminDashboard() {
               <div className="rounded-xl border border-emerald-100 bg-white p-5 shadow-sm">
                 <p className="text-sm text-slate-500">Healthy cases</p>
                 <p className="mt-2 text-2xl font-semibold text-emerald-700">{overview.healthyCases || 0}</p>
+              </div>
+            </section>
+
+            <section className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
+              <div className="lg:col-span-1 rounded-2xl border border-emerald-100 bg-white p-6 shadow-sm">
+                <h2 className="text-base font-semibold text-slate-800">
+                  Recent FMD vs Healthy
+                </h2>
+                <p className="mt-1 text-sm text-slate-600">
+                  From your latest user uploads.
+                </p>
+
+                <div className="mt-4 flex items-end gap-4">
+                  {(() => {
+                    const max = Math.max(fmdRecent, healthyRecent, 1);
+                    const bars = [
+                      { label: "FMD", value: fmdRecent, bg: "bg-red-600" },
+                      { label: "Healthy", value: healthyRecent, bg: "bg-emerald-600" }
+                    ];
+                    return bars.map((b) => {
+                      const heightPct = (b.value / max) * 100;
+                      return (
+                        <div key={b.label} className="w-24 text-center">
+                          <div className="mx-auto h-32 flex items-end justify-center bg-slate-50 rounded-lg border border-slate-200 p-2">
+                            <div
+                              className={`w-full rounded-lg ${b.bg}`}
+                              style={{ height: `${Math.max(8, heightPct)}%` }}
+                            />
+                          </div>
+                          <p className="mt-2 text-xs font-semibold text-slate-700">
+                            {b.label}
+                          </p>
+                          <p className="text-xs text-slate-500">{b.value}</p>
+                        </div>
+                      );
+                    });
+                  })()}
+                </div>
+                <p className="mt-3 text-xs text-slate-600">
+                  Other: <span className="font-semibold">{otherRecent}</span>
+                </p>
+              </div>
+
+              <div className="lg:col-span-2 rounded-2xl border border-emerald-100 bg-white p-6 shadow-sm">
+                <h2 className="text-base font-semibold text-slate-800">
+                  Trend (last 7 days)
+                </h2>
+                <p className="mt-1 text-sm text-slate-600">
+                  Segments show prediction types within recent records.
+                </p>
+
+                <div className="mt-5 h-36 flex items-end gap-2 overflow-x-auto pb-1">
+                  {days.map((d) => {
+                    const h = (d.total / maxDayTotal) * 120;
+                    const heightPx = Math.max(12, h);
+                    return (
+                      <div key={d.key} className="w-10 flex flex-col items-center">
+                        <div
+                          className="w-9 rounded-lg border border-slate-200 bg-white overflow-hidden flex flex-col-reverse"
+                          style={{ height: `${heightPx}px` }}
+                        >
+                          <div style={{ flex: d.other || 0 }} className="bg-amber-500/20" />
+                          <div style={{ flex: d.healthy || 0 }} className="bg-emerald-600/80" />
+                          <div style={{ flex: d.fmd || 0 }} className="bg-red-600/90" />
+                        </div>
+                        <p className="mt-2 text-[11px] font-semibold text-slate-600">
+                          {d.label}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </section>
 
