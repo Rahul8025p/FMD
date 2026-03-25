@@ -20,6 +20,12 @@ const ImageRecordSchema = new mongoose.Schema(
       required: true,
     },
 
+    // Denormalized RFID for reliable history display/search.
+    rfidTag: {
+      type: String,
+      trim: true
+    },
+
     breed: {
       type: String,
       trim: true,

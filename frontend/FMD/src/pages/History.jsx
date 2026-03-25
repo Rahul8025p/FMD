@@ -43,7 +43,7 @@ export default function History() {
 
     return items
       .filter((item) => {
-        const rfid = (item?.cow?.rfidTag || "").toLowerCase();
+        const rfid = (item?.rfidTag || item?.cow?.rfidTag || "").toLowerCase();
         if (q && !rfid.includes(q)) return false;
         if (
           predictionFilter !== "ALL" &&
@@ -255,7 +255,7 @@ export default function History() {
                         RFID
                       </p>
                       <p className="mt-1 text-sm font-semibold text-slate-800">
-                        {item?.cow?.rfidTag || "N/A"}
+                        {item?.rfidTag || item?.cow?.rfidTag || "N/A"}
                       </p>
                     </div>
                     <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-1 text-[11px] font-semibold text-slate-700">

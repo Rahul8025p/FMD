@@ -108,6 +108,7 @@ exports.analyzeCow = async (req, res) => {
       user: req.user.id,
       cow: cow._id,
       imageUrl: `/uploads/${req.file.filename}`,
+      rfidTag: rfid,
       breed,
       age,
       sex,
@@ -144,7 +145,7 @@ exports.getHistory = async (req, res) => {
     const records = await ImageRecord.find({ user: req.user.id })
       .sort({ createdAt: -1 })
       .select(
-        "imageUrl prediction confidence severity createdAt breed age sex fever temperature cow"
+        "imageUrl rfidTag prediction confidence severity createdAt breed age sex fever temperature cow"
       )
       .populate("cow", "rfidTag");
 
