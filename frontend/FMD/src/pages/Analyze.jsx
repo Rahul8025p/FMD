@@ -7,6 +7,7 @@ export default function Analyze() {
 
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
+  const streamRef = useRef(null);
 
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState(null);
@@ -68,25 +69,51 @@ export default function Analyze() {
   /* 📸 Camera */
   const startCamera = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      videoRef.current.srcObject = stream;
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: "environment" } },
+        audio: false
+      });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        // Ensure playback starts on mobile
+        videoRef.current.play().catch(() => {});
+      }
       setCameraOn(true);
-      setMode("camera");
-    } catch {
-      alert("Camera permission denied");
+    } catch (err) {
+      console.error("Camera error:", err);
+      setError(err?.message || "Camera permission denied");
+      setCameraOn(false);
+      setMode("upload");
     }
   };
 
   const stopCamera = () => {
-    const stream = videoRef.current?.srcObject;
+    const stream = streamRef.current || videoRef.current?.srcObject;
     stream?.getTracks().forEach((t) => t.stop());
+    if (videoRef.current) videoRef.current.srcObject = null;
+    streamRef.current = null;
     setCameraOn(false);
     setMode("upload");
   };
 
+  // Start camera only after the video element is rendered.
+  useEffect(() => {
+    if (mode === "camera" && !cameraOn) {
+      setError("");
+      startCamera();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, cameraOn]);
+
   const capturePhoto = () => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
+    if (!video || !canvas) return;
+    if (!video.videoWidth || !video.videoHeight) {
+      setError("Camera not ready yet. Please try again.");
+      return;
+    }
 
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
@@ -211,7 +238,10 @@ export default function Analyze() {
             <div className="inline-flex rounded-lg border border-slate-200 p-1 bg-slate-50">
               <button
                 type="button"
-                onClick={() => setMode("upload")}
+              onClick={() => {
+                if (cameraOn) stopCamera();
+                setMode("upload");
+              }}
                 className={`px-3 py-2 text-sm font-medium rounded-md transition ${
                   mode === "upload" ? "bg-white text-emerald-700 shadow-sm" : "text-slate-600 hover:text-slate-800"
                 }`}
@@ -220,10 +250,7 @@ export default function Analyze() {
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  setMode("camera");
-                  if (!cameraOn) startCamera();
-                }}
+              onClick={() => setMode("camera")}
                 className={`px-3 py-2 text-sm font-medium rounded-md transition ${
                   mode === "camera" ? "bg-white text-emerald-700 shadow-sm" : "text-slate-600 hover:text-slate-800"
                 }`}
@@ -326,7 +353,13 @@ export default function Analyze() {
               )}
               {cameraOn && (
                 <>
-                  <video ref={videoRef} autoPlay className="rounded-xl border w-full" />
+                  <video
+                    ref={videoRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    className="rounded-xl border w-full"
+                  />
                   <div className="grid grid-cols-2 gap-3">
                     <button onClick={capturePhoto} className="btn-primary w-full">
                       Capture Photo
