@@ -1,9 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { login } from "../services/auth";
+import LanguageSwitcher from "../components/LanguageSwitcher";
+import { useI18n } from "../i18n/I18nProvider";
 
 export default function AdminLogin() {
   const navigate = useNavigate();
+  const { t } = useI18n();
   const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -49,8 +52,11 @@ export default function AdminLogin() {
             onClick={() => navigate(-1)}
             className="inline-flex items-center rounded-md border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-50 sm:text-sm"
           >
-            Back
+            {t("common.back", "Back")}
           </button>
+        </div>
+        <div className="mb-3">
+          <LanguageSwitcher compact />
         </div>
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">
           Admin Access

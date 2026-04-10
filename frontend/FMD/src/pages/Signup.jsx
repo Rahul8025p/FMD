@@ -1,12 +1,15 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { register } from "../services/auth";
+import { useI18n } from "../i18n/I18nProvider";
+import LanguageSwitcher from "../components/LanguageSwitcher";
 
 const passwordRegex =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
 export default function Signup() {
   const navigate = useNavigate();
+  const { t } = useI18n();
 
   const [form, setForm] = useState({
     name: "",
@@ -94,11 +97,14 @@ export default function Signup() {
               onClick={() => navigate(-1)}
               className="inline-flex items-center rounded-md border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-50 sm:text-sm"
             >
-              Back
+              {t("common.back", "Back")}
             </button>
           </div>
+          <div className="mb-3">
+            <LanguageSwitcher compact />
+          </div>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">Create account</p>
-          <h1 className="mt-2 text-3xl font-bold text-slate-800">Start managing herd health smarter</h1>
+          <h1 className="mt-2 text-3xl font-bold text-slate-800">{t("auth.signUpTitle", "Start managing herd health smarter")}</h1>
           <p className="mt-1 text-sm text-slate-500">Quick setup for farmers, vets, and farm teams.</p>
 
           <div className="mt-5 grid grid-cols-1 gap-2 sm:grid-cols-2">

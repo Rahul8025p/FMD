@@ -1,11 +1,15 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { login } from "../services/auth";
+import { runSilentGeoLanguageDetection } from "../services/language";
+import { useI18n } from "../i18n/I18nProvider";
+import LanguageSwitcher from "../components/LanguageSwitcher";
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function Login() {
   const navigate = useNavigate();
+  const { t, setLanguage } = useI18n();
 
   const [form, setForm] = useState({
     email: "",
@@ -47,6 +51,11 @@ export default function Login() {
       });
 
       const role = localStorage.getItem("role");
+      if (role === "USER") {
+        runSilentGeoLanguageDetection((detectedLang) => {
+          setLanguage(detectedLang);
+        });
+      }
       navigate(role === "ADMIN" ? "/admin" : "/user");
     } catch (err) {
       setError(
@@ -95,11 +104,14 @@ export default function Login() {
               onClick={() => navigate(-1)}
               className="inline-flex items-center rounded-md border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-50 sm:text-sm"
             >
-              Back
+              {t("common.back", "Back")}
             </button>
           </div>
+          <div className="mb-3">
+            <LanguageSwitcher compact />
+          </div>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">Welcome back</p>
-          <h1 className="mt-2 text-3xl font-bold text-slate-800">Sign in to your farm dashboard</h1>
+          <h1 className="mt-2 text-3xl font-bold text-slate-800">{t("auth.signInTitle", "Sign in to your farm dashboard")}</h1>
           <p className="mt-1 text-sm text-slate-500">Use email/password or quick sign-in options below.</p>
 
           <div className="mt-5 grid grid-cols-1 gap-2 sm:grid-cols-3">

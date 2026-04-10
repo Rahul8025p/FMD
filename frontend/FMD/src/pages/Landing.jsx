@@ -1,8 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+import { useI18n } from "../i18n/I18nProvider";
+import LanguageSwitcher from "../components/LanguageSwitcher";
 
 export default function Landing() {
   const navigate = useNavigate();
+  const { t } = useI18n();
 
   // If already authenticated, optionally take user straight to dashboard
   useEffect(() => {
@@ -40,6 +43,7 @@ export default function Landing() {
           </span>
         </div>
         <div className="flex items-center gap-3">
+          <LanguageSwitcher compact />
           <button
             onClick={() => navigate("/admin/login")}
             className="rounded-md px-4 py-2 text-sm font-medium text-slate-700 hover:underline"
@@ -65,15 +69,13 @@ export default function Landing() {
       <section className="mx-auto grid max-w-6xl items-center gap-8 px-4 py-10 sm:px-6 lg:grid-cols-2 lg:py-16">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">
-            FMD Detection & Classification System
+            {t("landing.heroTag", "FMD Detection & Classification System")}
           </p>
           <h1 className="mt-2 text-3xl font-bold text-slate-900 sm:text-4xl">
-            Image-based disease detection for healthier herds
+            {t("landing.heroTitle", "Image-based disease detection for healthier herds")}
           </h1>
           <p className="mt-3 text-slate-600">
-            Upload or capture livestock images and get fast AI-assisted
-            indications of Foot-and-Mouth Disease, helping farmers and vets act
-            early and reduce impact.
+            {t("landing.heroDesc", "Upload or capture livestock images and get fast AI-assisted indications of Foot-and-Mouth Disease.")}
           </p>
           <div className="mt-6 flex flex-wrap items-center gap-3">
             <button

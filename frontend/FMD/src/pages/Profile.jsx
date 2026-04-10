@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useI18n } from "../i18n/I18nProvider";
+import { saveLanguagePreference } from "../services/language";
 
 export default function Profile() {
   const navigate = useNavigate();
+  const { t, language, setLanguage } = useI18n();
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -13,7 +16,8 @@ export default function Profile() {
     name: "",
     email: "",
     phone: "",
-    farmName: ""
+    farmName: "",
+    languagePreference: "en"
   });
 
   useEffect(() => {
@@ -37,9 +41,11 @@ export default function Profile() {
           name: fetchedUser.name || localStorage.getItem("name") || "",
           email: fetchedUser.email || "",
           phone: fetchedUser.phone || "",
-          farmName: fetchedUser.farmName || ""
+          farmName: fetchedUser.farmName || "",
+          languagePreference: fetchedUser.languagePreference || language || "en"
         });
-      } catch (err) {
+        setLanguage(fetchedUser.languagePreference || language || "en");
+      } catch {
         localStorage.clear();
         navigate("/login");
       } finally {
@@ -48,7 +54,7 @@ export default function Profile() {
     };
 
     loadProfile();
-  }, [navigate]);
+  }, [navigate, language, setLanguage]);
 
   const handleChange = (e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -66,6 +72,13 @@ export default function Profile() {
       ...form
     }));
     localStorage.setItem("name", form.name);
+    setLanguage(form.languagePreference);
+
+    try {
+      await saveLanguagePreference(form.languagePreference);
+    } catch {
+      // Keep profile save resilient; manual language save retried later.
+    }
 
     setTimeout(() => {
       setSaving(false);
@@ -97,14 +110,14 @@ export default function Profile() {
               Account
             </p>
             <h1 className="text-2xl font-semibold text-slate-800 sm:text-3xl">
-              My Profile
+              {t("profile.title", "My Profile")}
             </h1>
           </div>
           <button
             onClick={() => navigate("/user")}
             className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
           >
-            Back to dashboard
+            {t("common.back", "Back to dashboard")}
           </button>
         </div>
 
@@ -177,6 +190,25 @@ export default function Profile() {
 
             <div>
               <label className="mb-1 block text-sm font-medium text-slate-700">
+                {t("lang.label", "Language")}
+              </label>
+              <select
+                name="languagePreference"
+                value={form.languagePreference}
+                onChange={handleChange}
+                className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-600"
+              >
+                <option value="en">{t("lang.english", "English")}</option>
+                <option value="hi">{t("lang.hindi", "Hindi")}</option>
+                <option value="te">{t("lang.telugu", "Telugu")}</option>
+              </select>
+              <p className="mt-1 text-xs text-slate-500">
+                {t("profile.langHelp", "Choose your preferred application language.")}
+              </p>
+            </div>
+
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700">
                 Farm name
               </label>
               <input
@@ -200,7 +232,7 @@ export default function Profile() {
                 disabled={saving}
                 className="w-full rounded-xl bg-gradient-to-r from-emerald-700 to-lime-700 px-4 py-3 text-sm font-semibold text-white transition hover:from-emerald-800 hover:to-lime-800 disabled:opacity-60 sm:w-auto"
               >
-                {saving ? "Saving..." : "Save changes"}
+                {saving ? t("common.saving", "Saving...") : t("common.saveChanges", "Save changes")}
               </button>
             </div>
           </form>

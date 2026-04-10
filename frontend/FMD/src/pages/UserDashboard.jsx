@@ -2,14 +2,17 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { api } from "../services/api";
+import { useI18n } from "../i18n/I18nProvider";
+import LanguageSwitcher from "../components/LanguageSwitcher";
 
 export default function UserDashboard() {
   const navigate = useNavigate();
+  const { setLanguage } = useI18n();
 
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [sessionError, setSessionError] = useState("");
+  const [_sessionError, setSessionError] = useState("");
   const [historyItems, setHistoryItems] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyError, setHistoryError] = useState("");
@@ -39,17 +42,19 @@ export default function UserDashboard() {
 
         localStorage.setItem("name", res.data.user.name);
         localStorage.setItem("role", res.data.user.role);
+        localStorage.setItem("language", res.data.user.languagePreference || "en");
+        setLanguage(res.data.user.languagePreference || "en");
         // Load history for graphs (best-effort; dashboard stays usable if it fails)
         try {
           setHistoryLoading(true);
           const historyRes = await api.get("/user/history");
           setHistoryItems(historyRes.data?.history || []);
-        } catch (err) {
+        } catch {
           setHistoryError("Unable to load dashboard charts.");
         } finally {
           setHistoryLoading(false);
         }
-      } catch (err) {
+      } catch {
         setSessionError("Your session has expired. Please sign in again.");
         localStorage.clear();
         navigate("/login");
@@ -59,7 +64,7 @@ export default function UserDashboard() {
     };
 
     checkAuth();
-  }, [navigate]);
+  }, [navigate, setLanguage]);
 
   if (loading) {
     return (
@@ -140,6 +145,9 @@ export default function UserDashboard() {
             </span>
           </div>
           <div className="relative">
+            <div className="mb-2 text-right">
+              <LanguageSwitcher compact />
+            </div>
             <button
               type="button"
               onClick={() => setMenuOpen(!menuOpen)}
