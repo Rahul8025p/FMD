@@ -9,6 +9,7 @@ export default function LanguageSwitcher({ compact = false, onChange }) {
       <select
         value={language}
         onChange={(e) => {
+          localStorage.setItem("langManualOverride", "1");
           setLanguage(e.target.value);
           onChange?.(e.target.value);
         }}

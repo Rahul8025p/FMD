@@ -14,6 +14,7 @@ export async function autoDetectLanguageFromCoordinates(latitude, longitude) {
 }
 
 export function runSilentGeoLanguageDetection(onLanguageDetected) {
+  if (localStorage.getItem("langManualOverride") === "1") return;
   if (!("geolocation" in navigator)) return;
 
   navigator.geolocation.getCurrentPosition(

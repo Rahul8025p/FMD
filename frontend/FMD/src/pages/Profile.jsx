@@ -37,15 +37,20 @@ export default function Profile() {
 
         const fetchedUser = res.data.user || {};
         const storedLanguage = localStorage.getItem("language") || "en";
+        const hasManualOverride = localStorage.getItem("langManualOverride") === "1";
+        const preferredLanguage = hasManualOverride
+          ? storedLanguage
+          : fetchedUser.languagePreference || storedLanguage;
         setUser(fetchedUser);
         setForm({
           name: fetchedUser.name || localStorage.getItem("name") || "",
           email: fetchedUser.email || "",
           phone: fetchedUser.phone || "",
           farmName: fetchedUser.farmName || "",
-          languagePreference: fetchedUser.languagePreference || storedLanguage
+          languagePreference: preferredLanguage
         });
-        setLanguage(fetchedUser.languagePreference || storedLanguage);
+        localStorage.setItem("language", preferredLanguage);
+        setLanguage(preferredLanguage);
       } catch {
         localStorage.clear();
         navigate("/login");

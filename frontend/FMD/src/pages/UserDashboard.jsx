@@ -43,8 +43,13 @@ export default function UserDashboard() {
 
         localStorage.setItem("name", res.data.user.name);
         localStorage.setItem("role", res.data.user.role);
-        localStorage.setItem("language", res.data.user.languagePreference || "en");
-        setLanguage(res.data.user.languagePreference || "en");
+        const hasManualOverride = localStorage.getItem("langManualOverride") === "1";
+        const existingLanguage = localStorage.getItem("language");
+        const preferredLanguage = hasManualOverride
+          ? existingLanguage || res.data.user.languagePreference || "en"
+          : res.data.user.languagePreference || existingLanguage || "en";
+        localStorage.setItem("language", preferredLanguage);
+        setLanguage(preferredLanguage);
         // Load history for graphs (best-effort; dashboard stays usable if it fails)
         try {
           setHistoryLoading(true);
