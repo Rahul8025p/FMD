@@ -54,7 +54,19 @@ export default function Analyze() {
 
   /* 🧠 Input handler */
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    let nextValue = value;
+
+    if (name === "temperature" && value !== "") {
+      const n = Number(value);
+      if (Number.isNaN(n)) {
+        nextValue = "";
+      } else {
+        nextValue = n < 0 ? "0" : value;
+      }
+    }
+
+    setForm({ ...form, [name]: nextValue });
     setError("");
   };
 
@@ -135,6 +147,18 @@ export default function Analyze() {
     if (!image || !form.rfid) {
       setError("RFID number and cattle image are required.");
       return;
+    }
+
+    if (form.fever === "Yes") {
+      const temp = Number(form.temperature);
+      if (form.temperature === "" || Number.isNaN(temp)) {
+        setError("Please enter a valid body temperature.");
+        return;
+      }
+      if (temp < 0) {
+        setError("Body temperature cannot be negative.");
+        return;
+      }
     }
 
     try {
@@ -303,7 +327,11 @@ export default function Analyze() {
             {form.fever === "Yes" && (
               <input
                 name="temperature"
+                type="number"
+                min="0"
+                step="0.1"
                 placeholder="Body temperature (°C) e.g. 39.5"
+                value={form.temperature}
                 onChange={handleChange}
                 className="input"
               />
