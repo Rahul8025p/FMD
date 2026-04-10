@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useMemo, useState } from "react";
 import en from "./locales/en.json";
 import hi from "./locales/hi.json";
 import te from "./locales/te.json";
@@ -22,11 +22,11 @@ export function I18nProvider({ children }) {
     sanitizeLanguage(localStorage.getItem("language") || "en")
   );
 
-  const setLanguage = (next) => {
+  const setLanguage = useCallback((next) => {
     const safe = sanitizeLanguage(next);
     setLanguageState(safe);
     localStorage.setItem("language", safe);
-  };
+  }, []);
 
   const value = useMemo(() => {
     const dictionary = DICTIONARIES[language] || DICTIONARIES.en;
@@ -38,7 +38,7 @@ export function I18nProvider({ children }) {
       t: (key, fallback) =>
         dictionary[key] || fallbackDictionary[key] || fallback || key
     };
-  }, [language]);
+  }, [language, setLanguage]);
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }

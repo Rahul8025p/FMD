@@ -6,7 +6,7 @@ import { saveLanguagePreference } from "../services/language";
 
 export default function Profile() {
   const navigate = useNavigate();
-  const { t, language, setLanguage } = useI18n();
+  const { t, setLanguage } = useI18n();
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -36,15 +36,16 @@ export default function Profile() {
         });
 
         const fetchedUser = res.data.user || {};
+        const storedLanguage = localStorage.getItem("language") || "en";
         setUser(fetchedUser);
         setForm({
           name: fetchedUser.name || localStorage.getItem("name") || "",
           email: fetchedUser.email || "",
           phone: fetchedUser.phone || "",
           farmName: fetchedUser.farmName || "",
-          languagePreference: fetchedUser.languagePreference || language || "en"
+          languagePreference: fetchedUser.languagePreference || storedLanguage
         });
-        setLanguage(fetchedUser.languagePreference || language || "en");
+        setLanguage(fetchedUser.languagePreference || storedLanguage);
       } catch {
         localStorage.clear();
         navigate("/login");
@@ -54,7 +55,7 @@ export default function Profile() {
     };
 
     loadProfile();
-  }, [navigate, language, setLanguage]);
+  }, [navigate, setLanguage]);
 
   const handleChange = (e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
