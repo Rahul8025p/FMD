@@ -3,6 +3,11 @@ const Cow = require("../models/cow");
 const ImageRecord = require("../models/ImageRecord");
 const { inferWithML } = require("../services/inference.service");
 const { getMockRecommendations } = require("../services/recommendation.service");
+const {
+  SUPPORTED_LANGUAGES,
+  normalizeLanguage,
+  detectLanguageFromCoordinates
+} = require("../services/language.service");
 
 exports.verifyUser = async (req, res) => {
   try {
@@ -158,6 +163,59 @@ exports.getHistory = async (req, res) => {
     console.error("History fetch error:", err);
     return res.status(500).json({
       message: "Failed to fetch history"
+    });
+  }
+};
+
+exports.updateLanguagePreference = async (req, res) => {
+  try {
+    const language = normalizeLanguage(req.body?.language);
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    user.languagePreference = language;
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      language,
+      supportedLanguages: SUPPORTED_LANGUAGES
+    });
+  } catch (err) {
+    return res.status(500).json({
+      message: "Failed to update language preference"
+    });
+  }
+};
+
+exports.autoDetectLanguage = async (req, res) => {
+  try {
+    const { latitude, longitude } = req.body || {};
+    const detection = await detectLanguageFromCoordinates(latitude, longitude);
+    const language = normalizeLanguage(detection.language);
+
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    user.languagePreference = language;
+    user.languageCountryCode = detection.countryCode;
+    user.languageRegion = detection.region;
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      language,
+      region: detection.region,
+      countryCode: detection.countryCode,
+      supportedLanguages: SUPPORTED_LANGUAGES
+    });
+  } catch (err) {
+    return res.status(500).json({
+      message: "Failed to auto-detect language"
     });
   }
 };

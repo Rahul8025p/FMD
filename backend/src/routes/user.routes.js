@@ -8,7 +8,9 @@ const upload = require("../middleware/upload.middleware");
 const {
   verifyUser,
   analyzeCow,
-  getHistory
+  getHistory,
+  updateLanguagePreference,
+  autoDetectLanguage
 } = require("../controllers/user.controller");
 
 /* 🔐 Verify user */
@@ -33,6 +35,20 @@ router.get(
   authMiddleware,
   roleMiddleware("USER"),
   getHistory
+);
+
+router.patch(
+  "/language",
+  authMiddleware,
+  roleMiddleware("USER"),
+  updateLanguagePreference
+);
+
+router.post(
+  "/language/auto-detect",
+  authMiddleware,
+  roleMiddleware("USER"),
+  autoDetectLanguage
 );
 
 module.exports = router;

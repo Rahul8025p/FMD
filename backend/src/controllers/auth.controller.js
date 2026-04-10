@@ -45,7 +45,8 @@ exports.register = async (req, res) => {
 
     res.status(201).json({
       token,
-      role: user.role
+      role: user.role,
+      language: user.languagePreference || "en"
     });
   } catch (err) {
     console.error("Register error:", err.message);
@@ -59,9 +60,7 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    console.log(email,password);
     const user = await User.findOne({ email });
-    console.log(user);
     if (!user) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
@@ -78,7 +77,8 @@ exports.login = async (req, res) => {
 
     res.json({
       token,
-      role: user.role
+      role: user.role,
+      language: user.languagePreference || "en"
     });
   } catch (err) {
     console.error("Login error:", err.message);

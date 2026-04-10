@@ -30,6 +30,19 @@ const UserSchema = new mongoose.Schema(
     },
 
     lastLogin: Date,
+    languagePreference: {
+      type: String,
+      enum: ["en", "hi", "te"],
+      default: "en"
+    },
+    languageRegion: {
+      type: String,
+      default: null
+    },
+    languageCountryCode: {
+      type: String,
+      default: null
+    },
 
     isActive: {
       type: Boolean,
