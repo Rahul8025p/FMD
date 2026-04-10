@@ -1,0 +1,18 @@
+{
+  "common.back": "वापस",
+  "common.logout": "लॉगआउट",
+  "common.saveChanges": "परिवर्तन सहेजें",
+  "common.saving": "सहेजा जा रहा है...",
+  "lang.label": "भाषा",
+  "lang.english": "अंग्रेज़ी",
+  "lang.hindi": "हिंदी",
+  "lang.telugu": "तेलुगु",
+  "landing.heroTag": "एफएमडी पहचान और वर्गीकरण प्रणाली",
+  "landing.heroTitle": "स्वस्थ पशुधन के लिए चित्र-आधारित रोग पहचान",
+  "landing.heroDesc": "पशुधन की तस्वीर अपलोड या कैप्चर करें और फुट-एंड-माउथ रोग के लिए तेज AI संकेत प्राप्त करें।",
+  "auth.signInTitle": "अपने फार्म डैशबोर्ड में साइन इन करें",
+  "auth.signUpTitle": "पशु स्वास्थ्य प्रबंधन को स्मार्ट बनाएं",
+  "profile.title": "मेरी प्रोफ़ाइल",
+  "profile.langHelp": "एप्लिकेशन की पसंदीदा भाषा चुनें।"
+}
+
