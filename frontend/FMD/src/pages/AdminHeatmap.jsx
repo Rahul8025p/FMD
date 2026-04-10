@@ -263,11 +263,9 @@ export default function AdminHeatmap() {
   const totalFmd = cases.filter((item) => item.prediction === "FMD").length;
   const totalHealthy = cases.filter((item) => item.prediction === "Healthy").length;
   const totalCases = cases.length;
-  const totalOther = totalCases - totalFmd - totalHealthy;
   const legendItems = [
     { label: "FMD", swatch: "bg-red-500", count: totalFmd },
-    { label: "Healthy", swatch: "bg-emerald-500", count: totalHealthy },
-    { label: "Other", swatch: "bg-amber-500", count: Math.max(0, totalOther) }
+    { label: "Healthy", swatch: "bg-emerald-500", count: totalHealthy }
   ];
 
   useEffect(() => {
@@ -384,10 +382,6 @@ export default function AdminHeatmap() {
           <div className="rounded-xl border border-emerald-100 bg-white p-4 shadow-sm">
             <p className="text-xs uppercase tracking-wider text-slate-500">Healthy markers</p>
             <p className="mt-2 text-2xl font-semibold text-emerald-700">{totalHealthy}</p>
-          </div>
-          <div className="rounded-xl border border-amber-100 bg-white p-4 shadow-sm sm:col-span-3 lg:col-span-1">
-            <p className="text-xs uppercase tracking-wider text-slate-500">Other markers</p>
-            <p className="mt-2 text-2xl font-semibold text-amber-700">{Math.max(0, totalOther)}</p>
           </div>
         </section>
 

@@ -44,7 +44,8 @@ exports.getCaseHeatmap = async (req, res) => {
     // Bounding box for the Indian mainland/islands
     const indiaBounds = {
       "location.latitude": { $gte: 6, $lte: 38.5 },
-      "location.longitude": { $gte: 68, $lte: 97.5 }
+      "location.longitude": { $gte: 68, $lte: 97.5 },
+      prediction: { $in: ["FMD", "Healthy"] }
     };
 
     const records = await ImageRecord.find(indiaBounds)

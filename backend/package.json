@@ -4,7 +4,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "seed:admin": "node src/scripts/seedAdmin.js"
+    "seed:admin": "node src/scripts/seedAdmin.js",
+    "purge:non-fmd-healthy": "node src/scripts/purgeNonFmdHealthy.js",
+    "purge:non-fmd-healthy:dry": "node src/scripts/purgeNonFmdHealthy.js --dry-run"
   },
   "keywords": [],
   "author": "",
