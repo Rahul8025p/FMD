@@ -292,6 +292,22 @@ export default function AdminDashboard() {
                           Fever:{" "}
                           {item.fever === true ? "Yes" : item.fever === false ? "No" : "N/A"}
                         </p>
+                        <p className="text-slate-600">
+                          Temp:{" "}
+                          {typeof item.temperature === "number"
+                            ? `${item.temperature}\u00b0F`
+                            : "N/A"}
+                        </p>
+                        <p className="text-slate-600">
+                          RFID: <span className="font-medium">{item.rfidTag || "N/A"}</span>
+                        </p>
+                        <p className="text-slate-600">
+                          Geo:{" "}
+                          {typeof item.location?.latitude === "number" &&
+                          typeof item.location?.longitude === "number"
+                            ? `${item.location.latitude.toFixed(4)}, ${item.location.longitude.toFixed(4)}`
+                            : "N/A"}
+                        </p>
                           <p className="text-xs text-slate-500">
                             {item.createdAt
                               ? new Date(item.createdAt).toLocaleString()
