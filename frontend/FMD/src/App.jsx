@@ -10,6 +10,7 @@ import UserDashboard from "./pages/UserDashboard";
 import Profile from "./pages/Profile";
 import History from "./pages/History";
 import AdminDashboard from "./pages/AdminDashboard";
+import AdminHeatmap from "./pages/AdminHeatmap";
 import Analyze from "./pages/Analyze";
 import Result from "./pages/Result";
 
@@ -78,6 +79,15 @@ export default function App() {
         element={
           <ProtectedRoute role="ADMIN">
             <AdminDashboard />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/heatmap"
+        element={
+          <ProtectedRoute role="ADMIN">
+            <AdminHeatmap />
           </ProtectedRoute>
         }
       />
