@@ -21,7 +21,7 @@ export default function AdminDashboard() {
   const totalRecent = recentDetections.length;
   const fmdRecent = recentDetections.filter((x) => x?.prediction === "FMD").length;
   const healthyRecent = recentDetections.filter((x) => x?.prediction === "Healthy").length;
-  const otherRecent = Math.max(0, totalRecent - fmdRecent - healthyRecent);
+  const classifiedRecent = fmdRecent + healthyRecent;
 
   const now = new Date();
   const start7 = new Date(now);
@@ -36,7 +36,7 @@ export default function AdminDashboard() {
     d.setDate(now.getDate() - (6 - idx));
     const key = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
     const label = d.toLocaleDateString(undefined, { weekday: "short" });
-    return { key, label, fmd: 0, healthy: 0, other: 0, total: 0 };
+    return { key, label, fmd: 0, healthy: 0, total: 0 };
   });
 
   for (const item of trendItems) {
@@ -48,7 +48,6 @@ export default function AdminDashboard() {
     bucket.total += 1;
     if (item.prediction === "FMD") bucket.fmd += 1;
     else if (item.prediction === "Healthy") bucket.healthy += 1;
-    else bucket.other += 1;
   }
 
   const maxDayTotal = Math.max(...days.map((x) => x.total), 1);
@@ -212,7 +211,7 @@ export default function AdminDashboard() {
                   })()}
                 </div>
                 <p className="mt-3 text-xs text-slate-600">
-                  Other: <span className="font-semibold">{otherRecent}</span>
+                  Classified: <span className="font-semibold">{classifiedRecent}</span>
                 </p>
               </div>
 
@@ -234,7 +233,6 @@ export default function AdminDashboard() {
                           className="w-9 rounded-lg border border-slate-200 bg-white overflow-hidden flex flex-col-reverse"
                           style={{ height: `${heightPx}px` }}
                         >
-                          <div style={{ flex: d.other || 0 }} className="bg-amber-500/20" />
                           <div style={{ flex: d.healthy || 0 }} className="bg-emerald-600/80" />
                           <div style={{ flex: d.fmd || 0 }} className="bg-red-600/90" />
                         </div>

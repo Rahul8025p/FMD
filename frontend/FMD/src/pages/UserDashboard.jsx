@@ -99,7 +99,7 @@ export default function UserDashboard() {
     d.setDate(now.getDate() - (6 - idx));
     const key = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
     const label = d.toLocaleDateString(undefined, { weekday: "short" });
-    return { key, label, fmd: 0, healthy: 0, other: 0, total: 0 };
+    return { key, label, fmd: 0, healthy: 0, total: 0 };
   });
 
   for (const item of historyItems) {
@@ -112,7 +112,6 @@ export default function UserDashboard() {
     bucket.total += 1;
     if (item.prediction === "FMD") bucket.fmd += 1;
     else if (item.prediction === "Healthy") bucket.healthy += 1;
-    else bucket.other += 1;
   }
 
   const maxDayTotal = Math.max(
@@ -280,7 +279,6 @@ export default function UserDashboard() {
                       style={{ height: `${heightPx}px` }}
                       aria-label={`Total: ${total}`}
                     >
-                      <div style={{ flex: d.other || 0 }} className="bg-amber-500/20" />
                       <div style={{ flex: d.healthy || 0 }} className="bg-emerald-600/80" />
                       <div style={{ flex: d.fmd || 0 }} className="bg-red-600/90" />
                     </div>
@@ -299,10 +297,6 @@ export default function UserDashboard() {
               <div className="inline-flex items-center gap-2">
                 <span className="h-2.5 w-2.5 rounded bg-emerald-600/80" />
                 Healthy
-              </div>
-              <div className="inline-flex items-center gap-2">
-                <span className="h-2.5 w-2.5 rounded bg-amber-500/20" />
-                Other
               </div>
             </div>
           </div>
