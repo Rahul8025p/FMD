@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../services/api";
+import { useI18n } from "../i18n/I18nProvider";
+import LanguageSwitcher from "../components/LanguageSwitcher";
 
 export default function History() {
   const navigate = useNavigate();
+  const { t } = useI18n();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [items, setItems] = useState([]);
@@ -83,7 +86,7 @@ export default function History() {
                 Detection Records
               </p>
               <h1 className="mt-1 text-2xl font-semibold text-slate-800 sm:text-3xl">
-                History
+                {t("history.title", "History")}
               </h1>
               <p className="mt-1 text-sm text-slate-600">
                 Previous uploaded cases with prediction and date/time.
@@ -93,8 +96,11 @@ export default function History() {
               onClick={() => navigate("/user")}
               className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
             >
-              Back to dashboard
+              {t("history.backDashboard", "Back to dashboard")}
             </button>
+          </div>
+          <div className="mt-3">
+            <LanguageSwitcher compact />
           </div>
 
           {/* Search + filters */}
@@ -110,7 +116,7 @@ export default function History() {
               >
                 <option value="ALL">All</option>
                 <option value="FMD">FMD</option>
-                <option value="HEALTHY">Healthy</option>
+                <option value="HEALTHY">{t("admin.healthyCases", "Healthy")}</option>
               </select>
             </div>
 
@@ -212,7 +218,7 @@ export default function History() {
               }}
               className="mt-4 rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-800"
             >
-              Reset filters
+              {t("history.resetFilters", "Reset filters")}
             </button>
           </div>
         ) : null}

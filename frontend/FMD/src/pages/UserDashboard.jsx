@@ -8,7 +8,7 @@ import { saveLanguagePreference } from "../services/language";
 
 export default function UserDashboard() {
   const navigate = useNavigate();
-  const { setLanguage } = useI18n();
+  const { t, setLanguage } = useI18n();
 
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -136,7 +136,7 @@ export default function UserDashboard() {
               onClick={() => navigate(-1)}
               className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-50 sm:text-sm"
             >
-              Back
+              {t("common.back", "Back")}
             </button>
             <div className="h-9 w-9 rounded-md bg-emerald-600 text-white grid place-content-center font-bold">
               CC
@@ -183,13 +183,13 @@ export default function UserDashboard() {
                   }}
                   className="w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"
                 >
-                  Profile
+                  {t("profile.title", "Profile")}
                 </button>
                 <button
                   onClick={handleLogout}
                   className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50"
                 >
-                  Logout
+                  {t("common.logout", "Logout")}
                 </button>
               </div>
             )}
@@ -201,7 +201,7 @@ export default function UserDashboard() {
       <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:py-12">
         <div className="mb-8">
           <h2 className="text-2xl font-semibold text-slate-800">
-            Welcome, {user?.name} 🌾
+            {t("user.welcome", "Welcome")}, {user?.name} 🌾
           </h2>
           <p className="mt-1 text-slate-600">
             Monitor cattle health and detect diseases early using AI-powered image
@@ -323,7 +323,7 @@ export default function UserDashboard() {
         {/* Quick actions + Learn */}
         <section className="mb-10 grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div className="rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-700 to-lime-700 p-7 text-white lg:col-span-2">
-            <h3 className="text-xl font-semibold">Analyze Cattle Health</h3>
+            <h3 className="text-xl font-semibold">{t("analyze.title", "Analyze Cattle Health")}</h3>
             <p className="mt-1 text-emerald-100">
               Upload images and let AI assist you in disease detection.
             </p>

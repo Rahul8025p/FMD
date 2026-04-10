@@ -2,10 +2,13 @@ import { useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+import { useI18n } from "../i18n/I18nProvider";
+import LanguageSwitcher from "../components/LanguageSwitcher";
 
 export default function Result() {
   const { state } = useLocation();
   const navigate = useNavigate();
+  const { t } = useI18n();
   const backendHost = "http://localhost:5000";
   const reportRef = useRef(null);
   const [downloading, setDownloading] = useState(false);
@@ -19,7 +22,7 @@ export default function Result() {
             className="mt-4 rounded-lg bg-emerald-700 px-4 py-2 font-medium text-white transition hover:bg-emerald-800"
             onClick={() => navigate("/analyze")}
           >
-            Go to Analyze
+            {t("result.goAnalyze", "Go to Analyze")}
           </button>
         </div>
       </div>
@@ -77,24 +80,25 @@ export default function Result() {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">
-                Analysis Complete
+                {t("result.complete", "Analysis Complete")}
               </p>
               <h2 className="mt-1 text-2xl font-semibold text-slate-800">
-                Cattle Health Result
+                {t("result.title", "Cattle Health Result")}
               </h2>
             </div>
+            <LanguageSwitcher compact />
             <button
               onClick={() => navigate("/analyze")}
               className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
             >
-              Back to Analyze
+              {t("result.backAnalyze", "Back to Analyze")}
             </button>
             <button
               onClick={generatePdfReport}
               disabled={downloading}
               className="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-800 disabled:opacity-60"
             >
-              {downloading ? "Preparing PDF..." : "Download PDF Report"}
+              {downloading ? t("result.preparingPdf", "Preparing PDF...") : t("result.downloadPdf", "Download PDF Report")}
             </button>
           </div>
         </div>
@@ -102,7 +106,7 @@ export default function Result() {
         <div ref={reportRef} className="space-y-6 rounded-2xl border border-slate-200 bg-white/40 p-3 sm:p-4">
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <section className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
-            <h3 className="text-lg font-semibold text-slate-800">Uploaded image</h3>
+            <h3 className="text-lg font-semibold text-slate-800">{t("result.uploadedImage", "Uploaded image")}</h3>
             <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
               {uploadedImage ? (
                 <div className="relative">
@@ -126,7 +130,7 @@ export default function Result() {
           </section>
 
           <section className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
-            <h3 className="text-lg font-semibold text-slate-800">Prediction result</h3>
+            <h3 className="text-lg font-semibold text-slate-800">{t("result.prediction", "Prediction result")}</h3>
             <div className={`mt-4 inline-flex rounded-full border px-3 py-1 text-sm font-semibold ${diseaseStyles}`}>
               Disease detected: {disease || "Unknown"}
             </div>

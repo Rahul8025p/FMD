@@ -1,9 +1,12 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../services/api";
+import { useI18n } from "../i18n/I18nProvider";
+import LanguageSwitcher from "../components/LanguageSwitcher";
 
 export default function Analyze() {
   const navigate = useNavigate();
+  const { t } = useI18n();
 
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -219,6 +222,9 @@ export default function Analyze() {
             </button>
             {menuOpen && (
               <div className="absolute right-0 mt-2 w-52 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg">
+                <div className="px-4 py-2">
+                  <LanguageSwitcher compact />
+                </div>
                 <div className="px-4 py-3 text-sm text-slate-700">
                   <p className="font-medium">{userName}</p>
                 </div>
@@ -229,13 +235,13 @@ export default function Analyze() {
                   }}
                   className="w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"
                 >
-                  Profile
+                  {t("profile.title", "Profile")}
                 </button>
                 <button
                   onClick={handleLogout}
                   className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50"
                 >
-                  Logout
+                  {t("common.logout", "Logout")}
                 </button>
               </div>
             )}
@@ -252,7 +258,7 @@ export default function Analyze() {
             <p className="text-xs uppercase tracking-widest text-emerald-100">
               CattleCare AI
             </p>
-            <h2 className="mt-1 text-2xl font-semibold">Cattle Health Analysis</h2>
+            <h2 className="mt-1 text-2xl font-semibold">{t("analyze.title", "Cattle Health Analysis")}</h2>
             <p className="text-sm text-emerald-100">
               Upload or capture an image to detect diseases using AI
             </p>
@@ -273,7 +279,7 @@ export default function Analyze() {
                   mode === "upload" ? "bg-white text-emerald-700 shadow-sm" : "text-slate-600 hover:text-slate-800"
                 }`}
               >
-                From device
+                {t("analyze.fromDevice", "From device")}
               </button>
               <button
                 type="button"
@@ -282,7 +288,7 @@ export default function Analyze() {
                   mode === "camera" ? "bg-white text-emerald-700 shadow-sm" : "text-slate-600 hover:text-slate-800"
                 }`}
               >
-                Use camera
+                {t("analyze.useCamera", "Use camera")}
               </button>
             </div>
 
@@ -291,7 +297,7 @@ export default function Analyze() {
               onClick={() => navigate("/user")}
               className="text-sm font-medium text-emerald-700 hover:underline"
             >
-              Back to dashboard
+              {t("analyze.backDashboard", "Back to dashboard")}
             </button>
           </div>
 
@@ -299,30 +305,30 @@ export default function Analyze() {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <input
               name="rfid"
-              placeholder="RFID Number (e.g. RFID-10234)"
+              placeholder={t("analyze.rfidPlaceholder", "RFID Number (e.g. RFID-10234)")}
               onChange={handleChange}
               className="input"
             />
             <input
               name="breed"
-              placeholder="Breed (e.g. Jersey, Holstein)"
+              placeholder={t("analyze.breedPlaceholder", "Breed (e.g. Jersey, Holstein)")}
               onChange={handleChange}
               className="input"
             />
             <input
               name="age"
               type="number"
-              placeholder="Age in years (e.g. 3)"
+              placeholder={t("analyze.agePlaceholder", "Age in years (e.g. 3)")}
               onChange={handleChange}
               className="input"
             />
             <select name="sex" onChange={handleChange} className="input">
-              <option value="Female">Female</option>
-              <option value="Male">Male</option>
+                <option value="Female">{t("analyze.female", "Female")}</option>
+                <option value="Male">{t("analyze.male", "Male")}</option>
             </select>
             <select name="fever" onChange={handleChange} className="input">
-              <option value="No">Fever: No</option>
-              <option value="Yes">Fever: Yes</option>
+                <option value="No">{t("analyze.feverNo", "Fever: No")}</option>
+                <option value="Yes">{t("analyze.feverYes", "Fever: Yes")}</option>
             </select>
             {form.fever === "Yes" && (
               <input
@@ -330,7 +336,7 @@ export default function Analyze() {
                 type="number"
                 min="0"
                 step="0.1"
-                placeholder="Body temperature (°C) e.g. 39.5"
+                placeholder={t("analyze.tempPlaceholder", "Body temperature (°C) e.g. 39.5")}
                 value={form.temperature}
                 onChange={handleChange}
                 className="input"
@@ -364,7 +370,7 @@ export default function Analyze() {
           {mode === "upload" && (
             <div>
               <label className="text-sm font-medium text-slate-700">
-                Upload cattle image
+                {t("analyze.uploadImage", "Upload cattle image")}
               </label>
               <input
                 type="file"
@@ -379,7 +385,7 @@ export default function Analyze() {
             <div className="space-y-3">
               {!cameraOn && (
                 <button onClick={startCamera} className="btn-secondary w-full">
-                  📸 Start Camera
+                  {t("analyze.startCamera", "Start Camera")}
                 </button>
               )}
               {cameraOn && (
@@ -399,10 +405,10 @@ export default function Analyze() {
                       disabled={!cameraReady}
                       className="btn-primary w-full disabled:opacity-60 disabled:cursor-not-allowed"
                     >
-                      {cameraReady ? "Capture Photo" : "Preparing camera..."}
+                      {cameraReady ? t("analyze.capturePhoto", "Capture Photo") : t("analyze.preparingCamera", "Preparing camera...")}
                     </button>
                     <button onClick={stopCamera} className="btn-secondary w-full">
-                      Stop Camera
+                      {t("analyze.stopCamera", "Stop Camera")}
                     </button>
                   </div>
                 </>
@@ -431,7 +437,7 @@ export default function Analyze() {
             disabled={loading}
             className={`btn-primary w-full ${loading && "opacity-60"}`}
           >
-            {loading ? "Analyzing cattle…" : "Analyze Cattle Health"}
+            {loading ? t("analyze.analyzing", "Analyzing cattle…") : t("analyze.submit", "Analyze Cattle Health")}
           </button>
 
           <p className="text-center text-xs text-slate-400">

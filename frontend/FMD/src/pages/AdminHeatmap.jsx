@@ -9,6 +9,8 @@ import {
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { api } from "../services/api";
+import { useI18n } from "../i18n/I18nProvider";
+import LanguageSwitcher from "../components/LanguageSwitcher";
 
 const INDIA_CENTER = [22.9734, 78.6569];
 const INDIA_BOUNDS = [
@@ -254,6 +256,7 @@ function MapPanel({
 
 export default function AdminHeatmap() {
   const navigate = useNavigate();
+  const { t } = useI18n();
   const [loading, setLoading] = useState(true);
   const [mapExpanded, setMapExpanded] = useState(false);
   const [error, setError] = useState("");
@@ -264,8 +267,8 @@ export default function AdminHeatmap() {
   const totalHealthy = cases.filter((item) => item.prediction === "Healthy").length;
   const totalCases = cases.length;
   const legendItems = [
-    { label: "FMD", swatch: "bg-red-500", count: totalFmd },
-    { label: "Healthy", swatch: "bg-emerald-500", count: totalHealthy }
+    { label: t("admin.fmdFlagged", "FMD"), swatch: "bg-red-500", count: totalFmd },
+    { label: t("admin.healthyCases", "Healthy"), swatch: "bg-emerald-500", count: totalHealthy }
   ];
 
   useEffect(() => {
@@ -337,13 +340,14 @@ export default function AdminHeatmap() {
               Back to Dashboard
             </button>
             <div>
-              <p className="text-lg font-semibold text-emerald-800">India Case Heatmap</p>
+              <p className="text-lg font-semibold text-emerald-800">{t("heatmap.title", "India Case Heatmap")}</p>
               <p className="text-xs text-slate-500">
                 Operational geospatial monitoring view (live DB-backed data).
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <LanguageSwitcher compact />
             <button
               onClick={() => {
                 localStorage.clear();
@@ -351,7 +355,7 @@ export default function AdminHeatmap() {
               }}
               className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-medium text-red-700 transition hover:bg-red-100"
             >
-              Logout
+              {t("common.logout", "Logout")}
             </button>
           </div>
         </div>
@@ -363,7 +367,7 @@ export default function AdminHeatmap() {
             Monitoring Console
           </p>
           <h1 className="mt-1 text-xl font-semibold text-slate-900 sm:text-2xl">
-            India FMD Case Map
+            {t("heatmap.heading", "India FMD Case Map")}
           </h1>
           <p className="mt-2 text-sm text-slate-600">
             Hover or tap a case marker to open quick actions. Zoom to expand map into focused mode.
@@ -372,15 +376,15 @@ export default function AdminHeatmap() {
 
         <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div className="rounded-xl border border-emerald-100 bg-white p-4 shadow-sm">
-            <p className="text-xs uppercase tracking-wider text-slate-500">Total plotted cases</p>
+            <p className="text-xs uppercase tracking-wider text-slate-500">{t("heatmap.totalPlotted", "Total plotted cases")}</p>
             <p className="mt-2 text-2xl font-semibold text-slate-800">{totalCases}</p>
           </div>
           <div className="rounded-xl border border-red-100 bg-white p-4 shadow-sm">
-            <p className="text-xs uppercase tracking-wider text-slate-500">FMD markers</p>
+            <p className="text-xs uppercase tracking-wider text-slate-500">{t("heatmap.fmdMarkers", "FMD markers")}</p>
             <p className="mt-2 text-2xl font-semibold text-red-700">{totalFmd}</p>
           </div>
           <div className="rounded-xl border border-emerald-100 bg-white p-4 shadow-sm">
-            <p className="text-xs uppercase tracking-wider text-slate-500">Healthy markers</p>
+            <p className="text-xs uppercase tracking-wider text-slate-500">{t("heatmap.healthyMarkers", "Healthy markers")}</p>
             <p className="mt-2 text-2xl font-semibold text-emerald-700">{totalHealthy}</p>
           </div>
         </section>
@@ -394,8 +398,8 @@ export default function AdminHeatmap() {
             </div>
           ) : (
             <MapPanel
-              title="State-wise confirmed FMD cases in India"
-              subtitle="Put your mouse pointer on states for details"
+              title={t("heatmap.panelTitle", "State-wise confirmed FMD cases in India")}
+              subtitle={t("heatmap.panelSubtitle", "Put your mouse pointer on states for details")}
               legendItems={legendItems}
               cases={cases}
               expanded={mapExpanded}

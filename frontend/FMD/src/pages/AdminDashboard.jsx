@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../services/api";
+import { useI18n } from "../i18n/I18nProvider";
+import LanguageSwitcher from "../components/LanguageSwitcher";
 
 const API_HOST = "http://localhost:5000";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
+  const { t } = useI18n();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [overview, setOverview] = useState({
@@ -18,7 +21,6 @@ export default function AdminDashboard() {
   const [page, setPage] = useState(1);
   const pageSize = 25;
 
-  const totalRecent = recentDetections.length;
   const fmdRecent = recentDetections.filter((x) => x?.prediction === "FMD").length;
   const healthyRecent = recentDetections.filter((x) => x?.prediction === "Healthy").length;
   const classifiedRecent = fmdRecent + healthyRecent;
@@ -98,32 +100,35 @@ export default function AdminDashboard() {
               onClick={() => navigate("/admin/login")}
               className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-50 sm:text-sm"
             >
-              Back
+              {t("common.back", "Back")}
             </button>
             <div className="grid h-9 w-9 place-content-center rounded-md bg-emerald-700 font-bold text-white">
               CC
             </div>
             <div>
               <p className="text-lg font-semibold text-emerald-800">CattleCare AI</p>
-              <p className="text-xs text-slate-500">Admin Monitoring Panel</p>
+              <p className="text-xs text-slate-500">{t("admin.panel", "Admin Monitoring Panel")}</p>
             </div>
           </div>
-          <button
-            onClick={handleLogout}
-            className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-medium text-red-700 transition hover:bg-red-100"
-          >
-            Logout
-          </button>
+          <div className="flex items-center gap-3">
+            <LanguageSwitcher compact />
+            <button
+              onClick={handleLogout}
+              className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-medium text-red-700 transition hover:bg-red-100"
+            >
+              {t("common.logout", "Logout")}
+            </button>
+          </div>
         </div>
       </header>
 
       <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 md:py-10">
         <section className="mb-6 rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">
-            Admin Dashboard
+            {t("admin.dashboardTag", "Admin Dashboard")}
           </p>
           <h1 className="mt-1 text-2xl font-semibold text-slate-800 sm:text-3xl">
-            Disease Monitoring & Operations
+            {t("admin.dashboardTitle", "Disease Monitoring & Operations")}
           </h1>
           <p className="mt-2 text-sm text-slate-600">
             Track detection trends, review recent uploads, and monitor herd-health signals.
@@ -134,7 +139,7 @@ export default function AdminDashboard() {
               onClick={() => navigate("/admin/heatmap")}
               className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100"
             >
-              Open India Heatmap
+              {t("admin.openHeatmap", "Open India Heatmap")}
             </button>
           </div>
         </section>
@@ -158,19 +163,19 @@ export default function AdminDashboard() {
           <>
             <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
               <div className="rounded-xl border border-emerald-100 bg-white p-5 shadow-sm">
-                <p className="text-sm text-slate-500">Total users</p>
+                <p className="text-sm text-slate-500">{t("admin.totalUsers", "Total users")}</p>
                 <p className="mt-2 text-2xl font-semibold text-slate-800">{overview.totalUsers || 0}</p>
               </div>
               <div className="rounded-xl border border-emerald-100 bg-white p-5 shadow-sm">
-                <p className="text-sm text-slate-500">Total detections</p>
+                <p className="text-sm text-slate-500">{t("admin.totalDetections", "Total detections")}</p>
                 <p className="mt-2 text-2xl font-semibold text-slate-800">{overview.totalCases || 0}</p>
               </div>
               <div className="rounded-xl border border-red-100 bg-white p-5 shadow-sm">
-                <p className="text-sm text-slate-500">FMD flagged</p>
+                <p className="text-sm text-slate-500">{t("admin.fmdFlagged", "FMD flagged")}</p>
                 <p className="mt-2 text-2xl font-semibold text-red-700">{overview.fmdCases || 0}</p>
               </div>
               <div className="rounded-xl border border-emerald-100 bg-white p-5 shadow-sm">
-                <p className="text-sm text-slate-500">Healthy cases</p>
+                <p className="text-sm text-slate-500">{t("admin.healthyCases", "Healthy cases")}</p>
                 <p className="mt-2 text-2xl font-semibold text-emerald-700">{overview.healthyCases || 0}</p>
               </div>
             </section>
@@ -178,7 +183,7 @@ export default function AdminDashboard() {
             <section className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
               <div className="lg:col-span-1 rounded-2xl border border-emerald-100 bg-white p-6 shadow-sm">
                 <h2 className="text-base font-semibold text-slate-800">
-                  Recent FMD vs Healthy
+                  {t("admin.recentFmdVsHealthy", "Recent FMD vs Healthy")}
                 </h2>
                 <p className="mt-1 text-sm text-slate-600">
                   From your latest user uploads.
@@ -217,7 +222,7 @@ export default function AdminDashboard() {
 
               <div className="lg:col-span-2 rounded-2xl border border-emerald-100 bg-white p-6 shadow-sm">
                 <h2 className="text-base font-semibold text-slate-800">
-                  Trend (last 7 days)
+                  {t("admin.trend7d", "Trend (last 7 days)")}
                 </h2>
                 <p className="mt-1 text-sm text-slate-600">
                   Segments show prediction types within recent records.
@@ -247,7 +252,7 @@ export default function AdminDashboard() {
             </section>
 
             <section className="mt-6 rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
-              <h2 className="text-lg font-semibold text-slate-800">Recent detections</h2>
+              <h2 className="text-lg font-semibold text-slate-800">{t("admin.recentDetections", "Recent detections")}</h2>
               <p className="mt-1 text-sm text-slate-500">
                 Latest uploaded and analyzed records from users.
               </p>

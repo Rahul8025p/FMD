@@ -1,7 +1,10 @@
 import { useNavigate } from "react-router-dom";
+import { useI18n } from "../i18n/I18nProvider";
+import LanguageSwitcher from "../components/LanguageSwitcher";
 
 export default function DiseaseInfo() {
   const navigate = useNavigate();
+  const { t } = useI18n();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-lime-50 via-emerald-50 to-white px-4 py-6 sm:px-6 md:py-10">
@@ -13,7 +16,7 @@ export default function DiseaseInfo() {
                 Farmer Guide
               </p>
               <h1 className="mt-1 text-2xl font-semibold text-slate-800 sm:text-3xl">
-                Disease Information: Foot and Mouth Disease (FMD)
+                {t("disease.title", "Disease Information: Foot and Mouth Disease (FMD)")}
               </h1>
               <p className="mt-2 text-sm text-slate-600">
                 Simple guidance for farmers to identify, prevent, and respond early.
@@ -23,8 +26,11 @@ export default function DiseaseInfo() {
               onClick={() => navigate(-1)}
               className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
             >
-              Go back
+              {t("common.back", "Go back")}
             </button>
+          </div>
+          <div className="mt-3">
+            <LanguageSwitcher compact />
           </div>
         </header>
 
