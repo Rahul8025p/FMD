@@ -13,8 +13,9 @@ exports.getAdminOverview = async (req, res) => {
           .sort({ createdAt: -1 })
           .limit(100)
           .populate("user", "name email")
+          .populate("cow", "rfidTag")
           .select(
-            "imageUrl prediction confidence severity fever temperature location rfidTag breed age sex createdAt user"
+            "imageUrl prediction confidence severity fever temperature location.latitude location.longitude rfidTag breed age sex createdAt user cow"
           )
       ]);
 

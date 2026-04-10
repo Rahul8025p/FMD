@@ -299,7 +299,10 @@ export default function AdminDashboard() {
                             : "N/A"}
                         </p>
                         <p className="text-slate-600">
-                          RFID: <span className="font-medium">{item.rfidTag || "N/A"}</span>
+                          RFID:{" "}
+                          <span className="font-medium">
+                            {item.rfidTag || item.cow?.rfidTag || "N/A"}
+                          </span>
                         </p>
                         <p className="text-slate-600">
                           Geo:{" "}
