@@ -10,6 +10,7 @@ import {
 import {
   SUPPORTED_LANGUAGES,
   getCachedTranslation,
+  getSourceTextFromTranslation,
   translateTexts
 } from "../services/runtimeTranslation";
 
@@ -48,18 +49,28 @@ function shouldIgnoreTextNode(parentElement) {
   ].includes(tagName);
 }
 
-function getNodeSourceText(node) {
+function getNodeSourceText(node, targetLanguage) {
   if (!node.__runtimeI18nSource) {
-    node.__runtimeI18nSource = node.textContent;
+    const currentText = node.textContent;
+    const sourceFromReverse = getSourceTextFromTranslation(
+      targetLanguage,
+      currentText
+    );
+    node.__runtimeI18nSource = sourceFromReverse || currentText;
   }
 
   return node.__runtimeI18nSource;
 }
 
-function getAttributeSource(element, attributeName) {
+function getAttributeSource(element, attributeName, targetLanguage) {
   const sourceKey = `runtimeI18n${attributeName}`;
   if (!element.dataset[sourceKey]) {
-    element.dataset[sourceKey] = element.getAttribute(attributeName) || "";
+    const currentValue = element.getAttribute(attributeName) || "";
+    const sourceFromReverse = getSourceTextFromTranslation(
+      targetLanguage,
+      currentValue
+    );
+    element.dataset[sourceKey] = sourceFromReverse || currentValue;
   }
   return element.dataset[sourceKey];
 }
@@ -68,6 +79,7 @@ export function I18nProvider({ children }) {
   const [language, setLanguageState] = useState(
     sanitizeLanguage(localStorage.getItem("language") || "en")
   );
+  const previousLanguageRef = useRef(language);
   const [version, setVersion] = useState(0);
   const pendingRef = useRef(new Set());
   const flushTimerRef = useRef(null);
@@ -122,6 +134,8 @@ export function I18nProvider({ children }) {
     if (!root) return undefined;
 
     const translateDom = async () => {
+      const previousLanguage = previousLanguageRef.current;
+
       if (language === "en") {
         const elements = root.querySelectorAll("[data-runtime-i18n-placeholder],[data-runtime-i18n-title],[data-runtime-i18n-aria-label]");
         elements.forEach((element) => {
@@ -139,11 +153,23 @@ export function I18nProvider({ children }) {
         const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
         let currentNode = walker.nextNode();
         while (currentNode) {
+          if (!currentNode.__runtimeI18nSource) {
+            // If the node was already translated by React in the previous language,
+            // recover the original English source from the reverse cache.
+            const sourceFromReverse = getSourceTextFromTranslation(
+              previousLanguage,
+              currentNode.textContent
+            );
+            currentNode.__runtimeI18nSource = sourceFromReverse || currentNode.textContent;
+          }
+
           if (currentNode.__runtimeI18nSource) {
             currentNode.textContent = currentNode.__runtimeI18nSource;
           }
           currentNode = walker.nextNode();
         }
+
+        previousLanguageRef.current = language;
         return;
       }
 
@@ -154,7 +180,7 @@ export function I18nProvider({ children }) {
 
       while (currentNode) {
         const parentElement = currentNode.parentElement;
-        const sourceText = getNodeSourceText(currentNode);
+        const sourceText = getNodeSourceText(currentNode, language);
 
         if (!shouldIgnoreTextNode(parentElement) && isTranslatableText(sourceText)) {
           textNodes.push([currentNode, sourceText]);
@@ -164,21 +190,21 @@ export function I18nProvider({ children }) {
 
       root.querySelectorAll("input[placeholder], textarea[placeholder], [title], [aria-label]").forEach((element) => {
         if (element.hasAttribute("placeholder")) {
-          const source = getAttributeSource(element, "placeholder");
+          const source = getAttributeSource(element, "placeholder", language);
           if (isTranslatableText(source)) {
             attributeTargets.push([element, "placeholder", source]);
           }
         }
 
         if (element.hasAttribute("title")) {
-          const source = getAttributeSource(element, "title");
+          const source = getAttributeSource(element, "title", language);
           if (isTranslatableText(source)) {
             attributeTargets.push([element, "title", source]);
           }
         }
 
         if (element.hasAttribute("aria-label")) {
-          const source = getAttributeSource(element, "aria-label");
+          const source = getAttributeSource(element, "aria-label", language);
           if (isTranslatableText(source)) {
             attributeTargets.push([element, "aria-label", source]);
           }
@@ -206,6 +232,8 @@ export function I18nProvider({ children }) {
       attributeTargets.forEach(([element, attributeName, sourceText]) => {
         element.setAttribute(attributeName, translations[sourceText] || sourceText);
       });
+
+      previousLanguageRef.current = language;
     };
 
     const observer = new MutationObserver(() => {
@@ -249,7 +277,7 @@ export function I18nProvider({ children }) {
         return sourceText;
       }
     };
-  }, [language, queueTranslations, setLanguage]);
+  }, [language, queueTranslations, setLanguage, version]);
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }

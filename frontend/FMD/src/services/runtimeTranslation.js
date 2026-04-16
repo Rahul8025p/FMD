@@ -5,6 +5,7 @@ const STORAGE_PREFIX = "runtime-translations:";
 const REQUEST_BATCH_SIZE = 25;
 
 const inMemoryCache = new Map();
+const reverseCache = new Map(); // language -> { translatedText: sourceText }
 
 function normalizeLanguage(language) {
   return SUPPORTED_LANGUAGES.includes(language) ? language : "en";
@@ -32,6 +33,29 @@ function getLanguageCache(language) {
 
   inMemoryCache.set(safeLanguage, initialCache);
   return initialCache;
+}
+
+function buildReverseCacheForLanguage(language) {
+  const safeLanguage = normalizeLanguage(language);
+  if (reverseCache.has(safeLanguage)) return;
+
+  const cache = getLanguageCache(safeLanguage);
+  const reverse = {};
+  Object.entries(cache).forEach(([source, translated]) => {
+    // last write wins if collisions happen (rare for these UI strings)
+    reverse[translated] = source;
+  });
+  reverseCache.set(safeLanguage, reverse);
+}
+
+export function getSourceTextFromTranslation(language, translatedText) {
+  const safeLanguage = normalizeLanguage(language);
+  if (!translatedText) return "";
+  if (safeLanguage === "en") return translatedText;
+
+  buildReverseCacheForLanguage(safeLanguage);
+  const reverse = reverseCache.get(safeLanguage) || {};
+  return reverse[translatedText] || "";
 }
 
 function persistLanguageCache(language) {
@@ -71,6 +95,17 @@ export async function translateTexts(language, texts) {
       });
 
       Object.assign(cache, response.data?.translations || {});
+
+      // Keep reverse lookup in sync for instant language switching.
+      // Note: buildReverseCacheForLanguage() might not have run yet.
+      if (!reverseCache.has(safeLanguage)) {
+        buildReverseCacheForLanguage(safeLanguage);
+      }
+      const reverse = reverseCache.get(safeLanguage) || {};
+      Object.entries(response.data?.translations || {}).forEach(([source, translated]) => {
+        reverse[translated] = source;
+      });
+      reverseCache.set(safeLanguage, reverse);
     }
 
     persistLanguageCache(safeLanguage);
