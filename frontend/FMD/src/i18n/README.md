@@ -1,23 +1,23 @@
-# i18n Extension Guide
+# Runtime i18n Guide
 
 ## Supported languages
 - `en` (English)
 - `hi` (Hindi)
 - `te` (Telugu)
 
-## Add a new language
-1. Create `src/i18n/locales/<code>.json`.
-2. Add key-value translations using the same keys as `en.json`.
-3. Register the locale in `src/i18n/I18nProvider.jsx`:
-   - import JSON
-   - add to `DICTIONARIES`
-   - add code to `SUPPORTED`
-4. Add `<option>` in `src/components/LanguageSwitcher.jsx`.
-5. Add backend support:
-   - include code in `SUPPORTED_LANGUAGES` in `backend/src/services/language.service.js`
-   - optionally update region-to-language mapping in `mapRegionToLanguage()`
+## How it works
+- The frontend translates visible DOM text, placeholders, titles, and `aria-label`s at runtime.
+- The backend exposes `/api/translation/runtime` for batch translation requests.
+- Client and server both cache translations to reduce repeated calls and make switching faster.
 
-## Fallback behavior
-- If a key is missing in the current language, the app falls back to English.
-- If a language code is unknown, the app defaults to `en`.
+## Add a new language
+1. Add the code to `SUPPORTED_LANGUAGES` in:
+   - `frontend/FMD/src/services/runtimeTranslation.js`
+   - `backend/src/services/runtimeTranslation.service.js`
+2. Add the language option in `frontend/FMD/src/components/LanguageSwitcher.jsx`.
+3. If auto-detection should choose that language, update the mapping in `backend/src/services/language.service.js`.
+
+## Notes
+- No static locale JSON files are used by the runtime translation pipeline.
+- English remains the source/fallback language if translation is unavailable.
 

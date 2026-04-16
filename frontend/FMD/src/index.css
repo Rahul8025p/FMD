@@ -1,16 +1,53 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  min-width: 320px;
+}
+
+#root {
+  min-height: 100vh;
+}
+
 .input-field {
   @apply w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm
   focus:ring-2 focus:ring-emerald-600 focus:outline-none;
 }
 .input {
-  @apply w-full px-3 py-2 border rounded-lg text-sm;
+  @apply w-full min-h-11 px-3 py-2 border rounded-lg text-sm;
 }
 .btn-primary {
-  @apply bg-emerald-700 hover:bg-emerald-800 text-white py-2 rounded-lg;
+  @apply min-h-11 bg-emerald-700 hover:bg-emerald-800 text-white py-2 rounded-lg;
 }
 .btn-secondary {
-  @apply bg-slate-200 hover:bg-slate-300 py-2 rounded-lg;
+  @apply min-h-11 bg-slate-200 hover:bg-slate-300 py-2 rounded-lg;
+}
+
+.runtime-language-bar {
+  max-width: min(100vw - 2rem, 22rem);
+}
+
+.language-switcher {
+  flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+  .runtime-language-bar {
+    width: min(100vw - 2rem, 100%);
+  }
+
+  .language-switcher {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .language-switcher select {
+    flex: 1;
+    min-width: 9rem;
+  }
 }
