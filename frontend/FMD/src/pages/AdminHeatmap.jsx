@@ -9,6 +9,7 @@ import "leaflet/dist/leaflet.css";
 import "leaflet.markercluster/dist/MarkerCluster.css";
 import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 import L from "leaflet";
+import "leaflet.markercluster";
 import { api } from "../services/api";
 import { useI18n } from "../i18n/I18nProvider";
 import LanguageSwitcher from "../components/LanguageSwitcher";
