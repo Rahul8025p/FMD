@@ -329,7 +329,6 @@ export default function UserDashboard() {
           <div className="rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-700 to-lime-700 p-7 text-white lg:col-span-2">
             <h3 className="text-xl font-semibold">{t("analyze.title", "Analyze Cattle Health")}</h3>
             <p className="mt-1 text-emerald-100">
-              Upload images and let AI assist you in disease detection.
               {t("user.analyzeCardHelp", "Upload images and let AI assist you in disease detection.")}
             </p>
             <button
@@ -349,7 +348,7 @@ export default function UserDashboard() {
                 {t("user.newScan", "New scan")}
               </button>
               <button
-                onClick={() => navigate("/result")}
+                onClick={() => navigate("/history")}
                 className="rounded-lg border border-slate-200 px-3 py-2 text-slate-700 transition hover:bg-slate-50"
               >
                 {t("user.viewResults", "View results")}
@@ -364,7 +363,7 @@ export default function UserDashboard() {
                 onClick={() => navigate("/profile")}
                 className="rounded-lg border border-slate-200 px-3 py-2 text-slate-700 transition hover:bg-slate-50"
               >
-                Profile
+                {t("profile.title", "Profile")}
               </button>
               <button
                 onClick={() => navigate("/history")}

@@ -208,7 +208,7 @@ function MapPanel({
                     >
                       <Popup>
                         <p className="font-semibold">{c.ownerName}</p>
-                        <p className="text-xs">{c.state}</p>
+                        <p className="text-xs">{c.region}</p>
                         <p className="text-xs">{c.prediction}</p>
                         <div className="mt-2 flex gap-2">
                           <button
