@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  CircleMarker,
   MapContainer,
-  Popup,
   TileLayer,
   useMap
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import "leaflet.markercluster/dist/MarkerCluster.css";
+import "leaflet.markercluster/dist/MarkerCluster.Default.css";
+import L from "leaflet";
 import { api } from "../services/api";
 import { useI18n } from "../i18n/I18nProvider";
 import LanguageSwitcher from "../components/LanguageSwitcher";
@@ -17,6 +18,15 @@ const INDIA_BOUNDS = [
   [6, 68],
   [38.5, 97.5]
 ];
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
 
 function IconButton({ title, children, onClick }) {
   return (
@@ -102,6 +112,72 @@ function Legend({ title, items }) {
   );
 }
 
+function ClusteredCasesLayer({ cases }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!map) return undefined;
+
+    const clusterGroup = L.markerClusterGroup({
+      showCoverageOnHover: false,
+      zoomToBoundsOnClick: false,
+      spiderfyOnMaxZoom: true,
+      removeOutsideVisibleBounds: true
+    });
+
+    for (const c of cases || []) {
+      if (!Number.isFinite(c?.latitude) || !Number.isFinite(c?.longitude)) continue;
+
+      const isFmd = c.prediction === "FMD";
+      const borderColor = isFmd ? "#dc2626" : "#059669";
+      const fillColor = isFmd ? "#ef4444" : "#10b981";
+
+      // Use a Leaflet marker with a DivIcon so `leaflet.markercluster` can cluster it.
+      const icon = L.divIcon({
+        className: "",
+        iconSize: [14, 14],
+        iconAnchor: [7, 7],
+        html: `<div style="width:14px;height:14px;border-radius:9999px;border:2px solid ${borderColor};background:${fillColor};opacity:0.6;"></div>`
+      });
+
+      const popupHtml = `
+        <div style="min-width: 190px;">
+          <p style="margin: 0 0 4px 0; font-weight: 600;">${escapeHtml(c?.ownerName)}</p>
+          <p style="margin: 0; font-size: 12px;">${escapeHtml(c?.region)}</p>
+          <p style="margin: 0; font-size: 12px;">${escapeHtml(c?.prediction)}</p>
+          <div style="margin-top: 8px; display: flex; gap: 8px; flex-wrap: wrap;">
+            <button type="button" style="border:1px solid #cbd5e1; background:#ffffff; color:#475569; padding:6px 10px; border-radius:8px; font-weight:600; font-size:12px;">${escapeHtml("Report (mock)")}</button>
+            <button type="button" style="border:1px solid #34d399; background:#ecfdf5; color:#047857; padding:6px 10px; border-radius:8px; font-weight:700; font-size:12px;">${escapeHtml("More info (mock)")}</button>
+          </div>
+        </div>
+      `;
+
+      const marker = L.marker([c.latitude, c.longitude], { icon });
+      marker.bindPopup(popupHtml, { closeButton: false, autoPan: false });
+
+      marker.on("mouseover", function () {
+        this.openPopup();
+      });
+      marker.on("mouseout", function () {
+        this.closePopup();
+      });
+      marker.on("click", function () {
+        this.openPopup();
+      });
+
+      clusterGroup.addLayer(marker);
+    }
+
+    clusterGroup.addTo(map);
+
+    return () => {
+      map.removeLayer(clusterGroup);
+    };
+  }, [map, cases]);
+
+  return null;
+}
+
 function MapPanel({
   title,
   subtitle,
@@ -109,7 +185,9 @@ function MapPanel({
   cases,
   expanded,
   onSetExpanded,
-  updatedAt
+  updatedAt,
+  basemapMode,
+  onSetBasemapMode
 }) {
   const { t } = useI18n();
   const [mobileLegendOpen, setMobileLegendOpen] = useState(false);
@@ -160,6 +238,15 @@ function MapPanel({
                   >
                     {mobileLegendOpen ? t("heatmap.hideLegend", "Hide legend") : t("heatmap.showLegend", "Show legend")}
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => onSetBasemapMode((prev) => (prev === "street" ? "terrain" : "street"))}
+                    className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-50"
+                  >
+                    {basemapMode === "street"
+                      ? t("heatmap.basemapStreet", "Street")
+                      : t("heatmap.basemapTerrain", "Terrain")}
+                  </button>
                   <p className="text-xs text-slate-500">{t("heatmap.zoomHelp", "Use + / - to zoom")}</p>
                 </div>
               </div>
@@ -183,52 +270,23 @@ function MapPanel({
                   doubleClickZoom
                 >
                   <TileLayer
-                    // Use a "street" basemap (roads/labels) instead of terrain-style shading.
-                    attribution='&copy; <a href="https://carto.com/attributions">CARTO</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                    url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-                    detectRetina
+                    // Street/Terrain toggle for improved admin usability.
+                    attribution={
+                      basemapMode === "street"
+                        ? '&copy; <a href="https://carto.com/attributions">CARTO</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                        : '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://opentopomap.org/">OpenTopoMap</a>'
+                    }
+                    url={
+                      basemapMode === "street"
+                        ? "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+                        : "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"
+                    }
+                    detectRetina={basemapMode === "street"}
                   />
                   <MapZoomControls />
                   <MapAutoResize expanded={expanded} />
                   <MapExpandOnZoom onExpand={() => onSetExpanded(true)} />
-                  {cases.map((c) => (
-                    <CircleMarker
-                      key={`${title}-${c.id}`}
-                      center={[c.latitude, c.longitude]}
-                      radius={7}
-                      eventHandlers={{
-                        mouseover: (e) => e.target.openPopup(),
-                        mouseout: (e) => e.target.closePopup(),
-                        click: (e) => e.target.openPopup()
-                      }}
-                      pathOptions={{
-                        color: c.prediction === "FMD" ? "#dc2626" : "#059669",
-                        fillColor: c.prediction === "FMD" ? "#ef4444" : "#10b981",
-                        fillOpacity: 0.6,
-                        weight: 2
-                      }}
-                    >
-                      <Popup>
-                        <p className="font-semibold">{c.ownerName}</p>
-                        <p className="text-xs">{c.region}</p>
-                        <p className="text-xs">{c.prediction}</p>
-                        <div className="mt-2 flex gap-2">
-                          <button
-                            type="button"
-                            className="rounded border border-slate-300 px-2 py-1 text-[11px] font-semibold text-slate-700"
-                          >
-                            {t("heatmap.reportMock", "Report (mock)")}
-                          </button>
-                          <button
-                            type="button"
-                            className="rounded border border-emerald-300 bg-emerald-50 px-2 py-1 text-[11px] font-semibold text-emerald-700"
-                          >
-                            {t("heatmap.moreInfoMock", "More info (mock)")}
-                          </button>
-                        </div>
-                      </Popup>
-                    </CircleMarker>
-                  ))}
+                  <ClusteredCasesLayer cases={cases} />
                 </MapContainer>
               </div>
 
@@ -266,6 +324,7 @@ export default function AdminHeatmap() {
   const [error, setError] = useState("");
   const [cases, setCases] = useState([]);
   const [lastUpdatedAt, setLastUpdatedAt] = useState("");
+  const [basemapMode, setBasemapMode] = useState("street");
 
   const totalFmd = cases.filter((item) => item.prediction === "FMD").length;
   const totalHealthy = cases.filter((item) => item.prediction === "Healthy").length;
@@ -409,6 +468,8 @@ export default function AdminHeatmap() {
               expanded={mapExpanded}
               onSetExpanded={setMapExpanded}
               updatedAt={lastUpdatedAt}
+              basemapMode={basemapMode}
+              onSetBasemapMode={setBasemapMode}
             />
           )}
         </section>
