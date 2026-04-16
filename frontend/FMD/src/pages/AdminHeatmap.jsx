@@ -272,8 +272,8 @@ function MapPanel({
                 <MapContainer
                   center={INDIA_CENTER}
                   zoom={5}
-                  minZoom={4}
-                  maxZoom={9}
+                  minZoom={3}
+                  maxZoom={14}
                   maxBounds={INDIA_BOUNDS}
                   maxBoundsViscosity={0.8}
                   zoomControl={false}
@@ -298,6 +298,8 @@ function MapPanel({
                         : "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"
                     }
                     detectRetina={basemapMode === "bw"}
+                    maxZoom={14}
+                    maxNativeZoom={18}
                   />
                   <MapZoomControls />
                   <MapAutoResize expanded={expanded} />
