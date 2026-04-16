@@ -113,12 +113,13 @@ function Legend({ title, items }) {
   );
 }
 
-function ClusteredCasesLayer({ cases }) {
+function ClusteredCasesLayer({ cases, basemapMode }) {
   const map = useMap();
 
   useEffect(() => {
     if (!map) return undefined;
 
+    const isBW = basemapMode === "bw";
     const clusterGroup = L.markerClusterGroup({
       showCoverageOnHover: false,
       zoomToBoundsOnClick: false,
@@ -130,15 +131,30 @@ function ClusteredCasesLayer({ cases }) {
       if (!Number.isFinite(c?.latitude) || !Number.isFinite(c?.longitude)) continue;
 
       const isFmd = c.prediction === "FMD";
-      const borderColor = isFmd ? "#dc2626" : "#059669";
-      const fillColor = isFmd ? "#ef4444" : "#10b981";
+
+      // Monochrome mode keeps the heatmap readable even without color.
+      const borderColor = isBW ? "#0f172a" : isFmd ? "#dc2626" : "#059669";
+      const fillColor = isBW
+        ? isFmd
+          ? "#0b1220"
+          : "#f8fafc"
+        : isFmd
+          ? "#ef4444"
+          : "#10b981";
+
+      const reportBorder = isBW ? "#cbd5e1" : "#cbd5e1";
+      const reportBg = isBW ? "#ffffff" : "#ffffff";
+      const reportText = isBW ? "#334155" : "#475569";
+      const infoBorder = isBW ? "#cbd5e1" : "#34d399";
+      const infoBg = isBW ? "#f3f4f6" : "#ecfdf5";
+      const infoText = isBW ? "#374151" : "#047857";
 
       // Use a Leaflet marker with a DivIcon so `leaflet.markercluster` can cluster it.
       const icon = L.divIcon({
         className: "",
         iconSize: [14, 14],
         iconAnchor: [7, 7],
-        html: `<div style="width:14px;height:14px;border-radius:9999px;border:2px solid ${borderColor};background:${fillColor};opacity:0.6;"></div>`
+        html: `<div style="width:14px;height:14px;border-radius:9999px;border:2px solid ${borderColor};background:${fillColor};opacity:${isBW ? (isFmd ? 0.55 : 0.9) : 0.6};"></div>`
       });
 
       const popupHtml = `
@@ -147,8 +163,8 @@ function ClusteredCasesLayer({ cases }) {
           <p style="margin: 0; font-size: 12px;">${escapeHtml(c?.region)}</p>
           <p style="margin: 0; font-size: 12px;">${escapeHtml(c?.prediction)}</p>
           <div style="margin-top: 8px; display: flex; gap: 8px; flex-wrap: wrap;">
-            <button type="button" style="border:1px solid #cbd5e1; background:#ffffff; color:#475569; padding:6px 10px; border-radius:8px; font-weight:600; font-size:12px;">${escapeHtml("Report (mock)")}</button>
-            <button type="button" style="border:1px solid #34d399; background:#ecfdf5; color:#047857; padding:6px 10px; border-radius:8px; font-weight:700; font-size:12px;">${escapeHtml("More info (mock)")}</button>
+            <button type="button" style="border:1px solid ${reportBorder}; background:${reportBg}; color:${reportText}; padding:6px 10px; border-radius:8px; font-weight:600; font-size:12px;">${escapeHtml("Report (mock)")}</button>
+            <button type="button" style="border:1px solid ${infoBorder}; background:${infoBg}; color:${infoText}; padding:6px 10px; border-radius:8px; font-weight:700; font-size:12px;">${escapeHtml("More info (mock)")}</button>
           </div>
         </div>
       `;
@@ -174,7 +190,7 @@ function ClusteredCasesLayer({ cases }) {
     return () => {
       map.removeLayer(clusterGroup);
     };
-  }, [map, cases]);
+  }, [map, cases, basemapMode]);
 
   return null;
 }
@@ -241,11 +257,11 @@ function MapPanel({
                   </button>
                   <button
                     type="button"
-                    onClick={() => onSetBasemapMode((prev) => (prev === "street" ? "terrain" : "street"))}
+                    onClick={() => onSetBasemapMode((prev) => (prev === "bw" ? "terrain" : "bw"))}
                     className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-50"
                   >
-                    {basemapMode === "street"
-                      ? t("heatmap.basemapStreet", "Street")
+                    {basemapMode === "bw"
+                      ? t("heatmap.basemapBW", "B/W")
                       : t("heatmap.basemapTerrain", "Terrain")}
                   </button>
                   <p className="text-xs text-slate-500">{t("heatmap.zoomHelp", "Use + / - to zoom")}</p>
@@ -271,23 +287,22 @@ function MapPanel({
                   doubleClickZoom
                 >
                   <TileLayer
-                    // Street/Terrain toggle for improved admin usability.
                     attribution={
-                      basemapMode === "street"
+                      basemapMode === "bw"
                         ? '&copy; <a href="https://carto.com/attributions">CARTO</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                         : '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://opentopomap.org/">OpenTopoMap</a>'
                     }
                     url={
-                      basemapMode === "street"
-                        ? "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+                      basemapMode === "bw"
+                        ? "https://{s}.basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}{r}.png"
                         : "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"
                     }
-                    detectRetina={basemapMode === "street"}
+                    detectRetina={basemapMode === "bw"}
                   />
                   <MapZoomControls />
                   <MapAutoResize expanded={expanded} />
                   <MapExpandOnZoom onExpand={() => onSetExpanded(true)} />
-                  <ClusteredCasesLayer cases={cases} />
+                  <ClusteredCasesLayer cases={cases} basemapMode={basemapMode} />
                 </MapContainer>
               </div>
 
@@ -325,7 +340,7 @@ export default function AdminHeatmap() {
   const [error, setError] = useState("");
   const [cases, setCases] = useState([]);
   const [lastUpdatedAt, setLastUpdatedAt] = useState("");
-  const [basemapMode, setBasemapMode] = useState("street");
+  const [basemapMode, setBasemapMode] = useState("bw");
 
   const totalFmd = cases.filter((item) => item.prediction === "FMD").length;
   const totalHealthy = cases.filter((item) => item.prediction === "Healthy").length;
