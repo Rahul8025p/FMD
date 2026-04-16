@@ -27,7 +27,7 @@ export default function History() {
           navigate("/login");
           return;
         }
-        setError("Unable to load detection history.");
+        setError(t("history.loadError", "Unable to load detection history."));
       } finally {
         setLoading(false);
       }
@@ -83,13 +83,13 @@ export default function History() {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">
-                Detection Records
+                {t("history.recordsTag", "Detection Records")}
               </p>
               <h1 className="mt-1 text-2xl font-semibold text-slate-800 sm:text-3xl">
                 {t("history.title", "History")}
               </h1>
               <p className="mt-1 text-sm text-slate-600">
-                Previous uploaded cases with prediction and date/time.
+                {t("history.subtitle", "Previous uploaded cases with prediction and date/time.")}
               </p>
             </div>
             <button
@@ -107,14 +107,14 @@ export default function History() {
           <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <label className="mb-1 block text-xs font-medium text-slate-600">
-                Prediction
+                {t("history.prediction", "Prediction")}
               </label>
               <select
                 value={predictionFilter}
                 onChange={(e) => setPredictionFilter(e.target.value)}
                 className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-600"
               >
-                <option value="ALL">All</option>
+                <option value="ALL">{t("common.all", "All")}</option>
                 <option value="FMD">FMD</option>
                 <option value="HEALTHY">{t("admin.healthyCases", "Healthy")}</option>
               </select>
@@ -122,44 +122,44 @@ export default function History() {
 
             <div>
               <label className="mb-1 block text-xs font-medium text-slate-600">
-                Fever
+                {t("history.fever", "Fever")}
               </label>
               <select
                 value={feverFilter}
                 onChange={(e) => setFeverFilter(e.target.value)}
                 className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-600"
               >
-                <option value="ALL">All</option>
-                <option value="YES">Yes</option>
-                <option value="NO">No</option>
+                <option value="ALL">{t("common.all", "All")}</option>
+                <option value="YES">{t("common.yes", "Yes")}</option>
+                <option value="NO">{t("common.no", "No")}</option>
               </select>
             </div>
 
             <div>
               <label className="mb-1 block text-xs font-medium text-slate-600">
-                Sort
+                {t("history.sort", "Sort")}
               </label>
               <select
                 value={sortOrder}
                 onChange={(e) => setSortOrder(e.target.value)}
                 className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-600"
               >
-                <option value="DESC">Newest first</option>
-                <option value="ASC">Oldest first</option>
+                <option value="DESC">{t("history.newestFirst", "Newest first")}</option>
+                <option value="ASC">{t("history.oldestFirst", "Oldest first")}</option>
               </select>
             </div>
 
             <div className="sm:col-span-2">
               <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Results
+                  {t("history.results", "Results")}
                 </p>
                 <p className="mt-1 text-sm text-slate-700">
-                  Showing{" "}
+                  {t("history.showing", "Showing")}{" "}
                   <span className="font-semibold">{paginatedItems.length}</span>{" "}
-                  of{" "}
+                  {t("history.of", "of")}{" "}
                   <span className="font-semibold">{filteredItems.length}</span>{" "}
-                  detections
+                  {t("history.detections", "detections")}
                 </p>
               </div>
             </div>
@@ -169,15 +169,15 @@ export default function History() {
         {/* Chart: FMD vs Healthy */}
         <div className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
           <h2 className="text-lg font-semibold text-slate-800">
-            FMD vs Healthy
+            {t("history.fmdVsHealthy", "FMD vs Healthy")}
           </h2>
           <p className="mt-1 text-sm text-slate-600">
-            Based on your current filters ({filteredItems.length} records).
+            {t("history.filteredHelp", `Based on your current filters (${filteredItems.length} records).`)}
           </p>
           <div className="mt-4 flex items-end justify-start gap-4">
             {[
               { label: "FMD", value: fmdCount, bg: "bg-red-600" },
-              { label: "Healthy", value: healthyCount, bg: "bg-emerald-600" }
+              { label: t("admin.healthyCases", "Healthy"), value: healthyCount, bg: "bg-emerald-600" }
             ].map((bar) => {
               const max = Math.max(fmdCount, healthyCount, 1);
               const heightPct = (bar.value / max) * 100;
@@ -209,7 +209,7 @@ export default function History() {
 
         {!loading && !error && filteredItems.length === 0 ? (
           <div className="rounded-2xl border border-emerald-100 bg-white p-8 text-center shadow-sm">
-            <p className="text-slate-600">No records match your filters.</p>
+            <p className="text-slate-600">{t("history.noFilteredRecords", "No records match your filters.")}</p>
             <button
               onClick={() => {
                 setPredictionFilter("ALL");
@@ -240,31 +240,31 @@ export default function History() {
                   <div className="flex items-start justify-between gap-3">
                     {/* Prediction badge */}
                     <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-1 text-[11px] font-semibold text-slate-700">
-                      {item?.prediction || "N/A"}
+                      {item?.prediction || t("common.na", "N/A")}
                     </span>
                   </div>
 
                   <div className="mt-3 space-y-2">
                     <p className="text-sm text-slate-600">
-                      Confidence:{" "}
+                      {t("result.confidence", "Confidence")}:{" "}
                       {typeof item.confidence === "number"
                         ? `${(item.confidence * 100).toFixed(2)}%`
-                        : "N/A"}
+                        : t("common.na", "N/A")}
                     </p>
                     <p className="text-sm text-slate-600">
-                      Fever:{" "}
-                      {item.fever === true ? "Yes" : item.fever === false ? "No" : "N/A"}
+                      {t("history.fever", "Fever")}:{" "}
+                      {item.fever === true ? t("common.yes", "Yes") : item.fever === false ? t("common.no", "No") : t("common.na", "N/A")}
                     </p>
                     <p className="text-sm text-slate-600">
-                      Date/Time:{" "}
+                      {t("history.dateTime", "Date/Time")}:{" "}
                       {item.createdAt
                         ? new Date(item.createdAt).toLocaleString()
-                        : "N/A"}
+                        : t("common.na", "N/A")}
                     </p>
                   </div>
 
                   <div className="mt-3 text-xs text-slate-500">
-                    Image stored: {item.imageUrl ? "Yes" : "No"}
+                    {t("history.imageStored", "Image stored")}: {item.imageUrl ? t("common.yes", "Yes") : t("common.no", "No")}
                   </div>
                 </article>
               ))}
@@ -273,7 +273,7 @@ export default function History() {
             {/* Pagination */}
             <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
               <p className="text-sm text-slate-600">
-                Page{" "}
+                {t("history.page", "Page")}{" "}
                 <span className="font-semibold">
                   {page}/{totalPages}
                 </span>
@@ -284,7 +284,7 @@ export default function History() {
                   disabled={page === 1}
                   className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
                 >
-                  Prev
+                  {t("common.prev", "Prev")}
                 </button>
                 <button
                   onClick={() =>
@@ -293,7 +293,7 @@ export default function History() {
                   disabled={page === totalPages}
                   className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
                 >
-                  Next
+                  {t("common.next", "Next")}
                 </button>
               </div>
             </div>

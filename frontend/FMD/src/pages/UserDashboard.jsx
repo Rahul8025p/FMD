@@ -56,12 +56,12 @@ export default function UserDashboard() {
           const historyRes = await api.get("/user/history");
           setHistoryItems(historyRes.data?.history || []);
         } catch {
-          setHistoryError("Unable to load dashboard charts.");
+          setHistoryError(t("user.dashboardChartsError", "Unable to load dashboard charts."));
         } finally {
           setHistoryLoading(false);
         }
       } catch {
-        setSessionError("Your session has expired. Please sign in again.");
+        setSessionError(t("user.sessionExpired", "Your session has expired. Please sign in again."));
         localStorage.clear();
         navigate("/login");
       } finally {
@@ -209,33 +209,32 @@ export default function UserDashboard() {
             {t("user.welcome", "Welcome")}, {user?.name} 🌾
           </h2>
           <p className="mt-1 text-slate-600">
-            Monitor cattle health and detect diseases early using AI-powered image
-            analysis.
+            {t("user.subtitle", "Monitor cattle health and detect diseases early using AI-powered image analysis.")}
           </p>
         </div>
 
         {/* Stats / Highlights */}
         <section className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div className="rounded-xl border border-emerald-100 bg-white p-5 shadow-sm">
-            <p className="text-sm text-slate-500">Scans (7 days)</p>
+            <p className="text-sm text-slate-500">{t("user.scans7d", "Scans (7 days)")}</p>
             <p className="mt-2 text-2xl font-semibold text-slate-800">
               {historyLoading ? "…" : last7Total}
             </p>
           </div>
           <div className="rounded-xl border border-emerald-100 bg-white p-5 shadow-sm">
-            <p className="text-sm text-slate-500">Healthy scans</p>
+            <p className="text-sm text-slate-500">{t("user.healthyScans", "Healthy scans")}</p>
             <p className="mt-2 text-2xl font-semibold text-slate-800">
               {historyLoading ? "…" : last7Healthy}
             </p>
           </div>
           <div className="rounded-xl border border-emerald-100 bg-white p-5 shadow-sm">
-            <p className="text-sm text-slate-500">Cases flagged</p>
+            <p className="text-sm text-slate-500">{t("user.casesFlagged", "Cases flagged")}</p>
             <p className="mt-2 text-2xl font-semibold text-slate-800">
               {historyLoading ? "…" : last7Flagged}
             </p>
           </div>
           <div className="rounded-xl border border-emerald-100 bg-white p-5 shadow-sm">
-            <p className="text-sm text-slate-500">FMD cases</p>
+            <p className="text-sm text-slate-500">{t("user.fmdCases", "FMD cases")}</p>
             <p className="mt-2 text-2xl font-semibold text-slate-800">
               {historyLoading ? "…" : last7Fmd}
             </p>
@@ -246,17 +245,17 @@ export default function UserDashboard() {
         <section className="mb-10 grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div className="lg:col-span-1 rounded-2xl border border-emerald-100 bg-white p-6 shadow-sm">
             <h3 className="text-base font-semibold text-slate-800">
-              FMD vs Healthy (7 days)
+              {t("user.fmdVsHealthy7d", "FMD vs Healthy (7 days)")}
             </h3>
             <p className="mt-1 text-sm text-slate-600">
-              Auto from your detection history.
+              {t("user.fmdVsHealthyHelp", "Auto from your detection history.")}
             </p>
             <div className="mt-4 flex items-end gap-4">
               {(() => {
                 const max = Math.max(last7Fmd, last7Healthy, 1);
                 const bars = [
                   { label: "FMD", value: last7Fmd, bg: "bg-red-600" },
-                  { label: "Healthy", value: last7Healthy, bg: "bg-emerald-600" }
+                  { label: t("admin.healthyCases", "Healthy"), value: last7Healthy, bg: "bg-emerald-600" }
                 ];
 
                 return bars.map((b) => {
@@ -285,10 +284,10 @@ export default function UserDashboard() {
 
           <div className="lg:col-span-2 rounded-2xl border border-emerald-100 bg-white p-6 shadow-sm">
             <h3 className="text-base font-semibold text-slate-800">
-              Trend (last 7 days)
+              {t("user.trend7d", "Trend (last 7 days)")}
             </h3>
             <p className="mt-1 text-sm text-slate-600">
-              Each bar shows total uploads; segments show prediction type.
+              {t("user.trendHelp", "Each bar shows total uploads; segments show prediction type.")}
             </p>
             <div className="mt-5 h-36 flex items-end gap-2 overflow-x-auto pb-1">
               {last7Days.map((d) => {
@@ -300,7 +299,7 @@ export default function UserDashboard() {
                     <div
                       className="w-9 rounded-lg border border-slate-200 bg-white overflow-hidden flex flex-col-reverse"
                       style={{ height: `${heightPx}px` }}
-                      aria-label={`Total: ${total}`}
+                      aria-label={t("user.totalAria", `Total: ${total}`)}
                     >
                       <div style={{ flex: d.healthy || 0 }} className="bg-emerald-600/80" />
                       <div style={{ flex: d.fmd || 0 }} className="bg-red-600/90" />
@@ -319,7 +318,7 @@ export default function UserDashboard() {
               </div>
               <div className="inline-flex items-center gap-2">
                 <span className="h-2.5 w-2.5 rounded bg-emerald-600/80" />
-                Healthy
+                {t("admin.healthyCases", "Healthy")}
               </div>
             </div>
           </div>
@@ -331,34 +330,35 @@ export default function UserDashboard() {
             <h3 className="text-xl font-semibold">{t("analyze.title", "Analyze Cattle Health")}</h3>
             <p className="mt-1 text-emerald-100">
               Upload images and let AI assist you in disease detection.
+              {t("user.analyzeCardHelp", "Upload images and let AI assist you in disease detection.")}
             </p>
             <button
               onClick={() => navigate("/analyze")}
               className="mt-5 rounded-lg bg-white px-6 py-3 font-medium text-emerald-700 transition hover:bg-slate-100"
             >
-              Start Analysis →
+              {t("user.startAnalysis", "Start Analysis")}
             </button>
           </div>
           <div className="rounded-2xl border border-emerald-100 bg-white p-6 shadow-sm">
-            <h4 className="font-semibold text-slate-800">Quick actions</h4>
+            <h4 className="font-semibold text-slate-800">{t("user.quickActions", "Quick actions")}</h4>
             <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
               <button
                 onClick={() => navigate("/analyze")}
                 className="rounded-lg border border-slate-200 px-3 py-2 text-slate-700 transition hover:bg-slate-50"
               >
-                New scan
+                {t("user.newScan", "New scan")}
               </button>
               <button
                 onClick={() => navigate("/result")}
                 className="rounded-lg border border-slate-200 px-3 py-2 text-slate-700 transition hover:bg-slate-50"
               >
-                View results
+                {t("user.viewResults", "View results")}
               </button>
               <button
                 onClick={() => navigate("/user")}
                 className="rounded-lg border border-slate-200 px-3 py-2 text-slate-700 transition hover:bg-slate-50"
               >
-                My herd
+                {t("user.myHerd", "My herd")}
               </button>
               <button
                 onClick={() => navigate("/profile")}
@@ -370,27 +370,27 @@ export default function UserDashboard() {
                 onClick={() => navigate("/history")}
                 className="rounded-lg border border-slate-200 px-3 py-2 text-slate-700 transition hover:bg-slate-50"
               >
-                History
+                {t("history.title", "History")}
               </button>
               <button
                 onClick={() => navigate("/disease-info")}
                 className="rounded-lg border border-slate-200 px-3 py-2 text-slate-700 transition hover:bg-slate-50"
               >
-                Help
+                {t("user.help", "Help")}
               </button>
             </div>
           </div>
         </section>
 
         <section className="mb-10 rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
-          <h3 className="text-lg font-semibold text-slate-800">Recent detections</h3>
+          <h3 className="text-lg font-semibold text-slate-800">{t("admin.recentDetections", "Recent detections")}</h3>
           <p className="mt-1 text-sm text-slate-500">
-            Latest analyzed records with geo-coordinates and case details.
+            {t("user.recentDetectionsHelp", "Latest analyzed records with geo-coordinates and case details.")}
           </p>
           {historyLoading ? (
             <div className="mt-4 h-28 animate-pulse rounded-xl bg-slate-100" />
           ) : historyItems.length === 0 ? (
-            <p className="mt-4 text-sm text-slate-600">No detections available yet.</p>
+            <p className="mt-4 text-sm text-slate-600">{t("user.noDetections", "No detections available yet.")}</p>
           ) : (
             <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
               {historyItems.slice(0, 9).map((item) => (
@@ -400,49 +400,49 @@ export default function UserDashboard() {
                 >
                   <div className="flex items-start justify-between gap-3">
                     <p className="text-sm font-semibold text-slate-800">
-                      {item.rfidTag || "No RFID"}
+                      {item.rfidTag || t("user.noRfid", "No RFID")}
                     </p>
                     <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-1 text-[11px] font-semibold text-slate-700">
-                      {item.prediction || "N/A"}
+                      {item.prediction || t("common.na", "N/A")}
                     </span>
                   </div>
                   <div className="mt-3 space-y-1 text-sm text-slate-600">
                     <p>
-                      Confidence:{" "}
+                      {t("result.confidence", "Confidence")}:{" "}
                       {typeof item.confidence === "number"
                         ? `${(item.confidence * 100).toFixed(2)}%`
-                        : "N/A"}
+                        : t("common.na", "N/A")}
                     </p>
                     <p>
-                      Severity: <span className="font-medium">{item.severity || "N/A"}</span>
+                      {t("result.severity", "Severity")}: <span className="font-medium">{item.severity || t("common.na", "N/A")}</span>
                     </p>
                     <p>
-                      Fever:{" "}
-                      {item.fever === true ? "Yes" : item.fever === false ? "No" : "N/A"}
+                      {t("history.fever", "Fever")}:{" "}
+                      {item.fever === true ? t("common.yes", "Yes") : item.fever === false ? t("common.no", "No") : t("common.na", "N/A")}
                     </p>
                     <p>
-                      Temp:{" "}
+                      {t("history.temp", "Temp")}:{" "}
                       {typeof item.temperature === "number"
                         ? `${item.temperature}\u00b0F`
-                        : "N/A"}
+                        : t("common.na", "N/A")}
                     </p>
                     <p>
-                      Cattle:{" "}
+                      {t("user.cattle", "Cattle")}:{" "}
                       <span className="font-medium">
                         {[item.breed, item.sex, item.age]
                           .filter((x) => x !== undefined && x !== null && x !== "")
-                          .join(" / ") || "N/A"}
+                          .join(" / ") || t("common.na", "N/A")}
                       </span>
                     </p>
                     <p>
-                      Geo:{" "}
+                      {t("history.geo", "Geo")}:{" "}
                       {typeof item.location?.latitude === "number" &&
                       typeof item.location?.longitude === "number"
                         ? `${item.location.latitude.toFixed(4)}, ${item.location.longitude.toFixed(4)}`
-                        : "N/A"}
+                        : t("common.na", "N/A")}
                     </p>
                     <p className="text-xs text-slate-500">
-                      {item.createdAt ? new Date(item.createdAt).toLocaleString() : "N/A"}
+                      {item.createdAt ? new Date(item.createdAt).toLocaleString() : t("common.na", "N/A")}
                     </p>
                   </div>
                 </article>
@@ -454,21 +454,21 @@ export default function UserDashboard() {
         {/* Info cards */}
         <section className="grid grid-cols-1 gap-6 md:grid-cols-3">
           <div className="rounded-xl border border-emerald-100 bg-white p-6 shadow-sm">
-            <h3 className="mb-2 font-semibold">📷 Image-Based Diagnosis</h3>
+            <h3 className="mb-2 font-semibold">{t("user.card1Title", "Image-Based Diagnosis")}</h3>
             <p className="text-sm text-slate-600">
-              Upload or capture cattle images to detect diseases using deep learning.
+              {t("user.card1Desc", "Upload or capture cattle images to detect diseases using deep learning.")}
             </p>
           </div>
           <div className="rounded-xl border border-emerald-100 bg-white p-6 shadow-sm">
-            <h3 className="mb-2 font-semibold">🧠 AI-Powered Insights</h3>
+            <h3 className="mb-2 font-semibold">{t("user.card2Title", "AI-Powered Insights")}</h3>
             <p className="text-sm text-slate-600">
-              MobileNet Model analysis of hooves and mouth lesions for early detection.
+              {t("user.card2Desc", "MobileNet Model analysis of hooves and mouth lesions for early detection.")}
             </p>
           </div>
           <div className="rounded-xl border border-emerald-100 bg-white p-6 shadow-sm">
-            <h3 className="mb-2 font-semibold">🛡️ Preventive Guidance</h3>
+            <h3 className="mb-2 font-semibold">{t("user.card3Title", "Preventive Guidance")}</h3>
             <p className="text-sm text-slate-600">
-              Treatment and vaccination recommendations after diagnosis.
+              {t("user.card3Desc", "Treatment and vaccination recommendations after diagnosis.")}
             </p>
           </div>
         </section>

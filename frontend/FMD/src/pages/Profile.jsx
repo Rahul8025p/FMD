@@ -88,7 +88,7 @@ export default function Profile() {
 
     setTimeout(() => {
       setSaving(false);
-      setMessage("Profile updated successfully.");
+      setMessage(t("profile.updated", "Profile updated successfully."));
     }, 500);
   };
 
@@ -113,7 +113,7 @@ export default function Profile() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">
-              Account
+              {t("profile.accountTag", "Account")}
             </p>
             <h1 className="text-2xl font-semibold text-slate-800 sm:text-3xl">
               {t("profile.title", "My Profile")}
@@ -129,7 +129,7 @@ export default function Profile() {
 
         <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm sm:col-span-2">
-            <p className="text-sm text-slate-500">Logged in as</p>
+            <p className="text-sm text-slate-500">{t("profile.loggedInAs", "Logged in as")}</p>
             <p className="mt-1 text-xl font-semibold text-slate-800">{user?.name}</p>
             <p className="text-sm text-slate-500">{user?.email}</p>
             <span className="mt-3 inline-block rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800">
@@ -137,26 +137,26 @@ export default function Profile() {
             </span>
           </div>
           <div className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm">
-            <p className="text-sm text-slate-500">Uploaded cases</p>
+            <p className="text-sm text-slate-500">{t("profile.uploadedCases", "Uploaded cases")}</p>
             <p className="mt-2 text-3xl font-semibold text-slate-800">
               {uploadedCasesCount}
             </p>
             <p className="mt-1 text-xs text-slate-400">
-              Total image analyses submitted
+              {t("profile.uploadedCasesHelp", "Total image analyses submitted")}
             </p>
           </div>
         </section>
 
         <section className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
-          <h2 className="text-lg font-semibold text-slate-800">Update profile info</h2>
+          <h2 className="text-lg font-semibold text-slate-800">{t("profile.updateTitle", "Update profile info")}</h2>
           <p className="mt-1 text-sm text-slate-500">
-            Keep your details up to date for a better experience.
+            {t("profile.updateHelp", "Keep your details up to date for a better experience.")}
           </p>
 
           <form onSubmit={handleSave} className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label className="mb-1 block text-sm font-medium text-slate-700">
-                Full name
+                {t("signup.fullName", "Full name")}
               </label>
               <input
                 name="name"
@@ -169,7 +169,7 @@ export default function Profile() {
 
             <div>
               <label className="mb-1 block text-sm font-medium text-slate-700">
-                Email
+                {t("common.email", "Email")}
               </label>
               <input
                 type="email"
@@ -183,13 +183,13 @@ export default function Profile() {
 
             <div>
               <label className="mb-1 block text-sm font-medium text-slate-700">
-                Phone
+                {t("profile.phone", "Phone")}
               </label>
               <input
                 name="phone"
                 value={form.phone}
                 onChange={handleChange}
-                placeholder="Optional"
+                placeholder={t("common.optional", "Optional")}
                 className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-600"
               />
             </div>
@@ -215,13 +215,13 @@ export default function Profile() {
 
             <div>
               <label className="mb-1 block text-sm font-medium text-slate-700">
-                Farm name
+                {t("profile.farmName", "Farm name")}
               </label>
               <input
                 name="farmName"
                 value={form.farmName}
                 onChange={handleChange}
-                placeholder="Optional"
+                placeholder={t("common.optional", "Optional")}
                 className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-600"
               />
             </div>

@@ -33,7 +33,7 @@ export default function Landing() {
             onClick={() => navigate(-1)}
             className="hidden rounded-md border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-50 sm:block"
           >
-            Back
+            {t("common.back", "Back")}
           </button>
           <div className="grid h-9 w-9 place-content-center rounded-md bg-emerald-700 text-white font-bold">
             CC
@@ -48,19 +48,19 @@ export default function Landing() {
             onClick={() => navigate("/admin/login")}
             className="rounded-md px-4 py-2 text-sm font-medium text-slate-700 hover:underline"
           >
-            Admin
+            {t("landing.admin", "Admin")}
           </button>
           <button
             onClick={() => navigate("/login")}
             className="rounded-md px-4 py-2 text-sm font-medium text-emerald-800 hover:underline"
           >
-            Sign in
+            {t("landing.signIn", "Sign in")}
           </button>
           <button
             onClick={() => navigate("/register")}
             className="rounded-md bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800"
           >
-            Sign up
+            {t("landing.signUp", "Sign up")}
           </button>
         </div>
       </header>
@@ -82,19 +82,19 @@ export default function Landing() {
               onClick={goAnalyze}
               className="rounded-lg bg-emerald-700 px-5 py-3 text-sm font-semibold text-white hover:bg-emerald-800"
             >
-              Analyze Image
+              {t("landing.analyzeImage", "Analyze Image")}
             </button>
             <button
               onClick={() => navigate("/disease-info")}
               className="rounded-lg border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
             >
-              Learn about FMD
+              {t("landing.learnFmd", "Learn about FMD")}
             </button>
             <button
               onClick={() => navigate("/register")}
               className="rounded-lg border border-emerald-200 bg-emerald-50 px-5 py-3 text-sm font-semibold text-emerald-800 hover:bg-emerald-100"
             >
-              Get Started
+              {t("landing.getStarted", "Get Started")}
             </button>
           </div>
         </div>
@@ -105,7 +105,7 @@ export default function Landing() {
           <div className="absolute inset-0 rounded-2xl bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.25),transparent_55%)]" />
           <div className="pointer-events-none absolute inset-0 grid place-content-center">
             <span className="rounded-full bg-white/10 px-4 py-2 text-sm font-medium text-white ring-1 ring-white/30">
-              Livestock AI Imaging
+              {t("landing.visualBadge", "Livestock AI Imaging")}
             </span>
           </div>
         </div>
@@ -115,22 +115,36 @@ export default function Landing() {
       <section className="mx-auto max-w-6xl px-4 pb-12 sm:px-6">
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           <div className="rounded-xl border border-emerald-100 bg-white p-6 shadow-sm">
-            <h3 className="font-semibold text-slate-900">Image-based detection</h3>
+            <h3 className="font-semibold text-slate-900">
+              {t("landing.feature1Title", "Image-based detection")}
+            </h3>
             <p className="mt-1 text-sm text-slate-600">
-              Upload or capture images of mouth or hooves and let AI assist with
-              preliminary detection.
+              {t(
+                "landing.feature1Desc",
+                "Upload or capture images of mouth or hooves and let AI assist with preliminary detection."
+              )}
             </p>
           </div>
           <div className="rounded-xl border border-emerald-100 bg-white p-6 shadow-sm">
-            <h3 className="font-semibold text-slate-900">Fast results</h3>
+            <h3 className="font-semibold text-slate-900">
+              {t("landing.feature2Title", "Fast results")}
+            </h3>
             <p className="mt-1 text-sm text-slate-600">
-              Get quick indications and move faster on treatment or prevention.
+              {t(
+                "landing.feature2Desc",
+                "Get quick indications and move faster on treatment or prevention."
+              )}
             </p>
           </div>
           <div className="rounded-xl border border-emerald-100 bg-white p-6 shadow-sm">
-            <h3 className="font-semibold text-slate-900">Disease classification</h3>
+            <h3 className="font-semibold text-slate-900">
+              {t("landing.feature3Title", "Disease classification")}
+            </h3>
             <p className="mt-1 text-sm text-slate-600">
-              Model-powered classification to assist decision making in the field.
+              {t(
+                "landing.feature3Desc",
+                "Model-powered classification to assist decision making in the field."
+              )}
             </p>
           </div>
         </div>
@@ -140,20 +154,30 @@ export default function Landing() {
       <section className="mx-auto max-w-6xl px-4 pb-16 sm:px-6">
         <div className="grid grid-cols-2 gap-4 rounded-2xl border border-emerald-100 bg-white p-6 shadow-sm sm:grid-cols-4">
           <div>
-            <p className="text-xs uppercase tracking-wider text-slate-500">Images analyzed</p>
+            <p className="text-xs uppercase tracking-wider text-slate-500">
+              {t("landing.statsImages", "Images analyzed")}
+            </p>
             <p className="mt-1 text-2xl font-semibold text-slate-900">5k+</p>
           </div>
           <div>
-            <p className="text-xs uppercase tracking-wider text-slate-500">Avg. time</p>
+            <p className="text-xs uppercase tracking-wider text-slate-500">
+              {t("landing.statsTime", "Avg. time")}
+            </p>
             <p className="mt-1 text-2xl font-semibold text-slate-900">~3s</p>
           </div>
           <div>
-            <p className="text-xs uppercase tracking-wider text-slate-500">Regions</p>
+            <p className="text-xs uppercase tracking-wider text-slate-500">
+              {t("landing.statsRegions", "Regions")}
+            </p>
             <p className="mt-1 text-2xl font-semibold text-slate-900">20+</p>
           </div>
           <div>
-            <p className="text-xs uppercase tracking-wider text-slate-500">Devices</p>
-            <p className="mt-1 text-2xl font-semibold text-slate-900">Mobile/Web</p>
+            <p className="text-xs uppercase tracking-wider text-slate-500">
+              {t("landing.statsDevices", "Devices")}
+            </p>
+            <p className="mt-1 text-2xl font-semibold text-slate-900">
+              {t("landing.statsDevicesValue", "Mobile/Web")}
+            </p>
           </div>
         </div>
       </section>

@@ -19,7 +19,7 @@ export default function AdminLogin() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.email.trim() || !form.password) {
-      setError("Email and password are required.");
+      setError(t("adminLogin.required", "Email and password are required."));
       return;
     }
 
@@ -32,12 +32,12 @@ export default function AdminLogin() {
       const role = localStorage.getItem("role");
       if (role !== "ADMIN") {
         localStorage.clear();
-        setError("This login is only for admin accounts.");
+        setError(t("adminLogin.onlyAdmin", "This login is only for admin accounts."));
         return;
       }
       navigate("/admin");
     } catch (err) {
-      setError(err?.response?.data?.message || "Login failed. Please try again.");
+      setError(err?.response?.data?.message || t("adminLogin.failed", "Login failed. Please try again."));
     } finally {
       setLoading(false);
     }
@@ -59,13 +59,13 @@ export default function AdminLogin() {
           <LanguageSwitcher compact />
         </div>
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">
-          Admin Access
+          {t("adminLogin.access", "Admin Access")}
         </p>
         <h1 className="mt-2 text-2xl font-semibold text-slate-800">
-          Admin Sign in
+          {t("adminLogin.title", "Admin Sign in")}
         </h1>
         <p className="mt-1 text-sm text-slate-500">
-          Use your admin credentials to access monitoring tools.
+          {t("adminLogin.subtitle", "Use your admin credentials to access monitoring tools.")}
         </p>
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
@@ -74,7 +74,7 @@ export default function AdminLogin() {
             name="email"
             value={form.email}
             onChange={handleChange}
-            placeholder="admin@example.com"
+            placeholder={t("adminLogin.emailPlaceholder", "admin@example.com")}
             className="w-full rounded-lg border border-slate-300 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-600"
           />
           <input
@@ -82,7 +82,7 @@ export default function AdminLogin() {
             name="password"
             value={form.password}
             onChange={handleChange}
-            placeholder="Password"
+            placeholder={t("common.password", "Password")}
             className="w-full rounded-lg border border-slate-300 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-600"
           />
 
@@ -97,7 +97,7 @@ export default function AdminLogin() {
             disabled={loading}
             className="w-full rounded-lg bg-emerald-700 py-2.5 font-semibold text-white transition hover:bg-emerald-800 disabled:opacity-60"
           >
-            {loading ? "Signing in..." : "Sign in as Admin"}
+            {loading ? t("login.signingIn", "Signing in...") : t("adminLogin.submit", "Sign in as Admin")}
           </button>
         </form>
       </div>

@@ -17,7 +17,7 @@ export default function Result() {
     return (
       <div className="min-h-screen bg-slate-50 px-4 py-10 sm:px-6">
         <div className="mx-auto max-w-xl rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm">
-          <p className="text-slate-600">No analysis result found.</p>
+          <p className="text-slate-600">{t("result.notFound", "No analysis result found.")}</p>
           <button
             className="mt-4 rounded-lg bg-emerald-700 px-4 py-2 font-medium text-white transition hover:bg-emerald-800"
             onClick={() => navigate("/analyze")}
@@ -112,18 +112,18 @@ export default function Result() {
                 <div className="relative">
                   <img
                     src={uploadedImage}
-                    alt="Uploaded cattle"
+                    alt={t("result.uploadedCattleAlt", "Uploaded cattle")}
                     className="h-64 w-full object-cover sm:h-72"
                     crossOrigin="anonymous"
                   />
                   <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-red-500/20 via-yellow-400/10 to-transparent" />
                   <div className="absolute right-2 top-2 rounded bg-black/60 px-2 py-1 text-[11px] font-medium text-white">
-                    Heatmap Overlay (Visual)
+                    {t("result.overlayBadge", "Heatmap Overlay (Visual)")}
                   </div>
                 </div>
               ) : (
                 <div className="grid h-64 place-content-center text-sm text-slate-500 sm:h-72">
-                  Image preview unavailable
+                  {t("result.previewUnavailable", "Image preview unavailable")}
                 </div>
               )}
             </div>
@@ -132,18 +132,18 @@ export default function Result() {
           <section className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
             <h3 className="text-lg font-semibold text-slate-800">{t("result.prediction", "Prediction result")}</h3>
             <div className={`mt-4 inline-flex rounded-full border px-3 py-1 text-sm font-semibold ${diseaseStyles}`}>
-              Disease detected: {disease || "Unknown"}
+              {t("result.diseaseDetected", "Disease detected")}: {disease || t("common.unknown", "Unknown")}
             </div>
             <div className="mt-4 space-y-3">
               <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-                <p className="text-xs uppercase tracking-wide text-slate-500">Confidence score</p>
+                <p className="text-xs uppercase tracking-wide text-slate-500">{t("result.confidenceScore", "Confidence score")}</p>
                 <p className="mt-1 text-2xl font-semibold text-slate-800">
-                  {typeof confidence === "number" ? `${(confidence * 100).toFixed(2)}%` : "N/A"}
+                  {typeof confidence === "number" ? `${(confidence * 100).toFixed(2)}%` : t("common.na", "N/A")}
                 </p>
               </div>
               <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-                <p className="text-xs uppercase tracking-wide text-slate-500">Severity</p>
-                <p className="mt-1 text-base font-medium text-slate-700">{severity || "N/A"}</p>
+                <p className="text-xs uppercase tracking-wide text-slate-500">{t("result.severity", "Severity")}</p>
+                <p className="mt-1 text-base font-medium text-slate-700">{severity || t("common.na", "N/A")}</p>
               </div>
             </div>
           </section>
@@ -151,7 +151,7 @@ export default function Result() {
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <section className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
-            <h4 className="text-base font-semibold text-slate-800">Why this was detected</h4>
+            <h4 className="text-base font-semibold text-slate-800">{t("result.whyDetected", "Why this was detected")}</h4>
             <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-slate-600">
               {explanation?.visual?.map((v, i) => (
                 <li key={`v-${i}`}>{v}</li>
@@ -166,15 +166,15 @@ export default function Result() {
           </section>
 
           <section className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
-            <h4 className="text-base font-semibold text-slate-800">Recommended actions</h4>
-            <p className="mt-3 text-sm font-semibold text-slate-700">Precautions</p>
+            <h4 className="text-base font-semibold text-slate-800">{t("result.recommendedActions", "Recommended actions")}</h4>
+            <p className="mt-3 text-sm font-semibold text-slate-700">{t("result.precautions", "Precautions")}</p>
             <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-slate-600">
               {recommendations?.precautions?.map((p, i) => (
                 <li key={`p-${i}`}>{p}</li>
               ))}
             </ul>
 
-            <p className="mt-4 text-sm font-semibold text-slate-700">Treatment</p>
+            <p className="mt-4 text-sm font-semibold text-slate-700">{t("result.treatment", "Treatment")}</p>
             <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-slate-600">
               {recommendations?.treatment?.map((t, i) => (
                 <li key={`tr-${i}`}>{t}</li>
@@ -182,8 +182,8 @@ export default function Result() {
             </ul>
 
             <p className="mt-4 text-sm text-slate-700">
-              <span className="font-semibold">Vaccination:</span>{" "}
-              {recommendations?.vaccination || "N/A"}
+              <span className="font-semibold">{t("result.vaccination", "Vaccination")}:</span>{" "}
+              {recommendations?.vaccination || t("common.na", "N/A")}
             </p>
           </section>
         </div>

@@ -28,9 +28,9 @@ export default function Login() {
   };
 
   const validateForm = () => {
-    if (!form.email.trim()) return "Email is required.";
-    if (!emailRegex.test(form.email)) return "Enter a valid email address.";
-    if (!form.password) return "Password is required.";
+    if (!form.email.trim()) return t("login.emailRequired", "Email is required.");
+    if (!emailRegex.test(form.email)) return t("login.emailInvalid", "Enter a valid email address.");
+    if (!form.password) return t("login.passwordRequired", "Password is required.");
     return null;
   };
 
@@ -60,7 +60,7 @@ export default function Login() {
     } catch (err) {
       setError(
         err?.response?.data?.message ||
-          "Invalid email or password."
+          t("login.invalidCredentials", "Invalid email or password.")
       );
     } finally {
       setLoading(false);
@@ -68,7 +68,7 @@ export default function Login() {
   };
 
   const handleAltSignIn = (provider) => {
-    setError(`${provider} sign-in will be available soon.`);
+    setError(t("login.altSignInSoon", `${provider} sign-in will be available soon.`));
   };
 
   return (
@@ -78,22 +78,25 @@ export default function Login() {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.32),transparent_55%)]" />
           <div className="relative">
             <p className="inline-block rounded-full border border-white/30 px-3 py-1 text-xs uppercase tracking-wider text-emerald-50">
-              FMD Care
+              {t("login.badge", "FMD Care")}
             </p>
             <h2 className="mt-4 text-3xl font-bold leading-tight">
-              Healthy herd,
+              {t("login.heroLine1", "Healthy herd,")}
               <br />
-              smarter farming.
+              {t("login.heroLine2", "smarter farming.")}
             </h2>
             <p className="mt-3 text-sm text-emerald-50/90">
-              Monitor livestock health, view disease analysis, and make confident decisions faster.
+              {t(
+                "login.heroDesc",
+                "Monitor livestock health, view disease analysis, and make confident decisions faster."
+              )}
             </p>
           </div>
           <div className="relative grid grid-cols-2 gap-3 text-sm">
-            <div className="rounded-xl border border-white/20 bg-white/10 px-3 py-2">Fast diagnosis</div>
-            <div className="rounded-xl border border-white/20 bg-white/10 px-3 py-2">Farm-friendly UI</div>
-            <div className="rounded-xl border border-white/20 bg-white/10 px-3 py-2">Any device</div>
-            <div className="rounded-xl border border-white/20 bg-white/10 px-3 py-2">Secure records</div>
+            <div className="rounded-xl border border-white/20 bg-white/10 px-3 py-2">{t("login.tag1", "Fast diagnosis")}</div>
+            <div className="rounded-xl border border-white/20 bg-white/10 px-3 py-2">{t("login.tag2", "Farm-friendly UI")}</div>
+            <div className="rounded-xl border border-white/20 bg-white/10 px-3 py-2">{t("login.tag3", "Any device")}</div>
+            <div className="rounded-xl border border-white/20 bg-white/10 px-3 py-2">{t("login.tag4", "Secure records")}</div>
           </div>
         </aside>
 
@@ -110,9 +113,9 @@ export default function Login() {
           <div className="mb-3">
             <LanguageSwitcher compact />
           </div>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">Welcome back</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">{t("login.welcomeBack", "Welcome back")}</p>
           <h1 className="mt-2 text-3xl font-bold text-slate-800">{t("auth.signInTitle", "Sign in to your farm dashboard")}</h1>
-          <p className="mt-1 text-sm text-slate-500">Use email/password or quick sign-in options below.</p>
+          <p className="mt-1 text-sm text-slate-500">{t("login.signInHelp", "Use email/password or quick sign-in options below.")}</p>
 
           <div className="mt-5 grid grid-cols-1 gap-2 sm:grid-cols-3">
             <button
@@ -120,32 +123,32 @@ export default function Login() {
               onClick={() => handleAltSignIn("Google")}
               className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
             >
-              Continue with Google
+              {t("login.continueGoogle", "Continue with Google")}
             </button>
             <button
               type="button"
               onClick={() => handleAltSignIn("Phone OTP")}
               className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
             >
-              Continue with OTP
+              {t("login.continueOtp", "Continue with OTP")}
             </button>
             <button
               type="button"
               onClick={() => navigate("/register")}
               className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700 transition hover:bg-emerald-100"
             >
-              Create new account
+              {t("login.createAccount", "Create new account")}
             </button>
           </div>
 
           <form onSubmit={handleSubmit} className="mt-6 space-y-4">
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">Email</label>
+              <label className="mb-1 block text-sm font-medium text-slate-700">{t("common.email", "Email")}</label>
               <input
                 type="email"
                 name="email"
                 value={form.email}
-                placeholder="farmer@example.com"
+                placeholder={t("login.emailPlaceholder", "farmer@example.com")}
                 autoComplete="email"
                 required
                 onChange={handleChange}
@@ -154,13 +157,13 @@ export default function Login() {
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">Password</label>
+              <label className="mb-1 block text-sm font-medium text-slate-700">{t("common.password", "Password")}</label>
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
                   name="password"
                   value={form.password}
-                  placeholder="Enter your password"
+                  placeholder={t("login.passwordPlaceholder", "Enter your password")}
                   autoComplete="current-password"
                   required
                   onChange={handleChange}
@@ -170,9 +173,9 @@ export default function Login() {
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md px-2 py-1 text-xs font-medium text-slate-500 transition hover:bg-slate-100"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  aria-label={showPassword ? t("login.hidePassword", "Hide password") : t("login.showPassword", "Show password")}
                 >
-                  {showPassword ? "Hide" : "Show"}
+                  {showPassword ? t("login.hide", "Hide") : t("login.show", "Show")}
                 </button>
               </div>
             </div>
@@ -186,14 +189,14 @@ export default function Login() {
                   onChange={handleChange}
                   className="h-4 w-4 rounded border-slate-300 text-emerald-700 focus:ring-emerald-600"
                 />
-                Keep me signed in
+                {t("login.keepSignedIn", "Keep me signed in")}
               </label>
               <button
                 type="button"
                 onClick={() => handleAltSignIn("Password reset")}
                 className="font-medium text-emerald-700 hover:underline"
               >
-                Forgot password?
+                {t("login.forgotPassword", "Forgot password?")}
               </button>
             </div>
 
@@ -208,27 +211,27 @@ export default function Login() {
               disabled={loading}
               className="w-full rounded-xl bg-gradient-to-r from-emerald-700 to-lime-700 py-3 text-base font-semibold text-white shadow-md transition hover:from-emerald-800 hover:to-lime-800 disabled:opacity-60"
             >
-              {loading ? "Signing in..." : "Sign in"}
+              {loading ? t("login.signingIn", "Signing in...") : t("landing.signIn", "Sign in")}
             </button>
           </form>
 
           <div className="mt-6 border-t border-slate-200 pt-4 text-center text-sm text-slate-500">
-            New to CattleCare?{" "}
+            {t("login.newToApp", "New to CattleCare?")}{" "}
             <button
               type="button"
               onClick={() => navigate("/register")}
               className="font-semibold text-emerald-700 hover:underline"
             >
-              Sign up here
+              {t("login.signUpHere", "Sign up here")}
             </button>
             <p className="mt-2 text-xs text-slate-400">
-              Admin access?{" "}
+              {t("login.adminAccess", "Admin access?")}{" "}
               <button
                 type="button"
                 onClick={() => navigate("/admin/login")}
                 className="font-medium text-emerald-700 hover:underline"
               >
-                Use admin login
+                {t("login.useAdminLogin", "Use admin login")}
               </button>
             </p>
           </div>

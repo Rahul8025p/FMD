@@ -25,7 +25,7 @@ export default function Signup() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleAltSignup = (provider) => {
-    setError(`${provider} sign-up will be available soon.`);
+    setError(t("signup.altSignupSoon", `${provider} sign-up will be available soon.`));
   };
 
   const handleChange = (e) => {
@@ -38,23 +38,23 @@ export default function Signup() {
 
   const validateForm = () => {
     if (!form.name.trim()) {
-      return "Name is required.";
+      return t("signup.nameRequired", "Name is required.");
     }
 
     if (!form.email.trim()) {
-      return "Email is required.";
+      return t("signup.emailRequired", "Email is required.");
     }
 
     if (!passwordRegex.test(form.password)) {
-      return "Password must be at least 8 characters and include uppercase, lowercase, number, and special character.";
+      return t("signup.passwordRule", "Password must be at least 8 characters and include uppercase, lowercase, number, and special character.");
     }
 
     if (form.password !== form.confirmPassword) {
-      return "Passwords do not match.";
+      return t("signup.passwordMismatch", "Passwords do not match.");
     }
 
     if (!agreeTerms) {
-      return "Please agree to Terms & Conditions.";
+      return t("signup.acceptTerms", "Please agree to Terms & Conditions.");
     }
 
     return null;
@@ -80,7 +80,7 @@ export default function Signup() {
     } catch (err) {
       setError(
         err?.response?.data?.message ||
-          "Registration failed. Please try again."
+          t("signup.registrationFailed", "Registration failed. Please try again.")
       );
     } finally {
       setLoading(false);
@@ -103,9 +103,9 @@ export default function Signup() {
           <div className="mb-3">
             <LanguageSwitcher compact />
           </div>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">Create account</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">{t("signup.createAccountTag", "Create account")}</p>
           <h1 className="mt-2 text-3xl font-bold text-slate-800">{t("auth.signUpTitle", "Start managing herd health smarter")}</h1>
-          <p className="mt-1 text-sm text-slate-500">Quick setup for farmers, vets, and farm teams.</p>
+          <p className="mt-1 text-sm text-slate-500">{t("signup.subtitle", "Quick setup for farmers, vets, and farm teams.")}</p>
 
           <div className="mt-5 grid grid-cols-1 gap-2 sm:grid-cols-2">
             <button
@@ -113,24 +113,24 @@ export default function Signup() {
               onClick={() => handleAltSignup("Google")}
               className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
             >
-              Sign up with Google
+              {t("signup.google", "Sign up with Google")}
             </button>
             <button
               type="button"
               onClick={() => handleAltSignup("Phone OTP")}
               className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
             >
-              Sign up with OTP
+              {t("signup.otp", "Sign up with OTP")}
             </button>
           </div>
 
           <form onSubmit={handleSubmit} className="mt-6 space-y-4">
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">Full name</label>
+              <label className="mb-1 block text-sm font-medium text-slate-700">{t("signup.fullName", "Full name")}</label>
               <input
                 name="name"
                 value={form.name}
-                placeholder="Enter your name"
+                placeholder={t("signup.namePlaceholder", "Enter your name")}
                 autoComplete="name"
                 required
                 onChange={handleChange}
@@ -139,12 +139,12 @@ export default function Signup() {
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">Email</label>
+              <label className="mb-1 block text-sm font-medium text-slate-700">{t("common.email", "Email")}</label>
               <input
                 type="email"
                 name="email"
                 value={form.email}
-                placeholder="farmer@example.com"
+                placeholder={t("login.emailPlaceholder", "farmer@example.com")}
                 autoComplete="email"
                 required
                 onChange={handleChange}
@@ -153,13 +153,13 @@ export default function Signup() {
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">Create password</label>
+              <label className="mb-1 block text-sm font-medium text-slate-700">{t("signup.createPassword", "Create password")}</label>
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
                   name="password"
                   value={form.password}
-                  placeholder="Create a strong password"
+                  placeholder={t("signup.passwordPlaceholder", "Create a strong password")}
                   autoComplete="new-password"
                   required
                   onChange={handleChange}
@@ -169,21 +169,21 @@ export default function Signup() {
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md px-2 py-1 text-xs font-medium text-slate-500 transition hover:bg-slate-100"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  aria-label={showPassword ? t("login.hidePassword", "Hide password") : t("login.showPassword", "Show password")}
                 >
-                  {showPassword ? "Hide" : "Show"}
+                  {showPassword ? t("login.hide", "Hide") : t("login.show", "Show")}
                 </button>
               </div>
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">Confirm password</label>
+              <label className="mb-1 block text-sm font-medium text-slate-700">{t("signup.confirmPassword", "Confirm password")}</label>
               <div className="relative">
                 <input
                   type={showConfirmPassword ? "text" : "password"}
                   name="confirmPassword"
                   value={form.confirmPassword}
-                  placeholder="Re-enter password"
+                  placeholder={t("signup.confirmPasswordPlaceholder", "Re-enter password")}
                   autoComplete="new-password"
                   required
                   onChange={handleChange}
@@ -193,15 +193,15 @@ export default function Signup() {
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md px-2 py-1 text-xs font-medium text-slate-500 transition hover:bg-slate-100"
-                  aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
+                  aria-label={showConfirmPassword ? t("signup.hideConfirmPassword", "Hide confirm password") : t("signup.showConfirmPassword", "Show confirm password")}
                 >
-                  {showConfirmPassword ? "Hide" : "Show"}
+                  {showConfirmPassword ? t("login.hide", "Hide") : t("login.show", "Show")}
                 </button>
               </div>
             </div>
 
             <p className="text-xs text-slate-500">
-              Use 8+ characters with uppercase, lowercase, number, and symbol.
+              {t("signup.passwordHelp", "Use 8+ characters with uppercase, lowercase, number, and symbol.")}
             </p>
 
             <label className="inline-flex items-center gap-2 text-sm text-slate-700">
@@ -214,7 +214,7 @@ export default function Signup() {
                 }}
                 className="h-4 w-4 rounded border-slate-300 text-emerald-700 focus:ring-emerald-600"
               />
-              I agree to the <span className="font-semibold text-emerald-700">Terms & Conditions</span>
+              {t("signup.agreePrefix", "I agree to the")} <span className="font-semibold text-emerald-700">{t("signup.terms", "Terms & Conditions")}</span>
             </label>
 
             {error && (
@@ -228,18 +228,18 @@ export default function Signup() {
               disabled={loading}
               className="w-full rounded-xl bg-gradient-to-r from-emerald-700 to-lime-700 py-3 text-base font-semibold text-white shadow-md transition hover:from-emerald-800 hover:to-lime-800 disabled:opacity-60"
             >
-              {loading ? "Creating account..." : "Create account"}
+              {loading ? t("signup.creatingAccount", "Creating account...") : t("signup.createAccount", "Create account")}
             </button>
           </form>
 
           <div className="mt-6 border-t border-slate-200 pt-4 text-center text-sm text-slate-500">
-            Already have an account?{" "}
+            {t("signup.haveAccount", "Already have an account?")}{" "}
             <button
               type="button"
               onClick={() => navigate("/login")}
               className="font-semibold text-emerald-700 hover:underline"
             >
-              Sign in
+              {t("landing.signIn", "Sign in")}
             </button>
           </div>
         </section>
@@ -248,22 +248,22 @@ export default function Signup() {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.28),transparent_60%)]" />
           <div className="relative">
             <p className="inline-block rounded-full border border-white/30 px-3 py-1 text-xs uppercase tracking-wider">
-              FMD Care
+              {t("signup.badge", "FMD Care")}
             </p>
             <h2 className="mt-4 text-3xl font-bold leading-tight">
-              One platform for
+              {t("signup.heroLine1", "One platform for")}
               <br />
-              healthier farms.
+              {t("signup.heroLine2", "healthier farms.")}
             </h2>
             <p className="mt-3 text-sm text-emerald-50/95">
-              Get alerts, record cases, and manage prevention workflows with a clean, field-ready interface.
+              {t("signup.heroDesc", "Get alerts, record cases, and manage prevention workflows with a clean, field-ready interface.")}
             </p>
           </div>
           <div className="relative grid grid-cols-2 gap-3 text-sm">
-            <div className="rounded-xl border border-white/20 bg-white/10 px-3 py-2">Farmer first</div>
-            <div className="rounded-xl border border-white/20 bg-white/10 px-3 py-2">Easy onboarding</div>
-            <div className="rounded-xl border border-white/20 bg-white/10 px-3 py-2">Actionable insights</div>
-            <div className="rounded-xl border border-white/20 bg-white/10 px-3 py-2">Mobile ready</div>
+            <div className="rounded-xl border border-white/20 bg-white/10 px-3 py-2">{t("signup.tag1", "Farmer first")}</div>
+            <div className="rounded-xl border border-white/20 bg-white/10 px-3 py-2">{t("signup.tag2", "Easy onboarding")}</div>
+            <div className="rounded-xl border border-white/20 bg-white/10 px-3 py-2">{t("signup.tag3", "Actionable insights")}</div>
+            <div className="rounded-xl border border-white/20 bg-white/10 px-3 py-2">{t("signup.tag4", "Mobile ready")}</div>
           </div>
         </aside>
       </div>

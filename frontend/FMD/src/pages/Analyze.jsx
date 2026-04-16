@@ -47,7 +47,7 @@ export default function Analyze() {
         longitude: pos.coords.longitude.toFixed(4),
       }));
       },
-      () => alert("Please allow location access for accurate tracking")
+      () => alert(t("analyze.locationRequired", "Please allow location access for accurate tracking"))
     );
 
     return () => {
@@ -99,7 +99,7 @@ export default function Analyze() {
       setCameraOn(true);
     } catch (err) {
       console.error("Camera error:", err);
-      setError(err?.message || "Camera permission denied");
+      setError(err?.message || t("analyze.cameraPermissionDenied", "Camera permission denied"));
       setCameraOn(false);
       setMode("upload");
     }
@@ -128,38 +128,66 @@ export default function Analyze() {
     const video = videoRef.current;
     const canvas = canvasRef.current;
     if (!video || !canvas) return;
-    if (!cameraReady) {
-      setError("Preparing camera. Please try again in a moment.");
+    const hasFrame =
+      video.readyState >= 2 &&
+      Number(video.videoWidth) > 0 &&
+      Number(video.videoHeight) > 0;
+
+    if (!cameraReady || !hasFrame) {
+      setError(t("analyze.cameraPreparingRetry", "Preparing camera. Please try again in a moment."));
       return;
     }
 
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    canvas.getContext("2d").drawImage(video, 0, 0);
+    const width = video.videoWidth || 1280;
+    const height = video.videoHeight || 720;
+    canvas.width = width;
+    canvas.height = height;
+
+    const context = canvas.getContext("2d");
+    if (!context) {
+      setError(t("analyze.cameraFrameRetry", "Unable to access camera frame. Please retry."));
+      return;
+    }
+    context.drawImage(video, 0, 0, width, height);
 
     canvas.toBlob((blob) => {
-      const file = new File([blob], "cattle.jpg", { type: "image/jpeg" });
+      let safeBlob = blob;
+      if (!safeBlob) {
+        // Safari/older mobile browsers may return null blob; fallback to dataURL conversion.
+        const dataUrl = canvas.toDataURL("image/jpeg", 0.92);
+        const base64 = dataUrl.split(",")[1];
+        const binary = atob(base64);
+        const len = binary.length;
+        const bytes = new Uint8Array(len);
+        for (let i = 0; i < len; i += 1) {
+          bytes[i] = binary.charCodeAt(i);
+        }
+        safeBlob = new Blob([bytes], { type: "image/jpeg" });
+      }
+
+      const file = new File([safeBlob], "cattle.jpg", { type: "image/jpeg" });
+      const objectUrl = URL.createObjectURL(file);
       setImage(file);
-      setPreview(URL.createObjectURL(file));
+      setPreview(objectUrl);
       stopCamera();
-    });
+    }, "image/jpeg", 0.92);
   };
 
   /* 🚀 Submit */
   const analyzeImage = async () => {
     if (!image || !form.rfid) {
-      setError("RFID number and cattle image are required.");
+      setError(t("analyze.requiredInputs", "RFID number and cattle image are required."));
       return;
     }
 
     if (form.fever === "Yes") {
       const temp = Number(form.temperature);
       if (form.temperature === "" || Number.isNaN(temp)) {
-        setError("Please enter a valid body temperature.");
+        setError(t("analyze.validTemperature", "Please enter a valid body temperature."));
         return;
       }
       if (temp < 0) {
-        setError("Body temperature cannot be negative.");
+        setError(t("analyze.nonNegativeTemperature", "Body temperature cannot be negative."));
         return;
       }
     }
@@ -184,7 +212,7 @@ export default function Analyze() {
       setError(
         err?.response?.data?.message ||
         err?.response?.data?.detail ||
-        "Analysis failed. Please try again."
+        t("analyze.analysisFailed", "Analysis failed. Please try again.")
       );
     } finally {
       setLoading(false);
@@ -260,7 +288,7 @@ export default function Analyze() {
             </p>
             <h2 className="mt-1 text-2xl font-semibold">{t("analyze.title", "Cattle Health Analysis")}</h2>
             <p className="text-sm text-emerald-100">
-              Upload or capture an image to detect diseases using AI
+              {t("analyze.subtitle", "Upload or capture an image to detect diseases using AI")}
             </p>
           </div>
         </div>
@@ -347,20 +375,20 @@ export default function Analyze() {
           {/* Location (Auto) */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-xs text-slate-500">Latitude</label>
+              <label className="text-xs text-slate-500">{t("analyze.latitude", "Latitude")}</label>
               <input
                 value={form.latitude}
                 readOnly
-                placeholder="Detecting latitude…"
+                placeholder={t("analyze.detectingLatitude", "Detecting latitude...")}
                 className="input bg-slate-100 cursor-not-allowed"
               />
             </div>
             <div>
-              <label className="text-xs text-slate-500">Longitude</label>
+              <label className="text-xs text-slate-500">{t("analyze.longitude", "Longitude")}</label>
               <input
                 value={form.longitude}
                 readOnly
-                placeholder="Detecting longitude…"
+                placeholder={t("analyze.detectingLongitude", "Detecting longitude...")}
                 className="input bg-slate-100 cursor-not-allowed"
               />
             </div>
@@ -420,7 +448,7 @@ export default function Analyze() {
           {preview && (
             <img
               src={preview}
-              alt="Preview"
+              alt={t("analyze.previewAlt", "Preview")}
               className="h-64 w-full rounded-xl border object-cover"
             />
           )}
@@ -441,7 +469,7 @@ export default function Analyze() {
           </button>
 
           <p className="text-center text-xs text-slate-400">
-            Clear, well-lit images of mouth/hoof areas improve prediction accuracy.
+            {t("analyze.tip", "Clear, well-lit images of mouth/hoof areas improve prediction accuracy.")}
           </p>
 
           <canvas ref={canvasRef} className="hidden" />

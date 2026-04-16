@@ -72,7 +72,7 @@ export default function AdminDashboard() {
           navigate("/admin/login");
           return;
         }
-        setError("Unable to load admin dashboard.");
+        setError(t("admin.loadError", "Unable to load admin dashboard."));
       } finally {
         setLoading(false);
       }
@@ -131,7 +131,7 @@ export default function AdminDashboard() {
             {t("admin.dashboardTitle", "Disease Monitoring & Operations")}
           </h1>
           <p className="mt-2 text-sm text-slate-600">
-            Track detection trends, review recent uploads, and monitor herd-health signals.
+            {t("admin.subtitle", "Track detection trends, review recent uploads, and monitor herd-health signals.")}
           </p>
           <div className="mt-4">
             <button
@@ -186,7 +186,7 @@ export default function AdminDashboard() {
                   {t("admin.recentFmdVsHealthy", "Recent FMD vs Healthy")}
                 </h2>
                 <p className="mt-1 text-sm text-slate-600">
-                  From your latest user uploads.
+                  {t("admin.recentUploadsHelp", "From your latest user uploads.")}
                 </p>
 
                 <div className="mt-4 flex items-end gap-4">
@@ -194,7 +194,7 @@ export default function AdminDashboard() {
                     const max = Math.max(fmdRecent, healthyRecent, 1);
                     const bars = [
                       { label: "FMD", value: fmdRecent, bg: "bg-red-600" },
-                      { label: "Healthy", value: healthyRecent, bg: "bg-emerald-600" }
+                      { label: t("admin.healthyCases", "Healthy"), value: healthyRecent, bg: "bg-emerald-600" }
                     ];
                     return bars.map((b) => {
                       const heightPct = (b.value / max) * 100;
@@ -216,7 +216,7 @@ export default function AdminDashboard() {
                   })()}
                 </div>
                 <p className="mt-3 text-xs text-slate-600">
-                  Classified: <span className="font-semibold">{classifiedRecent}</span>
+                  {t("admin.classified", "Classified")}: <span className="font-semibold">{classifiedRecent}</span>
                 </p>
               </div>
 
@@ -225,7 +225,7 @@ export default function AdminDashboard() {
                   {t("admin.trend7d", "Trend (last 7 days)")}
                 </h2>
                 <p className="mt-1 text-sm text-slate-600">
-                  Segments show prediction types within recent records.
+                  {t("admin.trendHelp", "Segments show prediction types within recent records.")}
                 </p>
 
                 <div className="mt-5 h-36 flex items-end gap-2 overflow-x-auto pb-1">
@@ -254,11 +254,11 @@ export default function AdminDashboard() {
             <section className="mt-6 rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
               <h2 className="text-lg font-semibold text-slate-800">{t("admin.recentDetections", "Recent detections")}</h2>
               <p className="mt-1 text-sm text-slate-500">
-                Latest uploaded and analyzed records from users.
+                {t("admin.recentDetectionsHelp", "Latest uploaded and analyzed records from users.")}
               </p>
 
               {recentDetections.length === 0 ? (
-                <p className="mt-4 text-sm text-slate-600">No detections available yet.</p>
+                <p className="mt-4 text-sm text-slate-600">{t("admin.noDetections", "No detections available yet.")}</p>
               ) : (
                 <>
                   <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -270,54 +270,54 @@ export default function AdminDashboard() {
                         <div className="flex items-start justify-between gap-3">
                           <div>
                             <p className="text-sm font-semibold text-slate-800">
-                              {item.user?.name || "Unknown user"}
+                              {item.user?.name || t("admin.unknownUser", "Unknown user")}
                             </p>
                             <p className="text-xs text-slate-500">
-                              {item.user?.email || "No email"}
+                              {item.user?.email || t("admin.noEmail", "No email")}
                             </p>
                           </div>
                           <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-1 text-[11px] font-semibold text-slate-700">
-                            {item.prediction || "N/A"}
+                            {item.prediction || t("common.na", "N/A")}
                           </span>
                         </div>
 
                         <div className="mt-3 space-y-1 text-sm">
                           <p className="text-slate-600">
-                            Confidence:{" "}
+                            {t("result.confidence", "Confidence")}:{" "}
                             {typeof item.confidence === "number"
                               ? `${(item.confidence * 100).toFixed(2)}%`
-                              : "N/A"}
+                              : t("common.na", "N/A")}
                           </p>
                           <p className="text-slate-600">
-                            Severity: <span className="font-medium">{item.severity || "N/A"}</span>
+                            {t("result.severity", "Severity")}: <span className="font-medium">{item.severity || t("common.na", "N/A")}</span>
                           </p>
                         <p className="text-slate-600">
-                          Fever:{" "}
-                          {item.fever === true ? "Yes" : item.fever === false ? "No" : "N/A"}
+                          {t("history.fever", "Fever")}:{" "}
+                          {item.fever === true ? t("common.yes", "Yes") : item.fever === false ? t("common.no", "No") : t("common.na", "N/A")}
                         </p>
                         <p className="text-slate-600">
-                          Temp:{" "}
+                          {t("history.temp", "Temp")}:{" "}
                           {typeof item.temperature === "number"
                             ? `${item.temperature}\u00b0F`
-                            : "N/A"}
+                            : t("common.na", "N/A")}
                         </p>
                         <p className="text-slate-600">
-                          RFID:{" "}
+                          {t("history.rfid", "RFID")}:{" "}
                           <span className="font-medium">
-                            {item.rfidTag || item.cow?.rfidTag || "N/A"}
+                            {item.rfidTag || item.cow?.rfidTag || t("common.na", "N/A")}
                           </span>
                         </p>
                         <p className="text-slate-600">
-                          Geo:{" "}
+                          {t("history.geo", "Geo")}:{" "}
                           {typeof item.location?.latitude === "number" &&
                           typeof item.location?.longitude === "number"
                             ? `${item.location.latitude.toFixed(4)}, ${item.location.longitude.toFixed(4)}`
-                            : "N/A"}
+                            : t("common.na", "N/A")}
                         </p>
                           <p className="text-xs text-slate-500">
                             {item.createdAt
                               ? new Date(item.createdAt).toLocaleString()
-                              : "N/A"}
+                              : t("common.na", "N/A")}
                           </p>
                         </div>
                       </article>
@@ -327,7 +327,7 @@ export default function AdminDashboard() {
                   {/* Pagination */}
                   <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
                     <p className="text-sm text-slate-600">
-                      Page{" "}
+                      {t("history.page", "Page")}{" "}
                       <span className="font-semibold">
                         {page}/{totalPages}
                       </span>
@@ -338,7 +338,7 @@ export default function AdminDashboard() {
                         disabled={page === 1}
                         className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
                       >
-                        Prev
+                        {t("common.prev", "Prev")}
                       </button>
                       <button
                         onClick={() =>
@@ -347,7 +347,7 @@ export default function AdminDashboard() {
                         disabled={page === totalPages}
                         className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
                       >
-                        Next
+                        {t("common.next", "Next")}
                       </button>
                     </div>
                   </div>

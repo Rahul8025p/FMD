@@ -33,11 +33,12 @@ function IconButton({ title, children, onClick }) {
 
 function MapZoomControls() {
   const map = useMap();
+  const { t } = useI18n();
   const { onZoomIn, onZoomOut, onExpand } = map.options || {};
   return (
     <div className="absolute right-3 top-3 z-[1000] flex flex-col gap-2">
       <IconButton
-        title="Zoom in"
+        title={t("heatmap.zoomIn", "Zoom in")}
         onClick={() => {
           onZoomIn?.();
           map.zoomIn();
@@ -46,7 +47,7 @@ function MapZoomControls() {
         <span className="text-lg leading-none">+</span>
       </IconButton>
       <IconButton
-        title="Zoom out"
+        title={t("heatmap.zoomOut", "Zoom out")}
         onClick={() => {
           onZoomOut?.();
           map.zoomOut();
@@ -54,7 +55,7 @@ function MapZoomControls() {
       >
         <span className="text-lg leading-none">−</span>
       </IconButton>
-      <IconButton title="Expand map" onClick={() => onExpand?.()}>
+      <IconButton title={t("heatmap.expandMap", "Expand map")} onClick={() => onExpand?.()}>
         <span className="text-base leading-none">⤢</span>
       </IconButton>
     </div>
@@ -110,6 +111,7 @@ function MapPanel({
   onSetExpanded,
   updatedAt
 }) {
+  const { t } = useI18n();
   const [mobileLegendOpen, setMobileLegendOpen] = useState(false);
 
   return (
@@ -119,7 +121,7 @@ function MapPanel({
           type="button"
           onClick={() => onSetExpanded(false)}
           className="fixed inset-0 z-40 bg-slate-900/50"
-          aria-label="Close expanded map background"
+          aria-label={t("heatmap.closeExpandedBackground", "Close expanded map background")}
         />
       ) : null}
       <div
@@ -138,7 +140,7 @@ function MapPanel({
               onClick={() => onSetExpanded((prev) => !prev)}
               className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
             >
-              {expanded ? "Close" : "Expand"}
+              {expanded ? t("common.close", "Close") : t("common.expand", "Expand")}
             </button>
           </div>
         </div>
@@ -148,7 +150,7 @@ function MapPanel({
             <div className="relative overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
               <div className="flex items-center justify-between gap-3 border-b border-slate-200 bg-white/90 px-3 py-2">
                 <p className="text-xs font-medium text-slate-600">
-                  Put your pointer on regions for details
+                  {t("heatmap.pointerHelp", "Put your pointer on regions for details")}
                 </p>
                 <div className="flex items-center gap-2">
                   <button
@@ -156,9 +158,9 @@ function MapPanel({
                     onClick={() => setMobileLegendOpen((prev) => !prev)}
                     className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-50 lg:hidden"
                   >
-                    {mobileLegendOpen ? "Hide legend" : "Show legend"}
+                    {mobileLegendOpen ? t("heatmap.hideLegend", "Hide legend") : t("heatmap.showLegend", "Show legend")}
                   </button>
-                  <p className="text-xs text-slate-500">Use + / - to zoom</p>
+                  <p className="text-xs text-slate-500">{t("heatmap.zoomHelp", "Use + / - to zoom")}</p>
                 </div>
               </div>
 
@@ -213,13 +215,13 @@ function MapPanel({
                             type="button"
                             className="rounded border border-slate-300 px-2 py-1 text-[11px] font-semibold text-slate-700"
                           >
-                            Report (mock)
+                            {t("heatmap.reportMock", "Report (mock)")}
                           </button>
                           <button
                             type="button"
                             className="rounded border border-emerald-300 bg-emerald-50 px-2 py-1 text-[11px] font-semibold text-emerald-700"
                           >
-                            More info (mock)
+                            {t("heatmap.moreInfoMock", "More info (mock)")}
                           </button>
                         </div>
                       </Popup>
@@ -230,22 +232,22 @@ function MapPanel({
 
               {mobileLegendOpen ? (
                 <div className="border-t border-slate-200 bg-white p-3 lg:hidden">
-                  <Legend title="Color Scale" items={legendItems} />
+                  <Legend title={t("heatmap.colorScale", "Color Scale")} items={legendItems} />
                 </div>
               ) : null}
             </div>
 
             <p className="mt-3 text-xs text-slate-500">
               <span className="font-medium text-slate-700">
-                Updated: {updatedAt || "N/A"}
+                {t("common.updated", "Updated")}: {updatedAt || t("common.na", "N/A")}
               </span>
-              {" "}• Source: backend `ImageRecord` coordinates
+              {" "}• {t("heatmap.sourceNote", "Source: backend ImageRecord coordinates")}
             </p>
           </div>
 
           {expanded ? null : (
             <div className="hidden lg:col-span-2 lg:block">
-              <Legend title="Color Scale" items={legendItems} />
+              <Legend title={t("heatmap.colorScale", "Color Scale")} items={legendItems} />
             </div>
           )}
         </div>
@@ -302,9 +304,9 @@ export default function AdminHeatmap() {
               latitude,
               longitude,
               prediction: item.prediction || "Other",
-              ownerName: item?.report?.ownerName || "Unknown user",
+              ownerName: item?.report?.ownerName || t("admin.unknownUser", "Unknown user"),
               createdAt: item.createdAt || new Date().toISOString(),
-              region: item?.report?.region || "India"
+              region: item?.report?.region || t("heatmap.india", "India")
             };
           })
           .filter(Boolean);
@@ -317,7 +319,7 @@ export default function AdminHeatmap() {
           navigate("/admin/login");
           return;
         }
-        setError("Failed to load live case map data. Please restart backend once and try again.");
+        setError(t("heatmap.loadError", "Failed to load live case map data. Please restart backend once and try again."));
         setCases([]);
       } finally {
         setLoading(false);
@@ -337,12 +339,12 @@ export default function AdminHeatmap() {
               onClick={() => navigate("/admin")}
               className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-50 sm:text-sm"
             >
-              Back to Dashboard
+              {t("heatmap.backDashboard", "Back to Dashboard")}
             </button>
             <div>
               <p className="text-lg font-semibold text-emerald-800">{t("heatmap.title", "India Case Heatmap")}</p>
               <p className="text-xs text-slate-500">
-                Operational geospatial monitoring view (live DB-backed data).
+                {t("heatmap.operationalSubtitle", "Operational geospatial monitoring view (live DB-backed data).")}
               </p>
             </div>
           </div>
@@ -364,13 +366,13 @@ export default function AdminHeatmap() {
       <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 md:py-8">
         <section className="mb-4 rounded-2xl border border-emerald-100 bg-white p-4 shadow-sm sm:p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
-            Monitoring Console
+            {t("heatmap.consoleTag", "Monitoring Console")}
           </p>
           <h1 className="mt-1 text-xl font-semibold text-slate-900 sm:text-2xl">
             {t("heatmap.heading", "India FMD Case Map")}
           </h1>
           <p className="mt-2 text-sm text-slate-600">
-            Hover or tap a case marker to open quick actions. Zoom to expand map into focused mode.
+            {t("heatmap.instructions", "Hover or tap a case marker to open quick actions. Zoom to expand map into focused mode.")}
           </p>
         </section>
 
