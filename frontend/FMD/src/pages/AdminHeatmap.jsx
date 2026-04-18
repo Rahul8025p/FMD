@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   MapContainer,
@@ -202,6 +202,33 @@ async function geocodePlaceIndia(query) {
   return { lat, lon, zoom, label };
 }
 
+function MapLeafletRefBridge({ mapRef }) {
+  const map = useMap();
+  useEffect(() => {
+    mapRef.current = map;
+    return () => {
+      mapRef.current = null;
+    };
+  }, [map, mapRef]);
+  return null;
+}
+
+function MapLiveFocus({ filteredCases }) {
+  const map = useMap();
+  useEffect(() => {
+    const points = filteredCases
+      .filter((item) => Number.isFinite(item?.latitude) && Number.isFinite(item?.longitude))
+      .map((item) => [item.latitude, item.longitude]);
+    if (!points.length) return;
+    if (points.length === 1) {
+      map.setView(points[0], Math.min(12, map.getMaxZoom()));
+      return;
+    }
+    map.fitBounds(points, { padding: [34, 34], maxZoom: Math.min(12, map.getMaxZoom()) });
+  }, [filteredCases, map]);
+  return null;
+}
+
 function MapZoomControls({ expanded, onToggleExpand }) {
   const map = useMap();
   const { t } = useI18n();
@@ -236,8 +263,16 @@ function MapZoomControls({ expanded, onToggleExpand }) {
   );
 }
 
-function MapSearchControls({ cases, searchQuery, selectedState, onSearchQueryChange, onSelectedStateChange }) {
-  const map = useMap();
+function MapSearchBar({
+  mapRef,
+  cases,
+  searchQuery,
+  selectedState,
+  onSearchQueryChange,
+  onSelectedStateChange,
+  filteredCases,
+  expanded
+}) {
   const { t } = useI18n();
   const [placeStatus, setPlaceStatus] = useState("idle");
   const [placeDetail, setPlaceDetail] = useState("");
@@ -246,31 +281,30 @@ function MapSearchControls({ cases, searchQuery, selectedState, onSearchQueryCha
     (stateName) => normalizeValue(stateName) === normalizeValue(searchQuery)
   );
 
-  const filteredCases = useMemo(
-    () => computeFilteredCases(cases, searchQuery, selectedState),
-    [cases, searchQuery, selectedState]
-  );
-
-  useEffect(() => {
-    const points = filteredCases
-      .filter((item) => Number.isFinite(item?.latitude) && Number.isFinite(item?.longitude))
-      .map((item) => [item.latitude, item.longitude]);
-    if (!points.length) return;
-    if (points.length === 1) {
-      map.setView(points[0], Math.min(12, map.getMaxZoom()));
-      return;
-    }
-    map.fitBounds(points, { padding: [34, 34], maxZoom: Math.min(12, map.getMaxZoom()) });
-  }, [filteredCases, map]);
-
   return (
-    <div className="pointer-events-none absolute inset-x-0 top-0 z-[1000] flex justify-center px-3 pt-3 sm:px-4 sm:pt-4">
-      <div className="pointer-events-auto w-full max-w-2xl rounded-2xl border border-slate-200/80 bg-white/95 shadow-lg shadow-slate-900/10 ring-1 ring-slate-900/5 backdrop-blur-md">
+    <div
+      className={`w-full shrink-0 ${
+        expanded
+          ? "border-b border-slate-100 bg-gradient-to-b from-slate-50/80 to-white pb-3 sm:pb-4"
+          : "mb-3 sm:mb-4"
+      }`}
+    >
+      <div
+        className={`mx-auto w-full rounded-2xl border border-slate-200/80 bg-white shadow-md shadow-slate-900/5 ring-1 ring-slate-900/[0.04] ${
+          expanded ? "max-w-5xl" : "max-w-4xl"
+        }`}
+      >
+        {expanded ? (
+          <p className="border-b border-slate-100 px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500 sm:px-4">
+            {t("heatmap.searchOutsideHint", "Search & filter map")}
+          </p>
+        ) : null}
         <form
           className="flex flex-col gap-2.5 p-2.5 sm:flex-row sm:items-center sm:gap-2 sm:p-3"
           onSubmit={async (event) => {
             event.preventDefault();
             setPlaceDetail("");
+            const map = mapRef.current;
             const trimmed = searchQuery.trim();
             if (matchedStateFromQuery) {
               onSelectedStateChange(matchedStateFromQuery);
@@ -281,6 +315,11 @@ function MapSearchControls({ cases, searchQuery, selectedState, onSearchQueryCha
               nextSelectedState && normalizeValue(nextSelectedState) !== "all"
                 ? nextSelectedState
                 : matchedStateFromQuery || "";
+
+            if (!map) {
+              setPlaceStatus("idle");
+              return;
+            }
 
             const moved = focusMapFromFilter(map, syncedFiltered, {
               stateLabel: stateLabelForFallback,
@@ -300,8 +339,12 @@ function MapSearchControls({ cases, searchQuery, selectedState, onSearchQueryCha
             setPlaceStatus("loading");
             try {
               const geo = await geocodePlaceIndia(trimmed);
+              if (!mapRef.current) {
+                setPlaceStatus("idle");
+                return;
+              }
               if (geo) {
-                map.setView([geo.lat, geo.lon], Math.min(geo.zoom, map.getMaxZoom()));
+                mapRef.current.setView([geo.lat, geo.lon], Math.min(geo.zoom, mapRef.current.getMaxZoom()));
                 setPlaceStatus("ok");
                 setPlaceDetail(geo.label);
               } else {
@@ -378,7 +421,7 @@ function MapSearchControls({ cases, searchQuery, selectedState, onSearchQueryCha
                 onSelectedStateChange("all");
                 setPlaceStatus("idle");
                 setPlaceDetail("");
-                map.fitBounds(INDIA_BOUNDS, { padding: [20, 20] });
+                mapRef.current?.fitBounds(INDIA_BOUNDS, { padding: [20, 20] });
               }}
               className="inline-flex min-h-[40px] min-w-[40px] flex-1 items-center justify-center rounded-full border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-600 shadow-sm transition hover:bg-slate-50 sm:flex-none"
             >
@@ -530,6 +573,11 @@ function MapPanel({
   const [mobileLegendOpen, setMobileLegendOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedState, setSelectedState] = useState("all");
+  const mapRef = useRef(null);
+  const filteredCases = useMemo(
+    () => computeFilteredCases(cases, searchQuery, selectedState),
+    [cases, searchQuery, selectedState]
+  );
   const isBW = basemapMode === "bw";
   const mapMaxZoom = isBW ? 18 : 13;
   const mapMinZoom = 4;
@@ -546,7 +594,9 @@ function MapPanel({
       ) : null}
       <div
         className={`rounded-2xl border border-slate-200 bg-white shadow-sm ${
-          expanded ? "fixed inset-2 z-50 overflow-hidden sm:inset-3" : ""
+          expanded
+            ? "fixed inset-2 z-50 flex max-h-[calc(100dvh-1rem)] min-h-0 flex-col overflow-hidden sm:inset-3"
+            : ""
         }`}
       >
         <div className="border-b border-slate-200 px-4 py-3 sm:px-6">
@@ -565,9 +615,27 @@ function MapPanel({
           </div>
         </div>
 
-        <div className={`grid grid-cols-1 gap-4 p-4 sm:p-6 ${expanded ? "lg:grid-cols-1" : "lg:grid-cols-5"}`}>
-          <div className={expanded ? "" : "lg:col-span-3"}>
-            <div className="relative overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
+        <div
+          className={
+            expanded
+              ? "flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4 sm:p-6"
+              : "grid grid-cols-1 gap-4 p-4 sm:p-6 lg:grid-cols-5"
+          }
+        >
+          <div
+            className={`flex min-h-0 flex-col ${expanded ? "min-h-0 flex-1" : "lg:col-span-3"}`}
+          >
+            <MapSearchBar
+              mapRef={mapRef}
+              cases={cases}
+              searchQuery={searchQuery}
+              selectedState={selectedState}
+              onSearchQueryChange={setSearchQuery}
+              onSelectedStateChange={setSelectedState}
+              filteredCases={filteredCases}
+              expanded={expanded}
+            />
+            <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
               <div className="flex items-center justify-between gap-3 border-b border-slate-200 bg-white/90 px-3 py-2">
                 <p className="text-xs font-medium text-slate-600">
                   {t("heatmap.pointerHelp", "Put your pointer on regions for details")}
@@ -593,7 +661,13 @@ function MapPanel({
                 </div>
               </div>
 
-              <div className={expanded ? "h-[calc(100vh-165px)] sm:h-[calc(100vh-170px)]" : "h-[340px] sm:h-[460px] lg:h-[500px]"}>
+              <div
+                className={
+                  expanded
+                    ? "min-h-[260px] flex-1 sm:min-h-[320px]"
+                    : "h-[340px] sm:h-[460px] lg:h-[500px]"
+                }
+              >
                 <MapContainer
                   center={INDIA_CENTER}
                   zoom={5}
@@ -623,13 +697,8 @@ function MapPanel({
                     maxZoom={mapMaxZoom}
                     maxNativeZoom={isBW ? 18 : 13}
                   />
-                  <MapSearchControls
-                    cases={cases}
-                    searchQuery={searchQuery}
-                    selectedState={selectedState}
-                    onSearchQueryChange={setSearchQuery}
-                    onSelectedStateChange={setSelectedState}
-                  />
+                  <MapLeafletRefBridge mapRef={mapRef} />
+                  <MapLiveFocus filteredCases={filteredCases} />
                   <MapZoomControls
                     expanded={expanded}
                     onToggleExpand={() => onSetExpanded((prev) => !prev)}
