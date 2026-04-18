@@ -284,13 +284,11 @@ function MapSearchBar({
     const totals = {
       total: filteredCases.length,
       fmd: 0,
-      healthy: 0,
-      other: 0
+      notFmd: 0
     };
     for (const item of filteredCases) {
       if (item?.prediction === "FMD") totals.fmd += 1;
-      else if (item?.prediction === "Healthy") totals.healthy += 1;
-      else totals.other += 1;
+      else totals.notFmd += 1;
     }
     return totals;
   }, [filteredCases]);
@@ -458,22 +456,18 @@ function MapSearchBar({
               <p className="max-w-[min(100%,20rem)] text-right text-amber-800">{placeDetail}</p>
             ) : null}
           </div>
-          <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <div className="mt-2 flex flex-wrap items-stretch gap-2">
             <div className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2">
-              <p className="text-[11px] text-slate-500">{t("heatmap.totalPlotted", "Total plotted cases")}</p>
-              <p className="text-sm font-semibold text-slate-800">{stats.total}</p>
-            </div>
-            <div className="rounded-lg border border-red-100 bg-red-50 px-2.5 py-2">
               <p className="text-[11px] text-red-600">{t("admin.fmdFlagged", "FMD")}</p>
               <p className="text-sm font-semibold text-red-700">{stats.fmd}</p>
             </div>
             <div className="rounded-lg border border-emerald-100 bg-emerald-50 px-2.5 py-2">
-              <p className="text-[11px] text-emerald-600">{t("admin.healthyCases", "Healthy")}</p>
-              <p className="text-sm font-semibold text-emerald-700">{stats.healthy}</p>
+              <p className="text-[11px] text-emerald-700">{t("heatmap.notFmdCases", "Not FMD")}</p>
+              <p className="text-sm font-semibold text-emerald-700">{stats.notFmd}</p>
             </div>
-            <div className="rounded-lg border border-amber-100 bg-amber-50 px-2.5 py-2">
-              <p className="text-[11px] text-amber-700">{t("heatmap.otherCases", "Other")}</p>
-              <p className="text-sm font-semibold text-amber-800">{stats.other}</p>
+            <div className="ml-auto rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2 text-right">
+              <p className="text-[11px] text-slate-500">{t("heatmap.totalPlotted", "Total plotted cases")}</p>
+              <p className="text-sm font-semibold text-slate-800">{stats.total}</p>
             </div>
           </div>
         </div>
