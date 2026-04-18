@@ -280,6 +280,20 @@ function MapSearchBar({
   const matchedStateFromQuery = INDIA_STATES.find(
     (stateName) => normalizeValue(stateName) === normalizeValue(searchQuery)
   );
+  const stats = useMemo(() => {
+    const totals = {
+      total: filteredCases.length,
+      fmd: 0,
+      healthy: 0,
+      other: 0
+    };
+    for (const item of filteredCases) {
+      if (item?.prediction === "FMD") totals.fmd += 1;
+      else if (item?.prediction === "Healthy") totals.healthy += 1;
+      else totals.other += 1;
+    }
+    return totals;
+  }, [filteredCases]);
 
   return (
     <div
@@ -429,19 +443,39 @@ function MapSearchBar({
             </button>
           </div>
         </form>
-        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 px-3 py-2 text-xs sm:px-4">
-          <p className="font-medium text-slate-500">
-            {t("heatmap.matchingPins", "Matching pins")}:{" "}
-            <span className="text-slate-800">{filteredCases.length}</span>
-          </p>
-          {placeStatus === "ok" && placeDetail ? (
-            <p className="text-emerald-700">
-              {t("heatmap.placeLocated", "Showing")}: <span className="font-semibold">{placeDetail}</span>
+        <div className="border-t border-slate-100 px-3 py-2 sm:px-4">
+          <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+            <p className="font-medium text-slate-500">
+              {t("heatmap.matchingPins", "Matching pins")}:{" "}
+              <span className="text-slate-800">{stats.total}</span>
             </p>
-          ) : null}
-          {placeStatus === "error" && placeDetail ? (
-            <p className="max-w-[min(100%,20rem)] text-right text-amber-800">{placeDetail}</p>
-          ) : null}
+            {placeStatus === "ok" && placeDetail ? (
+              <p className="text-emerald-700">
+                {t("heatmap.placeLocated", "Showing")}: <span className="font-semibold">{placeDetail}</span>
+              </p>
+            ) : null}
+            {placeStatus === "error" && placeDetail ? (
+              <p className="max-w-[min(100%,20rem)] text-right text-amber-800">{placeDetail}</p>
+            ) : null}
+          </div>
+          <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+            <div className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2">
+              <p className="text-[11px] text-slate-500">{t("heatmap.totalPlotted", "Total plotted cases")}</p>
+              <p className="text-sm font-semibold text-slate-800">{stats.total}</p>
+            </div>
+            <div className="rounded-lg border border-red-100 bg-red-50 px-2.5 py-2">
+              <p className="text-[11px] text-red-600">{t("admin.fmdFlagged", "FMD")}</p>
+              <p className="text-sm font-semibold text-red-700">{stats.fmd}</p>
+            </div>
+            <div className="rounded-lg border border-emerald-100 bg-emerald-50 px-2.5 py-2">
+              <p className="text-[11px] text-emerald-600">{t("admin.healthyCases", "Healthy")}</p>
+              <p className="text-sm font-semibold text-emerald-700">{stats.healthy}</p>
+            </div>
+            <div className="rounded-lg border border-amber-100 bg-amber-50 px-2.5 py-2">
+              <p className="text-[11px] text-amber-700">{t("heatmap.otherCases", "Other")}</p>
+              <p className="text-sm font-semibold text-amber-800">{stats.other}</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
