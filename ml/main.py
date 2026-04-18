@@ -113,8 +113,34 @@ from preprocessing.preprocess import preprocess_image
 # Configuration
 # -----------------------------
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-# Note: Ensure this path matches exactly where your model is!
-MODEL_PATH = os.path.join(BASE_DIR, "models", "cow_disease_stable_no_aug.keras")
+MODEL_DIR = os.path.join(BASE_DIR, "models")
+
+
+def resolve_model_path():
+    """
+    Auto-pick a model file from ml/models.
+    Priority:
+    1) Exact expected default filename (for backwards compatibility)
+    2) First .keras file found alphabetically
+    """
+    default_path = os.path.join(MODEL_DIR, "FMD_Preprocessed_Data_Augmentation.keras")
+    if os.path.exists(default_path):
+        return default_path
+
+    if not os.path.isdir(MODEL_DIR):
+        return default_path
+
+    keras_files = sorted(
+        [
+            os.path.join(MODEL_DIR, name)
+            for name in os.listdir(MODEL_DIR)
+            if name.lower().endswith(".keras")
+        ]
+    )
+    return keras_files[0] if keras_files else default_path
+
+
+MODEL_PATH = resolve_model_path()
 
 # ⚠️ IMPORTANT: Match EXACT alphabetical order from your training dataset folders
 CLASSES = ["Healthy", "Foot and Mouth Disease"]

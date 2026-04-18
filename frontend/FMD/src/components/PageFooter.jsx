@@ -91,6 +91,7 @@ export default function PageFooter({ variant = "public", className = "" }) {
   let nav;
   let blurb;
   let heading;
+  let isCompactAuthFooter = false;
   switch (variant) {
     case "auth":
       nav = authNav;
@@ -99,6 +100,7 @@ export default function PageFooter({ variant = "public", className = "" }) {
         "footer.blurbPublic",
         "Foot-and-mouth disease awareness and AI-assisted image screening for healthier herds."
       );
+      isCompactAuthFooter = true;
       break;
     case "user":
       nav = userNav;
@@ -138,26 +140,40 @@ export default function PageFooter({ variant = "public", className = "" }) {
       role="contentinfo"
       className={`mt-auto border-t border-slate-200 bg-white ${className}`}
     >
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between lg:gap-12">
-          <div className="max-w-lg">
+      <div className={`mx-auto px-4 sm:px-6 lg:px-8 ${isCompactAuthFooter ? "max-w-5xl py-6" : "max-w-7xl py-8"}`}>
+        <div
+          className={`flex flex-col ${
+            isCompactAuthFooter
+              ? "gap-5 rounded-2xl border border-slate-200 bg-slate-50/60 px-4 py-4 text-center sm:px-6"
+              : "gap-8 lg:flex-row lg:items-start lg:justify-between lg:gap-12"
+          }`}
+        >
+          <div className={isCompactAuthFooter ? "mx-auto max-w-2xl" : "max-w-lg"}>
             <p className="text-sm font-semibold text-slate-900">CattleCare AI</p>
             <p className="mt-1 text-sm font-medium text-slate-700">{heading}</p>
             <p className="mt-2 text-xs leading-relaxed text-slate-500 sm:text-sm">{blurb}</p>
           </div>
-          <div className="shrink-0">
+          <div className={isCompactAuthFooter ? "mx-auto" : "shrink-0"}>
             <p className="mb-3 text-xs font-medium uppercase tracking-wide text-slate-400">
               {t("footer.navLabel", "Footer navigation")}
             </p>
             <nav
-              className="flex max-w-xl flex-wrap gap-x-5 gap-y-2 sm:gap-x-6"
+              className={`flex flex-wrap gap-y-2 ${
+                isCompactAuthFooter
+                  ? "justify-center gap-x-4 sm:gap-x-5"
+                  : "max-w-xl gap-x-5 sm:gap-x-6"
+              }`}
               aria-label={t("footer.navLabel", "Footer navigation")}
             >
               {nav}
             </nav>
           </div>
         </div>
-        <div className="mt-8 flex flex-col gap-2 border-t border-slate-100 pt-6 text-xs text-slate-500 sm:flex-row sm:items-start sm:justify-between sm:gap-6 sm:text-sm">
+        <div
+          className={`flex flex-col gap-2 border-t border-slate-100 pt-6 text-xs text-slate-500 sm:flex-row sm:items-start sm:justify-between sm:gap-6 sm:text-sm ${
+            isCompactAuthFooter ? "mt-5" : "mt-8"
+          }`}
+        >
           <p>
             © {year} CattleCare AI. {t("footer.rights", "All rights reserved.")}
           </p>
