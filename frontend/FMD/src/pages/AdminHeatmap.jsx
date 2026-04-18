@@ -202,7 +202,7 @@ async function geocodePlaceIndia(query) {
   return { lat, lon, zoom, label };
 }
 
-function MapZoomControls() {
+function MapZoomControls({ expanded, onToggleExpand }) {
   const map = useMap();
   const { t } = useI18n();
   const { onZoomIn, onZoomOut } = map.options || {};
@@ -225,6 +225,12 @@ function MapZoomControls() {
         }}
       >
         <span className="text-lg leading-none">−</span>
+      </IconButton>
+      <IconButton
+        title={expanded ? t("common.close", "Close") : t("common.expand", "Expand")}
+        onClick={onToggleExpand}
+      >
+        <span className="text-base leading-none">{expanded ? "⤡" : "⤢"}</span>
       </IconButton>
     </div>
   );
@@ -624,7 +630,10 @@ function MapPanel({
                     onSearchQueryChange={setSearchQuery}
                     onSelectedStateChange={setSelectedState}
                   />
-                  <MapZoomControls />
+                  <MapZoomControls
+                    expanded={expanded}
+                    onToggleExpand={() => onSetExpanded((prev) => !prev)}
+                  />
                   <MapAutoResize expanded={expanded} />
                   <ClusteredCasesLayer cases={cases} basemapMode={basemapMode} />
                 </MapContainer>
