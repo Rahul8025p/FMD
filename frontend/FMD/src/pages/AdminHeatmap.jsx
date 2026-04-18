@@ -122,6 +122,86 @@ function normalizeValue(value) {
   return String(value ?? "").trim().toLowerCase();
 }
 
+function computeFilteredCases(cases, searchQuery, selectedState) {
+  const normalizedQuery = normalizeValue(searchQuery);
+  const normalizedState = normalizeValue(selectedState);
+  const matchedStateFromQuery = INDIA_STATES.find(
+    (stateName) => normalizeValue(stateName) === normalizedQuery
+  );
+  const effectiveStateFilter =
+    normalizedState && normalizedState !== "all"
+      ? normalizedState
+      : matchedStateFromQuery
+        ? normalizeValue(matchedStateFromQuery)
+        : "all";
+
+  return (cases || []).filter((item) => {
+    const stateMatches =
+      !effectiveStateFilter ||
+      effectiveStateFilter === "all" ||
+      normalizeValue(item?.region).includes(effectiveStateFilter);
+
+    if (!stateMatches) return false;
+    if (!normalizedQuery || normalizeValue(item?.region).includes(normalizedQuery)) return true;
+
+    const searchable = [item?.ownerName, item?.region, item?.prediction]
+      .map((part) => normalizeValue(part))
+      .join(" ");
+
+    return searchable.includes(normalizedQuery);
+  });
+}
+
+function focusMapFromFilter(map, filteredCases, { stateLabel, useStateFallback }) {
+  const points = filteredCases
+    .filter((item) => Number.isFinite(item?.latitude) && Number.isFinite(item?.longitude))
+    .map((item) => [item.latitude, item.longitude]);
+
+  if (points.length === 1) {
+    map.setView(points[0], Math.min(12, map.getMaxZoom()));
+    return true;
+  }
+  if (points.length > 1) {
+    map.fitBounds(points, { padding: [34, 34], maxZoom: Math.min(12, map.getMaxZoom()) });
+    return true;
+  }
+  if (useStateFallback && stateLabel && STATE_VIEW_CENTERS[stateLabel]) {
+    const preset = STATE_VIEW_CENTERS[stateLabel];
+    map.setView(preset.center, Math.min(preset.zoom, map.getMaxZoom()));
+    return true;
+  }
+  return false;
+}
+
+async function geocodePlaceIndia(query) {
+  const q = query.trim();
+  if (!q) return null;
+
+  const bbox = "68.0,6.0,97.5,38.5";
+  const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=1&lang=en&bbox=${bbox}`;
+  const res = await fetch(url);
+  if (!res.ok) return null;
+  const data = await res.json();
+  const f = data?.features?.[0];
+  if (!f?.geometry?.coordinates) return null;
+  const [lon, lat] = f.geometry.coordinates;
+  if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
+
+  const props = f.properties || {};
+  const t = props.type;
+  let zoom = 11;
+  if (t === "state") zoom = 7;
+  else if (t === "county") zoom = 8;
+  else if (t === "district") zoom = 9;
+  else if (t === "city") zoom = 11;
+  else if (t === "town") zoom = 12;
+  else if (t === "village" || t === "hamlet") zoom = 13;
+  else if (t === "locality" || t === "neighbourhood") zoom = 13;
+
+  const label = props.name || q;
+  return { lat, lon, zoom, label };
+}
+
 function MapZoomControls() {
   const map = useMap();
   const { t } = useI18n();
@@ -153,122 +233,167 @@ function MapZoomControls() {
 function MapSearchControls({ cases, searchQuery, selectedState, onSearchQueryChange, onSelectedStateChange }) {
   const map = useMap();
   const { t } = useI18n();
-  const normalizedQuery = normalizeValue(searchQuery);
-  const normalizedState = normalizeValue(selectedState);
-  const matchedStateFromQuery = INDIA_STATES.find((stateName) => normalizeValue(stateName) === normalizedQuery);
-  const stateFromDropdown = INDIA_STATES.find((stateName) => normalizeValue(stateName) === normalizedState);
-  const activeStateName = stateFromDropdown || matchedStateFromQuery || "";
-  const effectiveStateFilter =
-    normalizedState && normalizedState !== "all"
-      ? normalizedState
-      : matchedStateFromQuery
-        ? normalizeValue(matchedStateFromQuery)
-        : "all";
+  const [placeStatus, setPlaceStatus] = useState("idle");
+  const [placeDetail, setPlaceDetail] = useState("");
 
-  const filteredCases = useMemo(() => {
-    return (cases || []).filter((item) => {
-      const stateMatches =
-        !effectiveStateFilter ||
-        effectiveStateFilter === "all" ||
-        normalizeValue(item?.region).includes(effectiveStateFilter);
+  const matchedStateFromQuery = INDIA_STATES.find(
+    (stateName) => normalizeValue(stateName) === normalizeValue(searchQuery)
+  );
 
-      if (!stateMatches) return false;
-      if (!normalizedQuery || normalizeValue(item?.region).includes(normalizedQuery)) return true;
+  const filteredCases = useMemo(
+    () => computeFilteredCases(cases, searchQuery, selectedState),
+    [cases, searchQuery, selectedState]
+  );
 
-      const searchable = [
-        item?.ownerName,
-        item?.region,
-        item?.prediction
-      ]
-        .map((part) => normalizeValue(part))
-        .join(" ");
-
-      return searchable.includes(normalizedQuery);
-    });
-  }, [cases, effectiveStateFilter, normalizedQuery]);
-
-  const focusOnFilteredCases = ({ includeStateFallback = false } = {}) => {
-    if (!filteredCases.length) {
-      if (includeStateFallback && activeStateName) {
-        const preset = STATE_VIEW_CENTERS[activeStateName];
-        if (preset) {
-          map.setView(preset.center, Math.min(preset.zoom, map.getMaxZoom()));
-        }
-      }
-      return;
-    }
-
+  useEffect(() => {
     const points = filteredCases
       .filter((item) => Number.isFinite(item?.latitude) && Number.isFinite(item?.longitude))
       .map((item) => [item.latitude, item.longitude]);
-
     if (!points.length) return;
     if (points.length === 1) {
       map.setView(points[0], Math.min(12, map.getMaxZoom()));
       return;
     }
     map.fitBounds(points, { padding: [34, 34], maxZoom: Math.min(12, map.getMaxZoom()) });
-  };
-
-  useEffect(() => {
-    focusOnFilteredCases({ includeStateFallback: false });
-  }, [filteredCases]);
+  }, [filteredCases, map]);
 
   return (
-    <div className="absolute left-3 right-3 top-3 z-[1000] max-w-[760px] rounded-xl border border-slate-200 bg-white/95 p-2 shadow-sm backdrop-blur">
-      <form
-        className="flex flex-col gap-2 sm:flex-row sm:items-center"
-        onSubmit={(event) => {
-          event.preventDefault();
-          if (matchedStateFromQuery) {
-            onSelectedStateChange(matchedStateFromQuery);
-          }
-          focusOnFilteredCases({ includeStateFallback: true });
-        }}
-      >
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(event) => onSearchQueryChange(event.target.value)}
-          placeholder={t("heatmap.searchPlaceholder", "Search places, owner, state, or status")}
-          className="w-full min-w-0 flex-1 rounded-full border border-slate-300 bg-white px-4 py-2 text-xs text-slate-700 outline-none transition focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 sm:min-w-[220px]"
-        />
-        <select
-          value={selectedState}
-          onChange={(event) => onSelectedStateChange(event.target.value)}
-          className="w-full rounded-full border border-slate-300 bg-white px-3 py-2 text-xs text-slate-700 outline-none transition focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 sm:w-auto sm:min-w-[190px]"
+    <div className="pointer-events-none absolute inset-x-0 top-0 z-[1000] flex justify-center px-3 pt-3 sm:px-4 sm:pt-4">
+      <div className="pointer-events-auto w-full max-w-2xl rounded-2xl border border-slate-200/80 bg-white/95 shadow-lg shadow-slate-900/10 ring-1 ring-slate-900/5 backdrop-blur-md">
+        <form
+          className="flex flex-col gap-2.5 p-2.5 sm:flex-row sm:items-center sm:gap-2 sm:p-3"
+          onSubmit={async (event) => {
+            event.preventDefault();
+            setPlaceDetail("");
+            const trimmed = searchQuery.trim();
+            if (matchedStateFromQuery) {
+              onSelectedStateChange(matchedStateFromQuery);
+            }
+            const nextSelectedState = matchedStateFromQuery || selectedState;
+            const syncedFiltered = computeFilteredCases(cases, searchQuery, nextSelectedState);
+            const stateLabelForFallback =
+              nextSelectedState && normalizeValue(nextSelectedState) !== "all"
+                ? nextSelectedState
+                : matchedStateFromQuery || "";
+
+            const moved = focusMapFromFilter(map, syncedFiltered, {
+              stateLabel: stateLabelForFallback,
+              useStateFallback: true
+            });
+
+            if (moved) {
+              setPlaceStatus("idle");
+              return;
+            }
+
+            if (!trimmed) {
+              setPlaceStatus("idle");
+              return;
+            }
+
+            setPlaceStatus("loading");
+            try {
+              const geo = await geocodePlaceIndia(trimmed);
+              if (geo) {
+                map.setView([geo.lat, geo.lon], Math.min(geo.zoom, map.getMaxZoom()));
+                setPlaceStatus("ok");
+                setPlaceDetail(geo.label);
+              } else {
+                setPlaceStatus("error");
+                setPlaceDetail(
+                  t("heatmap.placeNotFound", "No matching place found in India. Try another spelling.")
+                );
+              }
+            } catch {
+              setPlaceStatus("error");
+              setPlaceDetail(
+                t("heatmap.placeSearchFailed", "Place search unavailable. Check your connection and try again.")
+              );
+            }
+          }}
         >
-          <option value="all">{t("heatmap.allStates", "All states")}</option>
-          {INDIA_STATES.map((stateName) => (
-            <option key={stateName} value={stateName}>
-              {stateName}
-            </option>
-          ))}
-        </select>
-        <div className="flex items-center gap-2 sm:ml-auto">
-          <button
-            type="submit"
-            className="flex-1 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100 sm:flex-none"
-          >
-            {t("common.search", "Search")}
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              onSearchQueryChange("");
-              onSelectedStateChange("all");
-              map.fitBounds(INDIA_BOUNDS, { padding: [20, 20] });
+          <div className="relative min-w-0 flex-1">
+            <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
+              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path
+                  d="M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z"
+                  stroke="currentColor"
+                  strokeWidth="1.75"
+                />
+                <path d="M16.5 16.5 21 21" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+              </svg>
+            </span>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(event) => {
+                onSearchQueryChange(event.target.value);
+                setPlaceStatus("idle");
+                setPlaceDetail("");
+              }}
+              placeholder={t(
+                "heatmap.searchPlaceholder",
+                "Search city, village, owner, state, or status"
+              )}
+              className="w-full rounded-full border border-slate-200 bg-slate-50/80 py-2.5 pl-10 pr-4 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-emerald-300 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+              autoComplete="off"
+            />
+          </div>
+          <select
+            value={selectedState}
+            onChange={(event) => {
+              onSelectedStateChange(event.target.value);
+              setPlaceStatus("idle");
+              setPlaceDetail("");
             }}
-            className="flex-1 rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 sm:flex-none"
+            className="w-full shrink-0 rounded-full border border-slate-200 bg-slate-50/80 py-2.5 pl-3 pr-8 text-sm text-slate-800 outline-none transition focus:border-emerald-300 focus:bg-white focus:ring-2 focus:ring-emerald-100 sm:w-[min(42vw,220px)] md:w-56"
           >
-            {t("common.reset", "Reset")}
-          </button>
+            <option value="all">{t("heatmap.allStates", "All states")}</option>
+            {INDIA_STATES.map((stateName) => (
+              <option key={stateName} value={stateName}>
+                {stateName}
+              </option>
+            ))}
+          </select>
+          <div className="flex items-center justify-center gap-2 sm:ml-auto sm:justify-end">
+            <button
+              type="submit"
+              disabled={placeStatus === "loading"}
+              className="inline-flex min-h-[40px] min-w-[40px] flex-1 items-center justify-center rounded-full bg-emerald-600 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60 sm:flex-none sm:px-6"
+            >
+              {placeStatus === "loading"
+                ? t("heatmap.searching", "Searching…")
+                : t("common.search", "Search")}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                onSearchQueryChange("");
+                onSelectedStateChange("all");
+                setPlaceStatus("idle");
+                setPlaceDetail("");
+                map.fitBounds(INDIA_BOUNDS, { padding: [20, 20] });
+              }}
+              className="inline-flex min-h-[40px] min-w-[40px] flex-1 items-center justify-center rounded-full border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-600 shadow-sm transition hover:bg-slate-50 sm:flex-none"
+            >
+              {t("common.reset", "Reset")}
+            </button>
+          </div>
+        </form>
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 px-3 py-2 text-xs sm:px-4">
+          <p className="font-medium text-slate-500">
+            {t("heatmap.matchingPins", "Matching pins")}:{" "}
+            <span className="text-slate-800">{filteredCases.length}</span>
+          </p>
+          {placeStatus === "ok" && placeDetail ? (
+            <p className="text-emerald-700">
+              {t("heatmap.placeLocated", "Showing")}: <span className="font-semibold">{placeDetail}</span>
+            </p>
+          ) : null}
+          {placeStatus === "error" && placeDetail ? (
+            <p className="max-w-[min(100%,20rem)] text-right text-amber-800">{placeDetail}</p>
+          ) : null}
         </div>
-      </form>
-      <div className="mt-2 px-1">
-        <p className="text-[11px] text-slate-500">
-          {t("heatmap.matchingPins", "Matching pins")}: {filteredCases.length}
-        </p>
       </div>
     </div>
   );
