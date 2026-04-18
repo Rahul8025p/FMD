@@ -3,7 +3,6 @@ import { useLocation, useNavigate } from "react-router-dom";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { useI18n } from "../i18n/I18nProvider";
-import LanguageSwitcher from "../components/LanguageSwitcher";
 import PageFooter from "../components/PageFooter";
 
 export default function Result() {
@@ -90,7 +89,6 @@ export default function Result() {
                 {t("result.title", "Cattle Health Result")}
               </h2>
             </div>
-            <LanguageSwitcher compact />
             <button
               onClick={() => navigate("/analyze")}
               className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"

@@ -12,7 +12,6 @@ import L from "leaflet";
 import "leaflet.markercluster";
 import { api } from "../services/api";
 import { useI18n } from "../i18n/I18nProvider";
-import LanguageSwitcher from "../components/LanguageSwitcher";
 import PageFooter from "../components/PageFooter";
 
 const INDIA_CENTER = [22.9734, 78.6569];
@@ -829,7 +828,6 @@ export default function AdminHeatmap() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <LanguageSwitcher compact />
             <button
               onClick={() => {
                 localStorage.clear();

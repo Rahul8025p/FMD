@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { login } from "../services/auth";
 import { runSilentGeoLanguageDetection } from "../services/language";
 import { useI18n } from "../i18n/I18nProvider";
-import LanguageSwitcher from "../components/LanguageSwitcher";
 import PageFooter from "../components/PageFooter";
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -110,9 +109,6 @@ export default function Login() {
             >
               {t("common.back", "Back")}
             </button>
-          </div>
-          <div className="mb-3">
-            <LanguageSwitcher compact />
           </div>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">{t("login.welcomeBack", "Welcome back")}</p>
           <h1 className="mt-2 text-3xl font-bold text-slate-800">{t("auth.signInTitle", "Sign in to your farm dashboard")}</h1>

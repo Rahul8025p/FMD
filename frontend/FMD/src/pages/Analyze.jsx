@@ -2,7 +2,6 @@ import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../services/api";
 import { useI18n } from "../i18n/I18nProvider";
-import LanguageSwitcher from "../components/LanguageSwitcher";
 import PageFooter from "../components/PageFooter";
 
 export default function Analyze() {
@@ -251,9 +250,6 @@ export default function Analyze() {
             </button>
             {menuOpen && (
               <div className="absolute right-0 mt-2 w-52 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg">
-                <div className="px-4 py-2">
-                  <LanguageSwitcher compact />
-                </div>
                 <div className="px-4 py-3 text-sm text-slate-700">
                   <p className="font-medium">{userName}</p>
                 </div>

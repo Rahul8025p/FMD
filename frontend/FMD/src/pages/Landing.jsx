@@ -1,7 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { useI18n } from "../i18n/I18nProvider";
-import LanguageSwitcher from "../components/LanguageSwitcher";
 import PageFooter from "../components/PageFooter";
 
 export default function Landing() {
@@ -45,7 +44,6 @@ export default function Landing() {
           </span>
         </div>
         <div className="flex items-center gap-3">
-          <LanguageSwitcher compact />
           <button
             onClick={() => navigate("/admin/login")}
             className="rounded-md px-4 py-2 text-sm font-medium text-slate-700 hover:underline"

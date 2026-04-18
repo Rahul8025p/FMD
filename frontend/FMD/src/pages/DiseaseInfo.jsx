@@ -1,6 +1,5 @@
 import { useNavigate } from "react-router-dom";
 import { useI18n } from "../i18n/I18nProvider";
-import LanguageSwitcher from "../components/LanguageSwitcher";
 import PageFooter from "../components/PageFooter";
 
 export default function DiseaseInfo() {
@@ -29,9 +28,6 @@ export default function DiseaseInfo() {
             >
               {t("common.back", "Go back")}
             </button>
-          </div>
-          <div className="mt-3">
-            <LanguageSwitcher compact />
           </div>
         </header>
 

@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../services/api";
 import { useI18n } from "../i18n/I18nProvider";
-import LanguageSwitcher from "../components/LanguageSwitcher";
 import PageFooter from "../components/PageFooter";
 
 const API_HOST = "http://localhost:5000";
@@ -112,7 +111,6 @@ export default function AdminDashboard() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <LanguageSwitcher compact />
             <button
               onClick={handleLogout}
               className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-medium text-red-700 transition hover:bg-red-100"

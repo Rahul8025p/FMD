@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { register } from "../services/auth";
 import { useI18n } from "../i18n/I18nProvider";
-import LanguageSwitcher from "../components/LanguageSwitcher";
 import PageFooter from "../components/PageFooter";
 
 const passwordRegex =
@@ -100,9 +99,6 @@ export default function Signup() {
             >
               {t("common.back", "Back")}
             </button>
-          </div>
-          <div className="mb-3">
-            <LanguageSwitcher compact />
           </div>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">{t("signup.createAccountTag", "Create account")}</p>
           <h1 className="mt-2 text-3xl font-bold text-slate-800">{t("auth.signUpTitle", "Start managing herd health smarter")}</h1>

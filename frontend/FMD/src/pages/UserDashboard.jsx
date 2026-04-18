@@ -3,9 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { api } from "../services/api";
 import { useI18n } from "../i18n/I18nProvider";
-import LanguageSwitcher from "../components/LanguageSwitcher";
 import PageFooter from "../components/PageFooter";
-import { saveLanguagePreference } from "../services/language";
 
 export default function UserDashboard() {
   const navigate = useNavigate();
@@ -155,18 +153,6 @@ export default function UserDashboard() {
             </span>
           </div>
           <div className="relative">
-            <div className="mb-2 text-right">
-              <LanguageSwitcher
-                compact
-                onChange={async (lang) => {
-                  try {
-                    await saveLanguagePreference(lang);
-                  } catch {
-                    // Keep UI responsive even if preference sync fails.
-                  }
-                }}
-              />
-            </div>
             <button
               type="button"
               onClick={() => setMenuOpen(!menuOpen)}

@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { login } from "../services/auth";
-import LanguageSwitcher from "../components/LanguageSwitcher";
 import { useI18n } from "../i18n/I18nProvider";
 import PageFooter from "../components/PageFooter";
 
@@ -56,9 +55,6 @@ export default function AdminLogin() {
           >
             {t("common.back", "Back")}
           </button>
-        </div>
-        <div className="mb-3">
-          <LanguageSwitcher compact />
         </div>
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">
           {t("adminLogin.access", "Admin Access")}

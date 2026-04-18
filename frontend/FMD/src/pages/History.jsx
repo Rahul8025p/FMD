@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../services/api";
 import { useI18n } from "../i18n/I18nProvider";
-import LanguageSwitcher from "../components/LanguageSwitcher";
 import PageFooter from "../components/PageFooter";
 
 export default function History() {
@@ -99,9 +98,6 @@ export default function History() {
             >
               {t("history.backDashboard", "Back to dashboard")}
             </button>
-          </div>
-          <div className="mt-3">
-            <LanguageSwitcher compact />
           </div>
 
           {/* Search + filters */}
