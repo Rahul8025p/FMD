@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   MapContainer,
@@ -19,6 +19,82 @@ const INDIA_BOUNDS = [
   [6, 68],
   [38.5, 97.5]
 ];
+const INDIA_STATES = [
+  "Andhra Pradesh",
+  "Arunachal Pradesh",
+  "Assam",
+  "Bihar",
+  "Chhattisgarh",
+  "Goa",
+  "Gujarat",
+  "Haryana",
+  "Himachal Pradesh",
+  "Jharkhand",
+  "Karnataka",
+  "Kerala",
+  "Madhya Pradesh",
+  "Maharashtra",
+  "Manipur",
+  "Meghalaya",
+  "Mizoram",
+  "Nagaland",
+  "Odisha",
+  "Punjab",
+  "Rajasthan",
+  "Sikkim",
+  "Tamil Nadu",
+  "Telangana",
+  "Tripura",
+  "Uttar Pradesh",
+  "Uttarakhand",
+  "West Bengal",
+  "Andaman and Nicobar Islands",
+  "Chandigarh",
+  "Dadra and Nagar Haveli and Daman and Diu",
+  "Delhi",
+  "Jammu and Kashmir",
+  "Ladakh",
+  "Lakshadweep",
+  "Puducherry"
+];
+const STATE_VIEW_CENTERS = {
+  "Andhra Pradesh": { center: [15.9129, 79.74], zoom: 7 },
+  "Arunachal Pradesh": { center: [28.218, 94.7278], zoom: 7 },
+  Assam: { center: [26.2006, 92.9376], zoom: 7 },
+  Bihar: { center: [25.0961, 85.3131], zoom: 7 },
+  Chhattisgarh: { center: [21.2787, 81.8661], zoom: 7 },
+  Goa: { center: [15.2993, 74.124], zoom: 9 },
+  Gujarat: { center: [22.2587, 71.1924], zoom: 7 },
+  Haryana: { center: [29.0588, 76.0856], zoom: 8 },
+  "Himachal Pradesh": { center: [31.1048, 77.1734], zoom: 8 },
+  Jharkhand: { center: [23.6102, 85.2799], zoom: 8 },
+  Karnataka: { center: [15.3173, 75.7139], zoom: 7 },
+  Kerala: { center: [10.8505, 76.2711], zoom: 8 },
+  "Madhya Pradesh": { center: [22.9734, 78.6569], zoom: 7 },
+  Maharashtra: { center: [19.7515, 75.7139], zoom: 7 },
+  Manipur: { center: [24.6637, 93.9063], zoom: 8 },
+  Meghalaya: { center: [25.467, 91.3662], zoom: 8 },
+  Mizoram: { center: [23.1645, 92.9376], zoom: 8 },
+  Nagaland: { center: [26.1584, 94.5624], zoom: 8 },
+  Odisha: { center: [20.9517, 85.0985], zoom: 7 },
+  Punjab: { center: [31.1471, 75.3412], zoom: 8 },
+  Rajasthan: { center: [27.0238, 74.2179], zoom: 7 },
+  Sikkim: { center: [27.533, 88.5122], zoom: 9 },
+  "Tamil Nadu": { center: [11.1271, 78.6569], zoom: 7 },
+  Telangana: { center: [18.1124, 79.0193], zoom: 7 },
+  Tripura: { center: [23.9408, 91.9882], zoom: 8 },
+  "Uttar Pradesh": { center: [26.8467, 80.9462], zoom: 7 },
+  Uttarakhand: { center: [30.0668, 79.0193], zoom: 8 },
+  "West Bengal": { center: [22.9868, 87.855], zoom: 7 },
+  "Andaman and Nicobar Islands": { center: [11.7401, 92.6586], zoom: 7 },
+  Chandigarh: { center: [30.7333, 76.7794], zoom: 10 },
+  "Dadra and Nagar Haveli and Daman and Diu": { center: [20.3974, 72.8328], zoom: 9 },
+  Delhi: { center: [28.7041, 77.1025], zoom: 10 },
+  "Jammu and Kashmir": { center: [33.7782, 76.5762], zoom: 7 },
+  Ladakh: { center: [34.2996, 78.2932], zoom: 7 },
+  Lakshadweep: { center: [10.5667, 72.6417], zoom: 8 },
+  Puducherry: { center: [11.9416, 79.8083], zoom: 10 }
+};
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -42,12 +118,16 @@ function IconButton({ title, children, onClick }) {
   );
 }
 
+function normalizeValue(value) {
+  return String(value ?? "").trim().toLowerCase();
+}
+
 function MapZoomControls() {
   const map = useMap();
   const { t } = useI18n();
-  const { onZoomIn, onZoomOut, onExpand } = map.options || {};
+  const { onZoomIn, onZoomOut } = map.options || {};
   return (
-    <div className="absolute right-3 top-3 z-[1000] flex flex-col gap-2">
+    <div className="absolute bottom-4 right-3 z-[1000] flex flex-col gap-2">
       <IconButton
         title={t("heatmap.zoomIn", "Zoom in")}
         onClick={() => {
@@ -66,9 +146,130 @@ function MapZoomControls() {
       >
         <span className="text-lg leading-none">−</span>
       </IconButton>
-      <IconButton title={t("heatmap.expandMap", "Expand map")} onClick={() => onExpand?.()}>
-        <span className="text-base leading-none">⤢</span>
-      </IconButton>
+    </div>
+  );
+}
+
+function MapSearchControls({ cases, searchQuery, selectedState, onSearchQueryChange, onSelectedStateChange }) {
+  const map = useMap();
+  const { t } = useI18n();
+  const normalizedQuery = normalizeValue(searchQuery);
+  const normalizedState = normalizeValue(selectedState);
+  const matchedStateFromQuery = INDIA_STATES.find((stateName) => normalizeValue(stateName) === normalizedQuery);
+  const stateFromDropdown = INDIA_STATES.find((stateName) => normalizeValue(stateName) === normalizedState);
+  const activeStateName = stateFromDropdown || matchedStateFromQuery || "";
+  const effectiveStateFilter =
+    normalizedState && normalizedState !== "all"
+      ? normalizedState
+      : matchedStateFromQuery
+        ? normalizeValue(matchedStateFromQuery)
+        : "all";
+
+  const filteredCases = useMemo(() => {
+    return (cases || []).filter((item) => {
+      const stateMatches =
+        !effectiveStateFilter ||
+        effectiveStateFilter === "all" ||
+        normalizeValue(item?.region).includes(effectiveStateFilter);
+
+      if (!stateMatches) return false;
+      if (!normalizedQuery || normalizeValue(item?.region).includes(normalizedQuery)) return true;
+
+      const searchable = [
+        item?.ownerName,
+        item?.region,
+        item?.prediction
+      ]
+        .map((part) => normalizeValue(part))
+        .join(" ");
+
+      return searchable.includes(normalizedQuery);
+    });
+  }, [cases, effectiveStateFilter, normalizedQuery]);
+
+  const focusOnFilteredCases = ({ includeStateFallback = false } = {}) => {
+    if (!filteredCases.length) {
+      if (includeStateFallback && activeStateName) {
+        const preset = STATE_VIEW_CENTERS[activeStateName];
+        if (preset) {
+          map.setView(preset.center, Math.min(preset.zoom, map.getMaxZoom()));
+        }
+      }
+      return;
+    }
+
+    const points = filteredCases
+      .filter((item) => Number.isFinite(item?.latitude) && Number.isFinite(item?.longitude))
+      .map((item) => [item.latitude, item.longitude]);
+
+    if (!points.length) return;
+    if (points.length === 1) {
+      map.setView(points[0], Math.min(12, map.getMaxZoom()));
+      return;
+    }
+    map.fitBounds(points, { padding: [34, 34], maxZoom: Math.min(12, map.getMaxZoom()) });
+  };
+
+  useEffect(() => {
+    focusOnFilteredCases({ includeStateFallback: false });
+  }, [filteredCases]);
+
+  return (
+    <div className="absolute left-3 right-3 top-3 z-[1000] max-w-[760px] rounded-xl border border-slate-200 bg-white/95 p-2 shadow-sm backdrop-blur">
+      <form
+        className="flex flex-col gap-2 sm:flex-row sm:items-center"
+        onSubmit={(event) => {
+          event.preventDefault();
+          if (matchedStateFromQuery) {
+            onSelectedStateChange(matchedStateFromQuery);
+          }
+          focusOnFilteredCases({ includeStateFallback: true });
+        }}
+      >
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(event) => onSearchQueryChange(event.target.value)}
+          placeholder={t("heatmap.searchPlaceholder", "Search places, owner, state, or status")}
+          className="w-full min-w-0 flex-1 rounded-full border border-slate-300 bg-white px-4 py-2 text-xs text-slate-700 outline-none transition focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 sm:min-w-[220px]"
+        />
+        <select
+          value={selectedState}
+          onChange={(event) => onSelectedStateChange(event.target.value)}
+          className="w-full rounded-full border border-slate-300 bg-white px-3 py-2 text-xs text-slate-700 outline-none transition focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 sm:w-auto sm:min-w-[190px]"
+        >
+          <option value="all">{t("heatmap.allStates", "All states")}</option>
+          {INDIA_STATES.map((stateName) => (
+            <option key={stateName} value={stateName}>
+              {stateName}
+            </option>
+          ))}
+        </select>
+        <div className="flex items-center gap-2 sm:ml-auto">
+          <button
+            type="submit"
+            className="flex-1 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100 sm:flex-none"
+          >
+            {t("common.search", "Search")}
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              onSearchQueryChange("");
+              onSelectedStateChange("all");
+              map.fitBounds(INDIA_BOUNDS, { padding: [20, 20] });
+            }}
+            className="flex-1 rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 sm:flex-none"
+          >
+            {t("common.reset", "Reset")}
+          </button>
+        </div>
+      </form>
+      <div className="mt-2 px-1">
+        <p className="text-[11px] text-slate-500">
+          {t("heatmap.matchingPins", "Matching pins")}: {filteredCases.length}
+        </p>
+      </div>
     </div>
   );
 }
@@ -79,18 +280,6 @@ function MapAutoResize({ expanded }) {
     const t = setTimeout(() => map.invalidateSize(), 50);
     return () => clearTimeout(t);
   }, [expanded, map]);
-  return null;
-}
-
-function MapExpandOnZoom({ onExpand }) {
-  const map = useMap();
-  useEffect(() => {
-    const handler = () => onExpand?.();
-    map.on("zoomstart", handler);
-    return () => {
-      map.off("zoomstart", handler);
-    };
-  }, [map, onExpand]);
   return null;
 }
 
@@ -208,6 +397,11 @@ function MapPanel({
 }) {
   const { t } = useI18n();
   const [mobileLegendOpen, setMobileLegendOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedState, setSelectedState] = useState("all");
+  const isBW = basemapMode === "bw";
+  const mapMaxZoom = isBW ? 18 : 13;
+  const mapMinZoom = 4;
 
   return (
     <>
@@ -272,15 +466,12 @@ function MapPanel({
                 <MapContainer
                   center={INDIA_CENTER}
                   zoom={5}
-                  minZoom={3}
-                  maxZoom={14}
+                  minZoom={mapMinZoom}
+                  maxZoom={mapMaxZoom}
                   maxBounds={INDIA_BOUNDS}
                   maxBoundsViscosity={0.8}
                   zoomControl={false}
                   className="h-full w-full"
-                  onExpand={() => onSetExpanded(true)}
-                  onZoomIn={() => onSetExpanded(true)}
-                  onZoomOut={() => onSetExpanded(true)}
                   scrollWheelZoom
                   dragging
                   touchZoom
@@ -298,12 +489,18 @@ function MapPanel({
                         : "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"
                     }
                     detectRetina={basemapMode === "bw"}
-                    maxZoom={14}
-                    maxNativeZoom={18}
+                    maxZoom={mapMaxZoom}
+                    maxNativeZoom={isBW ? 18 : 13}
+                  />
+                  <MapSearchControls
+                    cases={cases}
+                    searchQuery={searchQuery}
+                    selectedState={selectedState}
+                    onSearchQueryChange={setSearchQuery}
+                    onSelectedStateChange={setSelectedState}
                   />
                   <MapZoomControls />
                   <MapAutoResize expanded={expanded} />
-                  <MapExpandOnZoom onExpand={() => onSetExpanded(true)} />
                   <ClusteredCasesLayer cases={cases} basemapMode={basemapMode} />
                 </MapContainer>
               </div>
