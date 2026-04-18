@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { useI18n } from "../i18n/I18nProvider";
 import LanguageSwitcher from "../components/LanguageSwitcher";
+import PageFooter from "../components/PageFooter";
 
 export default function Landing() {
   const navigate = useNavigate();
@@ -24,7 +25,8 @@ export default function Landing() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-emerald-50 via-white to-lime-50">
+    <div className="flex min-h-screen flex-col bg-gradient-to-b from-emerald-50 via-white to-lime-50">
+      <div className="flex-1">
       {/* Header */}
       <header className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
         <div className="flex items-center gap-3">
@@ -181,6 +183,8 @@ export default function Landing() {
           </div>
         </div>
       </section>
+      </div>
+      <PageFooter variant="public" />
     </div>
   );
 }

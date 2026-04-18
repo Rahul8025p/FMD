@@ -4,6 +4,7 @@ import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { useI18n } from "../i18n/I18nProvider";
 import LanguageSwitcher from "../components/LanguageSwitcher";
+import PageFooter from "../components/PageFooter";
 
 export default function Result() {
   const { state } = useLocation();
@@ -15,8 +16,9 @@ export default function Result() {
 
   if (!state?.result) {
     return (
-      <div className="min-h-screen bg-slate-50 px-4 py-10 sm:px-6">
-        <div className="mx-auto max-w-xl rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm">
+      <div className="flex min-h-screen flex-col bg-slate-50">
+        <div className="flex flex-1 items-center px-4 py-10 sm:px-6">
+        <div className="mx-auto w-full max-w-xl rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm">
           <p className="text-slate-600">{t("result.notFound", "No analysis result found.")}</p>
           <button
             className="mt-4 rounded-lg bg-emerald-700 px-4 py-2 font-medium text-white transition hover:bg-emerald-800"
@@ -25,6 +27,8 @@ export default function Result() {
             {t("result.goAnalyze", "Go to Analyze")}
           </button>
         </div>
+        </div>
+        <PageFooter variant="user" />
       </div>
     );
   }
@@ -74,8 +78,8 @@ export default function Result() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-lime-50 via-emerald-50 to-white px-4 py-6 sm:px-6 md:py-10">
-      <div className="mx-auto w-full max-w-5xl space-y-6">
+    <div className="flex min-h-screen flex-col bg-gradient-to-br from-lime-50 via-emerald-50 to-white px-4 py-6 sm:px-6 md:py-10">
+      <div className="mx-auto w-full max-w-5xl flex-1 space-y-6">
         <div className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
@@ -189,6 +193,7 @@ export default function Result() {
         </div>
         </div>
       </div>
+      <PageFooter variant="user" />
     </div>
   );
 }

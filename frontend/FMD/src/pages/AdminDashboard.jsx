@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { api } from "../services/api";
 import { useI18n } from "../i18n/I18nProvider";
 import LanguageSwitcher from "../components/LanguageSwitcher";
+import PageFooter from "../components/PageFooter";
 
 const API_HOST = "http://localhost:5000";
 
@@ -91,7 +92,7 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-100 via-emerald-50 to-white">
+    <div className="flex min-h-screen flex-col bg-gradient-to-br from-slate-100 via-emerald-50 to-white">
       <header className="sticky top-0 z-10 border-b border-emerald-100 bg-white/95 px-4 py-3 backdrop-blur sm:px-6">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
           <div className="flex items-center gap-3">
@@ -122,7 +123,7 @@ export default function AdminDashboard() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 md:py-10">
+      <main className="mx-auto max-w-7xl flex-1 px-4 py-6 sm:px-6 md:py-10">
         <section className="mb-6 rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">
             {t("admin.dashboardTag", "Admin Dashboard")}
@@ -357,6 +358,7 @@ export default function AdminDashboard() {
           </>
         )}
       </main>
+      <PageFooter variant="admin" />
     </div>
   );
 }

@@ -1,14 +1,15 @@
 import { useNavigate } from "react-router-dom";
 import { useI18n } from "../i18n/I18nProvider";
 import LanguageSwitcher from "../components/LanguageSwitcher";
+import PageFooter from "../components/PageFooter";
 
 export default function DiseaseInfo() {
   const navigate = useNavigate();
   const { t } = useI18n();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-lime-50 via-emerald-50 to-white px-4 py-6 sm:px-6 md:py-10">
-      <div className="mx-auto max-w-6xl space-y-6">
+    <div className="flex min-h-screen flex-col bg-gradient-to-br from-lime-50 via-emerald-50 to-white px-4 py-6 sm:px-6 md:py-10">
+      <div className="mx-auto max-w-6xl flex-1 space-y-6">
         <header className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
@@ -98,6 +99,7 @@ export default function DiseaseInfo() {
           </div>
         </section>
       </div>
+      <PageFooter variant="public" />
     </div>
   );
 }

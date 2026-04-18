@@ -13,6 +13,7 @@ import "leaflet.markercluster";
 import { api } from "../services/api";
 import { useI18n } from "../i18n/I18nProvider";
 import LanguageSwitcher from "../components/LanguageSwitcher";
+import PageFooter from "../components/PageFooter";
 
 const INDIA_CENTER = [22.9734, 78.6569];
 const INDIA_BOUNDS = [
@@ -809,7 +810,7 @@ export default function AdminHeatmap() {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-100 via-emerald-50 to-white">
+    <div className="flex min-h-screen flex-col bg-gradient-to-br from-slate-100 via-emerald-50 to-white">
       <header className="sticky top-0 z-20 border-b border-emerald-100 bg-white/95 px-4 py-3 backdrop-blur sm:px-6">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
@@ -842,7 +843,7 @@ export default function AdminHeatmap() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 md:py-8">
+      <main className="mx-auto max-w-7xl flex-1 px-4 py-6 sm:px-6 md:py-8">
         <section className="mb-4 rounded-2xl border border-emerald-100 bg-white p-4 shadow-sm sm:p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
             {t("heatmap.consoleTag", "Monitoring Console")}
@@ -892,7 +893,7 @@ export default function AdminHeatmap() {
           )}
         </section>
       </main>
-
+      <PageFooter variant="admin" />
     </div>
   );
 }

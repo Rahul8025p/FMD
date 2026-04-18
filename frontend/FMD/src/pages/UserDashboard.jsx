@@ -4,6 +4,7 @@ import axios from "axios";
 import { api } from "../services/api";
 import { useI18n } from "../i18n/I18nProvider";
 import LanguageSwitcher from "../components/LanguageSwitcher";
+import PageFooter from "../components/PageFooter";
 import { saveLanguagePreference } from "../services/language";
 
 export default function UserDashboard() {
@@ -74,7 +75,8 @@ export default function UserDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 px-6 py-10">
+      <div className="flex min-h-screen flex-col bg-slate-50">
+        <div className="flex-1 px-6 py-10">
         <div className="mx-auto max-w-6xl">
           <div className="mb-6 flex items-center justify-between">
             <div className="h-8 w-36 animate-pulse rounded-md bg-slate-200" />
@@ -87,6 +89,8 @@ export default function UserDashboard() {
           </div>
           <div className="mt-6 h-40 animate-pulse rounded-xl bg-slate-200" />
         </div>
+        </div>
+        <PageFooter variant="user" />
       </div>
     );
   }
@@ -131,7 +135,7 @@ export default function UserDashboard() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-lime-50 via-emerald-50 to-white">
+    <div className="flex min-h-screen flex-col bg-gradient-to-br from-lime-50 via-emerald-50 to-white">
       {/* Header */}
       <header className="sticky top-0 z-10 border-b border-emerald-100 bg-white/95 px-4 py-3 backdrop-blur sm:px-6">
         <div className="mx-auto flex max-w-6xl items-center justify-between">
@@ -203,7 +207,7 @@ export default function UserDashboard() {
       </header>
 
       {/* Content */}
-      <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:py-12">
+      <main className="mx-auto max-w-6xl flex-1 px-4 py-8 sm:px-6 lg:py-12">
         <div className="mb-8">
           <h2 className="text-2xl font-semibold text-slate-800">
             {t("user.welcome", "Welcome")}, {user?.name} 🌾
@@ -472,6 +476,7 @@ export default function UserDashboard() {
           </div>
         </section>
       </main>
+      <PageFooter variant="user" />
     </div>
   );
 }

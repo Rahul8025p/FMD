@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { register } from "../services/auth";
 import { useI18n } from "../i18n/I18nProvider";
 import LanguageSwitcher from "../components/LanguageSwitcher";
+import PageFooter from "../components/PageFooter";
 
 const passwordRegex =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
@@ -88,8 +89,8 @@ export default function Signup() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-lime-50 to-emerald-100 px-4 py-6 sm:px-6 md:py-10">
-      <div className="mx-auto grid w-full max-w-6xl overflow-hidden rounded-3xl border border-emerald-100 bg-white shadow-xl lg:grid-cols-2">
+    <div className="flex min-h-screen flex-col bg-gradient-to-br from-amber-50 via-lime-50 to-emerald-100 px-4 py-6 sm:px-6 md:py-10">
+      <div className="mx-auto grid w-full max-w-6xl flex-1 overflow-hidden rounded-3xl border border-emerald-100 bg-white shadow-xl lg:grid-cols-2">
         <section className="px-5 py-6 sm:px-8 sm:py-8 md:px-10 lg:px-12 lg:py-10">
           <div className="mb-3">
             <button
@@ -267,6 +268,7 @@ export default function Signup() {
           </div>
         </aside>
       </div>
+      <PageFooter variant="auth" />
     </div>
   );
 }

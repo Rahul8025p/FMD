@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useI18n } from "../i18n/I18nProvider";
 import { saveLanguagePreference } from "../services/language";
+import PageFooter from "../components/PageFooter";
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -97,19 +98,22 @@ export default function Profile() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 px-4 py-8 sm:px-6">
+      <div className="flex min-h-screen flex-col bg-slate-50">
+        <div className="flex-1 px-4 py-8 sm:px-6">
         <div className="mx-auto max-w-4xl space-y-4">
           <div className="h-10 w-40 animate-pulse rounded bg-slate-200" />
           <div className="h-44 animate-pulse rounded-2xl bg-slate-200" />
           <div className="h-72 animate-pulse rounded-2xl bg-slate-200" />
         </div>
+        </div>
+        <PageFooter variant="user" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-lime-50 via-emerald-50 to-white px-4 py-6 sm:px-6 md:py-10">
-      <div className="mx-auto max-w-4xl space-y-6">
+    <div className="flex min-h-screen flex-col bg-gradient-to-br from-lime-50 via-emerald-50 to-white px-4 py-6 sm:px-6 md:py-10">
+      <div className="mx-auto max-w-4xl flex-1 space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">
@@ -244,6 +248,7 @@ export default function Profile() {
           </form>
         </section>
       </div>
+      <PageFooter variant="user" />
     </div>
   );
 }

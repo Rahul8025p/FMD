@@ -4,6 +4,7 @@ import { login } from "../services/auth";
 import { runSilentGeoLanguageDetection } from "../services/language";
 import { useI18n } from "../i18n/I18nProvider";
 import LanguageSwitcher from "../components/LanguageSwitcher";
+import PageFooter from "../components/PageFooter";
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -72,8 +73,8 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-lime-100 via-emerald-50 to-stone-100 px-4 py-6 sm:px-6 md:py-10">
-      <div className="mx-auto grid w-full max-w-6xl overflow-hidden rounded-3xl border border-emerald-100 bg-white shadow-xl lg:grid-cols-2">
+    <div className="flex min-h-screen flex-col bg-gradient-to-br from-lime-100 via-emerald-50 to-stone-100 px-4 py-6 sm:px-6 md:py-10">
+      <div className="mx-auto grid w-full max-w-6xl flex-1 overflow-hidden rounded-3xl border border-emerald-100 bg-white shadow-xl lg:grid-cols-2">
         <aside className="relative hidden bg-gradient-to-br from-emerald-800 via-emerald-700 to-lime-700 p-8 text-white lg:flex lg:flex-col lg:justify-between">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.32),transparent_55%)]" />
           <div className="relative">
@@ -237,6 +238,7 @@ export default function Login() {
           </div>
         </section>
       </div>
+      <PageFooter variant="auth" />
     </div>
   );
 }

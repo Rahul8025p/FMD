@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { api } from "../services/api";
 import { useI18n } from "../i18n/I18nProvider";
 import LanguageSwitcher from "../components/LanguageSwitcher";
+import PageFooter from "../components/PageFooter";
 
 export default function Analyze() {
   const navigate = useNavigate();
@@ -225,7 +226,7 @@ export default function Analyze() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-lime-50 via-emerald-50 to-white">
+    <div className="flex min-h-screen flex-col bg-gradient-to-br from-lime-50 via-emerald-50 to-white">
       {/* Header like dashboard */}
       <header className="sticky top-0 z-10 border-b border-emerald-100 bg-white/95 px-4 py-3 backdrop-blur sm:px-6">
         <div className="mx-auto flex max-w-6xl items-center justify-between">
@@ -277,7 +278,7 @@ export default function Analyze() {
         </div>
       </header>
 
-      <div className="px-4 py-6 sm:px-6 md:py-10">
+      <div className="flex-1 px-4 py-6 sm:px-6 md:py-10">
       <div className="mx-auto w-full max-w-3xl overflow-hidden rounded-2xl border border-emerald-100 bg-white shadow-sm">
         {/* Header */}
         <div className="relative bg-gradient-to-r from-emerald-800 via-emerald-700 to-lime-700 px-5 py-7 text-white sm:px-8">
@@ -476,6 +477,7 @@ export default function Analyze() {
         </div>
       </div>
       </div>
+      <PageFooter variant="user" />
     </div>
   );
 }
