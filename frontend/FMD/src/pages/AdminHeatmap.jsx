@@ -10,7 +10,6 @@ import "leaflet.markercluster/dist/MarkerCluster.css";
 import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 import L from "leaflet";
 import "leaflet.markercluster";
-import { api } from "../services/api";
 import { useI18n } from "../i18n/I18nProvider";
 import PageFooter from "../components/PageFooter";
 
@@ -95,6 +94,45 @@ const STATE_VIEW_CENTERS = {
   Lakshadweep: { center: [10.5667, 72.6417], zoom: 8 },
   Puducherry: { center: [11.9416, 79.8083], zoom: 10 }
 };
+
+const STATE_SEVERITY_CONFIG = {
+  critical: { label: "Critical", tone: "bg-red-100 text-red-700 border-red-200", ring: "ring-red-100" },
+  high: { label: "High", tone: "bg-orange-100 text-orange-700 border-orange-200", ring: "ring-orange-100" },
+  moderate: { label: "Moderate", tone: "bg-amber-100 text-amber-700 border-amber-200", ring: "ring-amber-100" },
+  low: { label: "Low", tone: "bg-emerald-100 text-emerald-700 border-emerald-200", ring: "ring-emerald-100" }
+};
+
+const STATE_MOCK_SUMMARY = INDIA_STATES.map((stateName, index) => {
+  const affectedCows = 68 + ((index * 37) % 450);
+  const totalCows = affectedCows + 720 + ((index * 59) % 1300);
+  const ratio = affectedCows / totalCows;
+  let severity = "low";
+  if (ratio >= 0.23) severity = "critical";
+  else if (ratio >= 0.18) severity = "high";
+  else if (ratio >= 0.12) severity = "moderate";
+
+  return {
+    state: stateName,
+    affectedCows,
+    totalCows,
+    unaffectedCows: totalCows - affectedCows,
+    severity,
+    severityLabel: STATE_SEVERITY_CONFIG[severity].label
+  };
+});
+
+const STATE_MOCK_CASES = STATE_MOCK_SUMMARY.map((stateData, index) => {
+  const center = STATE_VIEW_CENTERS[stateData.state]?.center || INDIA_CENTER;
+  return {
+    id: `mock-${index + 1}`,
+    latitude: center[0],
+    longitude: center[1],
+    prediction: stateData.severity === "critical" || stateData.severity === "high" ? "FMD" : "Healthy",
+    ownerName: `${stateData.state} Livestock Board`,
+    createdAt: new Date(Date.now() - index * 3600000).toISOString(),
+    region: stateData.state
+  };
+});
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -292,6 +330,16 @@ function MapSearchBar({
     }
     return totals;
   }, [filteredCases]);
+  const selectedStateKey =
+    selectedState && normalizeValue(selectedState) !== "all"
+      ? selectedState
+      : matchedStateFromQuery || "";
+  const selectedStateInsight = selectedStateKey
+    ? STATE_MOCK_SUMMARY.find((item) => normalizeValue(item.state) === normalizeValue(selectedStateKey))
+    : null;
+  const selectedSeverityConfig = selectedStateInsight
+    ? STATE_SEVERITY_CONFIG[selectedStateInsight.severity]
+    : null;
 
   return (
     <div
@@ -441,6 +489,38 @@ function MapSearchBar({
             </button>
           </div>
         </form>
+        {selectedStateInsight ? (
+          <div className="border-t border-slate-100 px-3 py-3 sm:px-4">
+            <div
+              className={`rounded-xl border bg-white p-3 shadow-sm ring-1 ${selectedSeverityConfig?.ring || "ring-slate-100"}`}
+            >
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-sm font-semibold text-slate-900">{selectedStateInsight.state}</p>
+                <span
+                  className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ${selectedSeverityConfig?.tone || "bg-slate-100 text-slate-700 border-slate-200"}`}
+                >
+                  {selectedStateInsight.severityLabel} severity
+                </span>
+              </div>
+              <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
+                <div className="rounded-lg border border-red-100 bg-red-50 px-3 py-2">
+                  <p className="text-[11px] uppercase tracking-wide text-red-700">Affected cows</p>
+                  <p className="mt-1 text-base font-semibold text-red-800">{selectedStateInsight.affectedCows}</p>
+                </div>
+                <div className="rounded-lg border border-emerald-100 bg-emerald-50 px-3 py-2">
+                  <p className="text-[11px] uppercase tracking-wide text-emerald-700">Unaffected cows</p>
+                  <p className="mt-1 text-base font-semibold text-emerald-800">
+                    {selectedStateInsight.unaffectedCows}
+                  </p>
+                </div>
+                <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+                  <p className="text-[11px] uppercase tracking-wide text-slate-500">Total cows tracked</p>
+                  <p className="mt-1 text-base font-semibold text-slate-800">{selectedStateInsight.totalCows}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : null}
         <div className="border-t border-slate-100 px-3 py-2 sm:px-4">
           <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
             <p className="font-medium text-slate-500">
@@ -732,7 +812,7 @@ function MapPanel({
                     onToggleExpand={() => onSetExpanded((prev) => !prev)}
                   />
                   <MapAutoResize expanded={expanded} />
-                  <ClusteredCasesLayer cases={cases} basemapMode={basemapMode} />
+                  <ClusteredCasesLayer cases={filteredCases} basemapMode={basemapMode} />
                 </MapContainer>
               </div>
 
@@ -791,50 +871,12 @@ export default function AdminHeatmap() {
   }, [mapExpanded]);
 
   useEffect(() => {
-    const loadRealCaseData = async () => {
-      try {
-        setLoading(true);
-        setError("");
-        const res = await api.get("/admin/case-heatmap?limit=500");
-        const incoming = Array.isArray(res.data?.cases) ? res.data.cases : [];
-
-        const normalized = incoming
-          .map((item) => {
-            const latitude = Number(item?.location?.latitude);
-            const longitude = Number(item?.location?.longitude);
-            if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
-              return null;
-            }
-
-            return {
-              id: item.id || item._id,
-              latitude,
-              longitude,
-              prediction: item.prediction || "Other",
-              ownerName: item?.report?.ownerName || t("admin.unknownUser", "Unknown user"),
-              createdAt: item.createdAt || new Date().toISOString(),
-              region: item?.report?.region || t("heatmap.india", "India")
-            };
-          })
-          .filter(Boolean);
-
-        setCases(normalized);
-        setLastUpdatedAt(new Date().toLocaleString());
-      } catch (err) {
-        if (err?.response?.status === 401 || err?.response?.status === 403) {
-          localStorage.clear();
-          navigate("/admin/login");
-          return;
-        }
-        setError(t("heatmap.loadError", "Failed to load live case map data. Please restart backend once and try again."));
-        setCases([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadRealCaseData();
-  }, [navigate]);
+    setLoading(true);
+    setError("");
+    setCases(STATE_MOCK_CASES);
+    setLastUpdatedAt(new Date().toLocaleString());
+    setLoading(false);
+  }, []);
 
   return (
     <div className="flex min-h-screen flex-col bg-gradient-to-br from-slate-100 via-emerald-50 to-white">
@@ -851,7 +893,7 @@ export default function AdminHeatmap() {
             <div>
               <p className="text-lg font-semibold text-emerald-800">{t("heatmap.title", "India Case Heatmap")}</p>
               <p className="text-xs text-slate-500">
-                {t("heatmap.operationalSubtitle", "Operational geospatial monitoring view (live DB-backed data).")}
+                {t("heatmap.operationalSubtitle", "Operational geospatial monitoring view (state-wise mock data).")}
               </p>
             </div>
           </div>
