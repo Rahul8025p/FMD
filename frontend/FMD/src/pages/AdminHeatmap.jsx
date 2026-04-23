@@ -106,14 +106,17 @@ const STATE_SEVERITY_CONFIG = {
   low: { label: "Low", tone: "bg-emerald-100 text-emerald-700 border-emerald-200", ring: "ring-emerald-100" }
 };
 
+function getSeverityFromRatio(ratio) {
+  if (ratio >= 0.23) return "critical";
+  if (ratio >= 0.18) return "high";
+  if (ratio >= 0.12) return "moderate";
+  return "low";
+}
+
 const STATE_MOCK_SUMMARY = INDIA_STATES.map((stateName, index) => {
   const affectedCows = 68 + ((index * 37) % 450);
   const totalCows = affectedCows + 720 + ((index * 59) % 1300);
-  const ratio = affectedCows / totalCows;
-  let severity = "low";
-  if (ratio >= 0.23) severity = "critical";
-  else if (ratio >= 0.18) severity = "high";
-  else if (ratio >= 0.12) severity = "moderate";
+  const severity = getSeverityFromRatio(affectedCows / totalCows);
 
   return {
     state: stateName,
@@ -359,9 +362,27 @@ function MapSearchBar({
     selectedState && normalizeValue(selectedState) !== "all"
       ? selectedState
       : matchedStateFromQuery || "";
-  const selectedStateInsight = selectedStateKey
-    ? STATE_MOCK_SUMMARY.find((item) => normalizeValue(item.state) === normalizeValue(selectedStateKey))
-    : null;
+  const selectedStateInsight = useMemo(() => {
+    if (!selectedStateKey) return null;
+    const stateCases = (cases || []).filter(
+      (item) => normalizeValue(item?.region) === normalizeValue(selectedStateKey)
+    );
+    if (!stateCases.length) return null;
+
+    const affectedCows = stateCases.filter((item) => item?.prediction === "FMD").length;
+    const totalCows = stateCases.length;
+    const unaffectedCows = totalCows - affectedCows;
+    const severity = getSeverityFromRatio(totalCows ? affectedCows / totalCows : 0);
+
+    return {
+      state: selectedStateKey,
+      affectedCows,
+      totalCows,
+      unaffectedCows,
+      severity,
+      severityLabel: STATE_SEVERITY_CONFIG[severity].label
+    };
+  }, [cases, selectedStateKey]);
   const selectedSeverityConfig = selectedStateInsight
     ? STATE_SEVERITY_CONFIG[selectedStateInsight.severity]
     : null;
