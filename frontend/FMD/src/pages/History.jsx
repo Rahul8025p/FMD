@@ -263,6 +263,13 @@ export default function History() {
                   <div className="mt-3 text-xs text-slate-500">
                     {t("history.imageStored", "Image stored")}: {item.imageUrl ? t("common.yes", "Yes") : t("common.no", "No")}
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/result?recordId=${encodeURIComponent(item?._id || "")}`)}
+                    className="mt-3 w-full rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100"
+                  >
+                    {t("history.viewDetails", "View full result")}
+                  </button>
                 </article>
               ))}
             </div>

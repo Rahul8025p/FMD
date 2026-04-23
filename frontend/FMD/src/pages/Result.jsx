@@ -1,41 +1,107 @@
-import { useRef, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+import { Circle, MapContainer, TileLayer } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
 import { useI18n } from "../i18n/I18nProvider";
 import PageFooter from "../components/PageFooter";
+import { api } from "../services/api";
+
+function getBoundaryRadiusMeters(severity, confidence) {
+  const normalized = String(severity || "").toLowerCase();
+  const baseBySeverity = normalized.includes("critical") || normalized.includes("severe")
+    ? 5500
+    : normalized.includes("high")
+      ? 3800
+      : normalized.includes("moderate")
+        ? 2400
+        : 1400;
+
+  const confidenceBoost = Math.round((Number(confidence) || 0) * 1200);
+  return baseBySeverity + confidenceBoost;
+}
 
 export default function Result() {
   const { state } = useLocation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { t } = useI18n();
-  const backendHost = "http://localhost:5000";
+  const backendHost = (api.defaults.baseURL || "http://localhost:5000/api").replace(/\/api\/?$/, "");
   const reportRef = useRef(null);
   const [downloading, setDownloading] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [fetchError, setFetchError] = useState("");
+  const [liveData, setLiveData] = useState(null);
+  const recordIdFromQuery = searchParams.get("recordId");
 
-  if (!state?.result) {
+  useEffect(() => {
+    const loadLiveResult = async () => {
+      if (!recordIdFromQuery) return;
+      try {
+        setLoading(true);
+        setFetchError("");
+        const res = await api.get(`/user/result/${encodeURIComponent(recordIdFromQuery)}`);
+        setLiveData(res.data || null);
+      } catch (err) {
+        if (err?.response?.status === 401 || err?.response?.status === 403) {
+          localStorage.clear();
+          navigate("/login");
+          return;
+        }
+        setFetchError(
+          err?.response?.data?.message ||
+            t("result.loadFailed", "Failed to load real-time result details.")
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadLiveResult();
+  }, [navigate, recordIdFromQuery, t]);
+
+  const resolvedPayload = liveData || state || null;
+  const resolvedResult = resolvedPayload?.result || null;
+  const uploadedImage = state?.uploadedImage
+    || (resolvedPayload?.imageUrl ? `${backendHost}${resolvedPayload.imageUrl}` : null);
+
+  if (loading) {
     return (
       <div className="flex min-h-screen flex-col bg-slate-50">
-        <div className="flex flex-1 items-center px-4 py-10 sm:px-6">
-        <div className="mx-auto w-full max-w-xl rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm">
-          <p className="text-slate-600">{t("result.notFound", "No analysis result found.")}</p>
-          <button
-            className="mt-4 rounded-lg bg-emerald-700 px-4 py-2 font-medium text-white transition hover:bg-emerald-800"
-            onClick={() => navigate("/analyze")}
-          >
-            {t("result.goAnalyze", "Go to Analyze")}
-          </button>
-        </div>
+        <div className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-6">
+          <div className="h-48 animate-pulse rounded-2xl border border-slate-200 bg-white" />
         </div>
         <PageFooter variant="user" />
       </div>
     );
   }
 
-  const { disease, confidence, severity, explanation, recommendations } =
-    state.result;
-  const uploadedImage = state.uploadedImage
-    || (state.imageUrl ? `${backendHost}${state.imageUrl}` : null);
+  if (!resolvedResult) {
+    return (
+      <div className="flex min-h-screen flex-col bg-slate-50">
+        <div className="flex flex-1 items-center px-4 py-10 sm:px-6">
+          <div className="mx-auto w-full max-w-xl rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm">
+            <p className="text-slate-600">
+              {fetchError || t("result.notFound", "No analysis result found.")}
+            </p>
+            <button
+              className="mt-4 rounded-lg bg-emerald-700 px-4 py-2 font-medium text-white transition hover:bg-emerald-800"
+              onClick={() => navigate("/analyze")}
+            >
+              {t("result.goAnalyze", "Go to Analyze")}
+            </button>
+          </div>
+        </div>
+        <PageFooter variant="user" />
+      </div>
+    );
+  }
+
+  const { disease, confidence, severity, explanation, recommendations, location } = resolvedResult;
+  const hasLocation =
+    Number.isFinite(Number(location?.latitude)) && Number.isFinite(Number(location?.longitude));
+  const boundaryRadius = getBoundaryRadiusMeters(severity, confidence);
 
   const normalizedDisease = (disease || "").toLowerCase();
   const diseaseStyles = normalizedDisease.includes("fmd")
@@ -148,6 +214,14 @@ export default function Result() {
                 <p className="mt-1 text-base font-medium text-slate-700">{severity || t("common.na", "N/A")}</p>
               </div>
             </div>
+            <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+              <p className="text-xs uppercase tracking-wide text-slate-500">
+                {t("result.dataSource", "Data source")}
+              </p>
+              <p className="mt-1 text-sm font-medium text-slate-700">
+                {t("result.realData", "Live backend record")}
+              </p>
+            </div>
           </section>
         </div>
 
@@ -189,6 +263,43 @@ export default function Result() {
             </p>
           </section>
         </div>
+        {hasLocation ? (
+          <section className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
+            <h4 className="text-base font-semibold text-slate-800">
+              {t("result.affectedBoundary", "Affected region boundary")}
+            </h4>
+            <p className="mt-1 text-sm text-slate-600">
+              {t(
+                "result.affectedBoundaryHelp",
+                "Boundary is estimated from real record location, severity, and confidence."
+              )}
+            </p>
+            <div className="mt-4 overflow-hidden rounded-xl border border-slate-200">
+              <div className="h-72 w-full">
+                <MapContainer
+                  center={[Number(location.latitude), Number(location.longitude)]}
+                  zoom={11}
+                  className="h-full w-full"
+                  scrollWheelZoom
+                >
+                  <TileLayer
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  />
+                  <Circle
+                    center={[Number(location.latitude), Number(location.longitude)]}
+                    radius={boundaryRadius}
+                    pathOptions={{
+                      color: normalizedDisease.includes("fmd") ? "#dc2626" : "#059669",
+                      fillColor: normalizedDisease.includes("fmd") ? "#ef4444" : "#10b981",
+                      fillOpacity: 0.2
+                    }}
+                  />
+                </MapContainer>
+              </div>
+            </div>
+          </section>
+        ) : null}
         </div>
       </div>
       <PageFooter variant="user" />

@@ -206,7 +206,9 @@ export default function Analyze() {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      navigate("/result", { state: { ...res.data, uploadedImage: preview } });
+      navigate(`/result?recordId=${encodeURIComponent(res.data?.imageRecordId || "")}`, {
+        state: { ...res.data, uploadedImage: preview }
+      });
     } catch (err) {
       console.error(err);
       setError(

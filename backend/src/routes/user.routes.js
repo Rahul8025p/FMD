@@ -9,6 +9,7 @@ const {
   verifyUser,
   analyzeCow,
   getHistory,
+  getResultById,
   updateLanguagePreference,
   autoDetectLanguage
 } = require("../controllers/user.controller");
@@ -35,6 +36,12 @@ router.get(
   authMiddleware,
   roleMiddleware("USER"),
   getHistory
+);
+router.get(
+  "/result/:imageRecordId",
+  authMiddleware,
+  roleMiddleware("USER"),
+  getResultById
 );
 
 router.patch(
