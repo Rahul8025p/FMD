@@ -847,11 +847,9 @@ function MapPanel({
 export default function AdminHeatmap() {
   const navigate = useNavigate();
   const { t } = useI18n();
-  const [loading, setLoading] = useState(true);
   const [mapExpanded, setMapExpanded] = useState(false);
-  const [error, setError] = useState("");
-  const [cases, setCases] = useState([]);
-  const [lastUpdatedAt, setLastUpdatedAt] = useState("");
+  const [cases] = useState(STATE_MOCK_CASES);
+  const [lastUpdatedAt] = useState(() => new Date().toLocaleString());
   const [basemapMode, setBasemapMode] = useState("bw");
 
   const totalFmd = cases.filter((item) => item.prediction === "FMD").length;
@@ -871,14 +869,6 @@ export default function AdminHeatmap() {
       document.body.style.overflow = previousOverflow;
     };
   }, [mapExpanded]);
-
-  useEffect(() => {
-    setLoading(true);
-    setError("");
-    setCases(STATE_MOCK_CASES);
-    setLastUpdatedAt(new Date().toLocaleString());
-    setLoading(false);
-  }, []);
 
   return (
     <div className="flex min-h-screen flex-col bg-gradient-to-br from-slate-100 via-emerald-50 to-white">
@@ -942,25 +932,17 @@ export default function AdminHeatmap() {
         </section>
 
         <section className="mt-6 grid grid-cols-1 gap-6">
-          {loading ? (
-            <div className="h-[560px] animate-pulse rounded-2xl border border-slate-200 bg-white" />
-          ) : error ? (
-            <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-              {error}
-            </div>
-          ) : (
-            <MapPanel
-              title={t("heatmap.panelTitle", "State-wise confirmed FMD cases in India")}
-              subtitle={t("heatmap.panelSubtitle", "Put your mouse pointer on states for details")}
-              legendItems={legendItems}
-              cases={cases}
-              expanded={mapExpanded}
-              onSetExpanded={setMapExpanded}
-              updatedAt={lastUpdatedAt}
-              basemapMode={basemapMode}
-              onSetBasemapMode={setBasemapMode}
-            />
-          )}
+          <MapPanel
+            title={t("heatmap.panelTitle", "State-wise confirmed FMD cases in India")}
+            subtitle={t("heatmap.panelSubtitle", "Put your mouse pointer on states for details")}
+            legendItems={legendItems}
+            cases={cases}
+            expanded={mapExpanded}
+            onSetExpanded={setMapExpanded}
+            updatedAt={lastUpdatedAt}
+            basemapMode={basemapMode}
+            onSetBasemapMode={setBasemapMode}
+          />
         </section>
       </main>
       <PageFooter variant="admin" />
