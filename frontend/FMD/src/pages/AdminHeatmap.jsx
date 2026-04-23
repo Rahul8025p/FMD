@@ -121,17 +121,27 @@ const STATE_MOCK_SUMMARY = INDIA_STATES.map((stateName, index) => {
   };
 });
 
-const STATE_MOCK_CASES = STATE_MOCK_SUMMARY.map((stateData, index) => {
+const STATE_MOCK_CASES = STATE_MOCK_SUMMARY.flatMap((stateData, index) => {
   const center = STATE_VIEW_CENTERS[stateData.state]?.center || INDIA_CENTER;
-  return {
-    id: `mock-${index + 1}`,
-    latitude: center[0],
-    longitude: center[1],
-    prediction: stateData.severity === "critical" || stateData.severity === "high" ? "FMD" : "Healthy",
-    ownerName: `${stateData.state} Livestock Board`,
-    createdAt: new Date(Date.now() - index * 3600000).toISOString(),
-    region: stateData.state
-  };
+  const markerCount = 4 + (index % 4);
+  const fmdShare = stateData.affectedCows / stateData.totalCows;
+  const fmdCount = Math.max(1, Math.round(markerCount * fmdShare));
+
+  return Array.from({ length: markerCount }, (_, markerIndex) => {
+    const isFmd = markerIndex < fmdCount;
+    const latJitter = ((markerIndex % 3) - 1) * 0.28 + ((index % 5) - 2) * 0.05;
+    const lngJitter = (((markerIndex + 1) % 3) - 1) * 0.26 + ((index % 7) - 3) * 0.04;
+
+    return {
+      id: `mock-${index + 1}-${markerIndex + 1}`,
+      latitude: Number((center[0] + latJitter).toFixed(6)),
+      longitude: Number((center[1] + lngJitter).toFixed(6)),
+      prediction: isFmd ? "FMD" : "Healthy",
+      ownerName: `${stateData.state} Livestock Cluster ${markerIndex + 1}`,
+      createdAt: new Date(Date.now() - (index * 6 + markerIndex) * 3600000).toISOString(),
+      region: stateData.state
+    };
+  });
 });
 
 function escapeHtml(value) {
@@ -590,7 +600,6 @@ function ClusteredCasesLayer({ cases, basemapMode }) {
   useEffect(() => {
     if (!map) return undefined;
 
-    const isBW = basemapMode === "bw";
     const clusterGroup = L.markerClusterGroup({
       showCoverageOnHover: false,
       zoomToBoundsOnClick: false,
@@ -603,29 +612,22 @@ function ClusteredCasesLayer({ cases, basemapMode }) {
 
       const isFmd = c.prediction === "FMD";
 
-      // Monochrome mode keeps the heatmap readable even without color.
-      const borderColor = isBW ? "#0f172a" : isFmd ? "#dc2626" : "#059669";
-      const fillColor = isBW
-        ? isFmd
-          ? "#0b1220"
-          : "#f8fafc"
-        : isFmd
-          ? "#ef4444"
-          : "#10b981";
+      const borderColor = isFmd ? "#dc2626" : "#059669";
+      const fillColor = isFmd ? "#ef4444" : "#10b981";
 
-      const reportBorder = isBW ? "#cbd5e1" : "#cbd5e1";
-      const reportBg = isBW ? "#ffffff" : "#ffffff";
-      const reportText = isBW ? "#334155" : "#475569";
-      const infoBorder = isBW ? "#cbd5e1" : "#34d399";
-      const infoBg = isBW ? "#f3f4f6" : "#ecfdf5";
-      const infoText = isBW ? "#374151" : "#047857";
+      const reportBorder = "#cbd5e1";
+      const reportBg = "#ffffff";
+      const reportText = "#475569";
+      const infoBorder = "#34d399";
+      const infoBg = "#ecfdf5";
+      const infoText = "#047857";
 
       // Use a Leaflet marker with a DivIcon so `leaflet.markercluster` can cluster it.
       const icon = L.divIcon({
         className: "",
         iconSize: [14, 14],
         iconAnchor: [7, 7],
-        html: `<div style="width:14px;height:14px;border-radius:9999px;border:2px solid ${borderColor};background:${fillColor};opacity:${isBW ? (isFmd ? 0.55 : 0.9) : 0.6};"></div>`
+        html: `<div style="width:14px;height:14px;border-radius:9999px;border:2px solid ${borderColor};background:${fillColor};opacity:0.72;"></div>`
       });
 
       const popupHtml = `
