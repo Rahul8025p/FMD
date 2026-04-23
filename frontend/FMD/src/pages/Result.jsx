@@ -7,6 +7,7 @@ import "leaflet/dist/leaflet.css";
 import { useI18n } from "../i18n/I18nProvider";
 import PageFooter from "../components/PageFooter";
 import { api } from "../services/api";
+import { translateTexts } from "../services/runtimeTranslation";
 
 function getBoundaryRadiusMeters(severity, confidence) {
   const normalized = String(severity || "").toLowerCase();
@@ -26,13 +27,14 @@ export default function Result() {
   const { state } = useLocation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const backendHost = (api.defaults.baseURL || "http://localhost:5000/api").replace(/\/api\/?$/, "");
   const reportRef = useRef(null);
   const [downloading, setDownloading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [fetchError, setFetchError] = useState("");
   const [liveData, setLiveData] = useState(null);
+  const [translatedDynamicText, setTranslatedDynamicText] = useState(null);
   const recordIdFromQuery = searchParams.get("recordId");
 
   useEffect(() => {
@@ -65,6 +67,67 @@ export default function Result() {
   const resolvedResult = resolvedPayload?.result || null;
   const uploadedImage = state?.uploadedImage
     || (resolvedPayload?.imageUrl ? `${backendHost}${resolvedPayload.imageUrl}` : null);
+
+  useEffect(() => {
+    const translateDynamicPayloadText = async () => {
+      if (!resolvedResult) {
+        setTranslatedDynamicText(null);
+        return;
+      }
+
+      const visual = resolvedResult?.explanation?.visual || [];
+      const texture = resolvedResult?.explanation?.texture || [];
+      const thermal = resolvedResult?.explanation?.thermal || [];
+      const precautions = resolvedResult?.recommendations?.precautions || [];
+      const treatment = resolvedResult?.recommendations?.treatment || [];
+      const vaccination = resolvedResult?.recommendations?.vaccination || "";
+
+      const allTexts = [
+        ...visual,
+        ...texture,
+        ...thermal,
+        ...precautions,
+        ...treatment,
+        vaccination
+      ].filter(Boolean);
+
+      if (allTexts.length === 0 || language === "en") {
+        setTranslatedDynamicText({
+          visual,
+          texture,
+          thermal,
+          precautions,
+          treatment,
+          vaccination
+        });
+        return;
+      }
+
+      try {
+        const translations = await translateTexts(language, allTexts);
+        const mapText = (value) => translations[value] || value;
+        setTranslatedDynamicText({
+          visual: visual.map(mapText),
+          texture: texture.map(mapText),
+          thermal: thermal.map(mapText),
+          precautions: precautions.map(mapText),
+          treatment: treatment.map(mapText),
+          vaccination: vaccination ? mapText(vaccination) : ""
+        });
+      } catch {
+        setTranslatedDynamicText({
+          visual,
+          texture,
+          thermal,
+          precautions,
+          treatment,
+          vaccination
+        });
+      }
+    };
+
+    translateDynamicPayloadText();
+  }, [resolvedResult, language]);
 
   if (loading) {
     return (
@@ -104,6 +167,20 @@ export default function Result() {
   const boundaryRadius = getBoundaryRadiusMeters(severity, confidence);
 
   const normalizedDisease = (disease || "").toLowerCase();
+  const diseaseLabel = normalizedDisease.includes("fmd")
+    ? t("result.diseaseFmd", "FMD")
+    : normalizedDisease.includes("healthy")
+      ? t("result.diseaseHealthy", "Healthy")
+      : disease || t("common.unknown", "Unknown");
+  const severityLabel = String(severity || "").toLowerCase().includes("critical")
+    ? t("result.severityCritical", "Critical")
+    : String(severity || "").toLowerCase().includes("high")
+      ? t("result.severityHigh", "High")
+      : String(severity || "").toLowerCase().includes("moderate")
+        ? t("result.severityModerate", "Moderate")
+        : String(severity || "").toLowerCase().includes("low")
+          ? t("result.severityLow", "Low")
+          : severity || t("common.na", "N/A");
   const diseaseStyles = normalizedDisease.includes("fmd")
     ? "bg-red-50 text-red-700 border-red-200"
     : normalizedDisease.includes("healthy")
@@ -200,7 +277,7 @@ export default function Result() {
           <section className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
             <h3 className="text-lg font-semibold text-slate-800">{t("result.prediction", "Prediction result")}</h3>
             <div className={`mt-4 inline-flex rounded-full border px-3 py-1 text-sm font-semibold ${diseaseStyles}`}>
-              {t("result.diseaseDetected", "Disease detected")}: {disease || t("common.unknown", "Unknown")}
+              {t("result.diseaseDetected", "Disease detected")}: {diseaseLabel}
             </div>
             <div className="mt-4 space-y-3">
               <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
@@ -211,7 +288,7 @@ export default function Result() {
               </div>
               <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
                 <p className="text-xs uppercase tracking-wide text-slate-500">{t("result.severity", "Severity")}</p>
-                <p className="mt-1 text-base font-medium text-slate-700">{severity || t("common.na", "N/A")}</p>
+                <p className="mt-1 text-base font-medium text-slate-700">{severityLabel}</p>
               </div>
             </div>
             <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
@@ -229,13 +306,13 @@ export default function Result() {
           <section className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
             <h4 className="text-base font-semibold text-slate-800">{t("result.whyDetected", "Why this was detected")}</h4>
             <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-slate-600">
-              {explanation?.visual?.map((v, i) => (
+              {(translatedDynamicText?.visual || explanation?.visual || []).map((v, i) => (
                 <li key={`v-${i}`}>{v}</li>
               ))}
-              {explanation?.texture?.map((t, i) => (
-                <li key={`t-${i}`}>{t}</li>
+              {(translatedDynamicText?.texture || explanation?.texture || []).map((textureItem, i) => (
+                <li key={`t-${i}`}>{textureItem}</li>
               ))}
-              {explanation?.thermal?.map((th, i) => (
+              {(translatedDynamicText?.thermal || explanation?.thermal || []).map((th, i) => (
                 <li key={`th-${i}`}>{th}</li>
               ))}
             </ul>
@@ -245,21 +322,21 @@ export default function Result() {
             <h4 className="text-base font-semibold text-slate-800">{t("result.recommendedActions", "Recommended actions")}</h4>
             <p className="mt-3 text-sm font-semibold text-slate-700">{t("result.precautions", "Precautions")}</p>
             <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-slate-600">
-              {recommendations?.precautions?.map((p, i) => (
+              {(translatedDynamicText?.precautions || recommendations?.precautions || []).map((p, i) => (
                 <li key={`p-${i}`}>{p}</li>
               ))}
             </ul>
 
             <p className="mt-4 text-sm font-semibold text-slate-700">{t("result.treatment", "Treatment")}</p>
             <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-slate-600">
-              {recommendations?.treatment?.map((t, i) => (
-                <li key={`tr-${i}`}>{t}</li>
+              {(translatedDynamicText?.treatment || recommendations?.treatment || []).map((treatmentItem, i) => (
+                <li key={`tr-${i}`}>{treatmentItem}</li>
               ))}
             </ul>
 
             <p className="mt-4 text-sm text-slate-700">
               <span className="font-semibold">{t("result.vaccination", "Vaccination")}:</span>{" "}
-              {recommendations?.vaccination || t("common.na", "N/A")}
+              {translatedDynamicText?.vaccination || recommendations?.vaccination || t("common.na", "N/A")}
             </p>
           </section>
         </div>
