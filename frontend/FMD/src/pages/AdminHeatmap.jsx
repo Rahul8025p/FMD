@@ -18,6 +18,10 @@ const INDIA_BOUNDS = [
   [6, 68],
   [38.5, 97.5]
 ];
+const INDIA_LAT_MIN = INDIA_BOUNDS[0][0];
+const INDIA_LNG_MIN = INDIA_BOUNDS[0][1];
+const INDIA_LAT_MAX = INDIA_BOUNDS[1][0];
+const INDIA_LNG_MAX = INDIA_BOUNDS[1][1];
 const INDIA_STATES = [
   "Andhra Pradesh",
   "Arunachal Pradesh",
@@ -131,11 +135,13 @@ const STATE_MOCK_CASES = STATE_MOCK_SUMMARY.flatMap((stateData, index) => {
     const isFmd = markerIndex < fmdCount;
     const latJitter = ((markerIndex % 3) - 1) * 0.28 + ((index % 5) - 2) * 0.05;
     const lngJitter = (((markerIndex + 1) % 3) - 1) * 0.26 + ((index % 7) - 3) * 0.04;
+    const latitude = Math.max(INDIA_LAT_MIN, Math.min(INDIA_LAT_MAX, center[0] + latJitter));
+    const longitude = Math.max(INDIA_LNG_MIN, Math.min(INDIA_LNG_MAX, center[1] + lngJitter));
 
     return {
       id: `mock-${index + 1}-${markerIndex + 1}`,
-      latitude: Number((center[0] + latJitter).toFixed(6)),
-      longitude: Number((center[1] + lngJitter).toFixed(6)),
+      latitude: Number(latitude.toFixed(6)),
+      longitude: Number(longitude.toFixed(6)),
       prediction: isFmd ? "FMD" : "Healthy",
       ownerName: `${stateData.state} Livestock Cluster ${markerIndex + 1}`,
       createdAt: new Date(Date.now() - (index * 6 + markerIndex) * 3600000).toISOString(),
@@ -170,12 +176,23 @@ function normalizeValue(value) {
   return String(value ?? "").trim().toLowerCase();
 }
 
+function resolveStateFromQuery(searchQuery) {
+  const normalizedQuery = normalizeValue(searchQuery);
+  if (!normalizedQuery) return "";
+
+  const exactMatch = INDIA_STATES.find((stateName) => normalizeValue(stateName) === normalizedQuery);
+  if (exactMatch) return exactMatch;
+
+  const partialMatch = INDIA_STATES.find((stateName) =>
+    normalizeValue(stateName).includes(normalizedQuery)
+  );
+  return partialMatch || "";
+}
+
 function computeFilteredCases(cases, searchQuery, selectedState) {
   const normalizedQuery = normalizeValue(searchQuery);
   const normalizedState = normalizeValue(selectedState);
-  const matchedStateFromQuery = INDIA_STATES.find(
-    (stateName) => normalizeValue(stateName) === normalizedQuery
-  );
+  const matchedStateFromQuery = resolveStateFromQuery(searchQuery);
   const effectiveStateFilter =
     normalizedState && normalizedState !== "all"
       ? normalizedState
@@ -325,9 +342,7 @@ function MapSearchBar({
   const [placeStatus, setPlaceStatus] = useState("idle");
   const [placeDetail, setPlaceDetail] = useState("");
 
-  const matchedStateFromQuery = INDIA_STATES.find(
-    (stateName) => normalizeValue(stateName) === normalizeValue(searchQuery)
-  );
+  const matchedStateFromQuery = resolveStateFromQuery(searchQuery);
   const stats = useMemo(() => {
     const totals = {
       total: filteredCases.length,
@@ -537,6 +552,11 @@ function MapSearchBar({
               {t("heatmap.matchingPins", "Matching pins")}:{" "}
               <span className="text-slate-800">{stats.total}</span>
             </p>
+            {stats.total === 0 && (searchQuery.trim() || normalizeValue(selectedState) !== "all") ? (
+              <p className="text-amber-700">
+                {t("heatmap.noMatches", "No markers match your current search/filter.")}
+              </p>
+            ) : null}
             {placeStatus === "ok" && placeDetail ? (
               <p className="text-emerald-700">
                 {t("heatmap.placeLocated", "Showing")}: <span className="font-semibold">{placeDetail}</span>
