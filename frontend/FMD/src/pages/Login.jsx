@@ -72,12 +72,12 @@ export default function Login() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-gradient-to-br from-lime-100 via-emerald-50 to-stone-100 px-4 py-6 sm:px-6 md:py-10">
-      <div className="mx-auto grid w-full max-w-6xl flex-1 overflow-hidden rounded-3xl border border-emerald-100 bg-white shadow-xl lg:grid-cols-2">
-        <aside className="relative hidden bg-gradient-to-br from-emerald-800 via-emerald-700 to-lime-700 p-8 text-white lg:flex lg:flex-col lg:justify-between">
+    <div className="flex min-h-screen flex-col bg-gradient-to-br from-[#eef6ff] via-[#e6f2ff] to-[#f8fafc] px-4 py-6 sm:px-6 md:py-10">
+      <div className="mx-auto grid w-full max-w-6xl flex-1 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl lg:grid-cols-2">
+        <aside className="relative hidden bg-gradient-to-br from-[#003366] via-[#0b4c7a] to-[#0f6aa8] p-8 text-white lg:flex lg:flex-col lg:justify-between">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.32),transparent_55%)]" />
           <div className="relative">
-            <p className="inline-block rounded-full border border-white/30 px-3 py-1 text-xs uppercase tracking-wider text-emerald-50">
+            <p className="inline-block rounded-full border border-white/30 px-3 py-1 text-xs uppercase tracking-wider text-white">
               {t("login.badge", "FMD Care")}
             </p>
             <h2 className="mt-4 text-3xl font-bold leading-tight">
@@ -85,7 +85,7 @@ export default function Login() {
               <br />
               {t("login.heroLine2", "smarter farming.")}
             </h2>
-            <p className="mt-3 text-sm text-emerald-50/90">
+          <p className="mt-3 text-sm text-white/90">
               {t(
                 "login.heroDesc",
                 "Monitor livestock health, view disease analysis, and make confident decisions faster."
@@ -110,7 +110,7 @@ export default function Login() {
               {t("common.back", "Back")}
             </button>
           </div>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">{t("login.welcomeBack", "Welcome back")}</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#003366]">{t("login.welcomeBack", "Welcome back")}</p>
           <h1 className="mt-2 text-3xl font-bold text-slate-800">{t("auth.signInTitle", "Sign in to your farm dashboard")}</h1>
           <p className="mt-1 text-sm text-slate-500">{t("login.signInHelp", "Use email/password or quick sign-in options below.")}</p>
 
@@ -132,7 +132,7 @@ export default function Login() {
             <button
               type="button"
               onClick={() => navigate("/register")}
-              className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700 transition hover:bg-emerald-100"
+              className="rounded-lg border border-[#dbeafe] bg-[#e9f3ff] px-3 py-2 text-sm font-medium text-[#003366] transition hover:bg-[#dbeafe]"
             >
               {t("login.createAccount", "Create new account")}
             </button>
@@ -149,7 +149,7 @@ export default function Login() {
                 autoComplete="email"
                 required
                 onChange={handleChange}
-                className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#003366]"
               />
             </div>
 
@@ -164,7 +164,7 @@ export default function Login() {
                   autoComplete="current-password"
                   required
                   onChange={handleChange}
-                  className="w-full rounded-xl border border-slate-300 px-3 py-2.5 pr-16 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                  className="w-full rounded-xl border border-slate-300 px-3 py-2.5 pr-16 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#003366]"
                 />
                 <button
                   type="button"
@@ -184,14 +184,14 @@ export default function Login() {
                   name="rememberMe"
                   checked={form.rememberMe}
                   onChange={handleChange}
-                  className="h-4 w-4 rounded border-slate-300 text-emerald-700 focus:ring-emerald-600"
+                className="h-4 w-4 rounded border-slate-300 text-[#003366] focus:ring-[#003366]"
                 />
                 {t("login.keepSignedIn", "Keep me signed in")}
               </label>
               <button
                 type="button"
                 onClick={() => handleAltSignIn("Password reset")}
-                className="font-medium text-emerald-700 hover:underline"
+                className="font-medium text-[#003366] hover:underline"
               >
                 {t("login.forgotPassword", "Forgot password?")}
               </button>
@@ -206,7 +206,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-xl bg-gradient-to-r from-emerald-700 to-lime-700 py-3 text-base font-semibold text-white shadow-md transition hover:from-emerald-800 hover:to-lime-800 disabled:opacity-60"
+              className="w-full rounded-xl bg-gradient-to-r from-[#003366] to-[#0f6aa8] py-3 text-base font-semibold text-white shadow-md transition hover:from-[#002a4d] hover:to-[#0b4c7a] disabled:opacity-60"
             >
               {loading ? t("login.signingIn", "Signing in...") : t("landing.signIn", "Sign in")}
             </button>
@@ -217,7 +217,7 @@ export default function Login() {
             <button
               type="button"
               onClick={() => navigate("/register")}
-              className="font-semibold text-emerald-700 hover:underline"
+              className="font-semibold text-[#003366] hover:underline"
             >
               {t("login.signUpHere", "Sign up here")}
             </button>
@@ -226,7 +226,7 @@ export default function Login() {
               <button
                 type="button"
                 onClick={() => navigate("/admin/login")}
-                className="font-medium text-emerald-700 hover:underline"
+                className="font-medium text-[#003366] hover:underline"
               >
                 {t("login.useAdminLogin", "Use admin login")}
               </button>

@@ -133,9 +133,9 @@ export default function UserDashboard() {
   );
 
   return (
-    <div className="flex min-h-screen flex-col bg-gradient-to-br from-lime-50 via-emerald-50 to-white">
+    <div className="flex min-h-screen flex-col bg-[#f8fafc]">
       {/* Header */}
-      <header className="sticky top-0 z-10 border-b border-emerald-100 bg-white/95 px-4 py-3 backdrop-blur sm:px-6">
+      <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/95 px-4 py-3 backdrop-blur sm:px-6">
         <div className="mx-auto flex max-w-6xl items-center justify-between">
           <div className="flex items-center gap-3">
             <button
@@ -145,10 +145,10 @@ export default function UserDashboard() {
             >
               {t("common.back", "Back")}
             </button>
-            <div className="h-9 w-9 rounded-md bg-emerald-600 text-white grid place-content-center font-bold">
+            <div className="h-9 w-9 rounded-md bg-[#003366] text-white grid place-content-center font-bold">
               CC
             </div>
-            <span className="text-lg font-semibold text-emerald-800">
+            <span className="text-lg font-semibold text-[#003366]">
               CattleCare AI
             </span>
           </div>
@@ -156,7 +156,7 @@ export default function UserDashboard() {
             <button
               type="button"
               onClick={() => setMenuOpen(!menuOpen)}
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-600 text-white font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-600"
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-[#003366] text-white font-semibold focus:outline-none focus:ring-2 focus:ring-[#003366]"
               aria-haspopup="menu"
               aria-expanded={menuOpen}
             >
@@ -205,25 +205,25 @@ export default function UserDashboard() {
 
         {/* Stats / Highlights */}
         <section className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="rounded-xl border border-emerald-100 bg-white p-5 shadow-sm">
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
             <p className="text-sm text-slate-500">{t("user.scans7d", "Scans (7 days)")}</p>
             <p className="mt-2 text-2xl font-semibold text-slate-800">
               {historyLoading ? "…" : last7Total}
             </p>
           </div>
-          <div className="rounded-xl border border-emerald-100 bg-white p-5 shadow-sm">
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
             <p className="text-sm text-slate-500">{t("user.healthyScans", "Healthy scans")}</p>
             <p className="mt-2 text-2xl font-semibold text-slate-800">
               {historyLoading ? "…" : last7Healthy}
             </p>
           </div>
-          <div className="rounded-xl border border-emerald-100 bg-white p-5 shadow-sm">
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
             <p className="text-sm text-slate-500">{t("user.casesFlagged", "Cases flagged")}</p>
             <p className="mt-2 text-2xl font-semibold text-slate-800">
               {historyLoading ? "…" : last7Flagged}
             </p>
           </div>
-          <div className="rounded-xl border border-emerald-100 bg-white p-5 shadow-sm">
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
             <p className="text-sm text-slate-500">{t("user.fmdCases", "FMD cases")}</p>
             <p className="mt-2 text-2xl font-semibold text-slate-800">
               {historyLoading ? "…" : last7Fmd}
@@ -233,7 +233,7 @@ export default function UserDashboard() {
 
         {/* Graphs */}
         <section className="mb-10 grid grid-cols-1 gap-6 lg:grid-cols-3">
-          <div className="lg:col-span-1 rounded-2xl border border-emerald-100 bg-white p-6 shadow-sm">
+          <div className="lg:col-span-1 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <h3 className="text-base font-semibold text-slate-800">
               {t("user.fmdVsHealthy7d", "FMD vs Healthy (7 days)")}
             </h3>
@@ -272,7 +272,7 @@ export default function UserDashboard() {
             ) : null}
           </div>
 
-          <div className="lg:col-span-2 rounded-2xl border border-emerald-100 bg-white p-6 shadow-sm">
+          <div className="lg:col-span-2 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <h3 className="text-base font-semibold text-slate-800">
               {t("user.trend7d", "Trend (last 7 days)")}
             </h3>
@@ -316,19 +316,19 @@ export default function UserDashboard() {
 
         {/* Quick actions + Learn */}
         <section className="mb-10 grid grid-cols-1 gap-6 lg:grid-cols-3">
-          <div className="rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-700 to-lime-700 p-7 text-white lg:col-span-2">
+          <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-[#003366] to-[#0f6aa8] p-7 text-white lg:col-span-2">
             <h3 className="text-xl font-semibold">{t("analyze.title", "Analyze Cattle Health")}</h3>
-            <p className="mt-1 text-emerald-100">
+            <p className="mt-1 text-[#dbeafe]">
               {t("user.analyzeCardHelp", "Upload images and let AI assist you in disease detection.")}
             </p>
             <button
               onClick={() => navigate("/analyze")}
-              className="mt-5 rounded-lg bg-white px-6 py-3 font-medium text-emerald-700 transition hover:bg-slate-100"
+              className="mt-5 rounded-lg bg-white px-6 py-3 font-medium text-[#003366] transition hover:bg-slate-100"
             >
               {t("user.startAnalysis", "Start Analysis")}
             </button>
           </div>
-          <div className="rounded-2xl border border-emerald-100 bg-white p-6 shadow-sm">
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <h4 className="font-semibold text-slate-800">{t("user.quickActions", "Quick actions")}</h4>
             <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
               <button
@@ -371,7 +371,7 @@ export default function UserDashboard() {
           </div>
         </section>
 
-        <section className="mb-10 rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
+        <section className="mb-10 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
           <h3 className="text-lg font-semibold text-slate-800">{t("admin.recentDetections", "Recent detections")}</h3>
           <p className="mt-1 text-sm text-slate-500">
             {t("user.recentDetectionsHelp", "Latest analyzed records with geo-coordinates and case details.")}
@@ -442,19 +442,19 @@ export default function UserDashboard() {
 
         {/* Info cards */}
         <section className="grid grid-cols-1 gap-6 md:grid-cols-3">
-          <div className="rounded-xl border border-emerald-100 bg-white p-6 shadow-sm">
+          <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
             <h3 className="mb-2 font-semibold">{t("user.card1Title", "Image-Based Diagnosis")}</h3>
             <p className="text-sm text-slate-600">
               {t("user.card1Desc", "Upload or capture cattle images to detect diseases using deep learning.")}
             </p>
           </div>
-          <div className="rounded-xl border border-emerald-100 bg-white p-6 shadow-sm">
+          <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
             <h3 className="mb-2 font-semibold">{t("user.card2Title", "AI-Powered Insights")}</h3>
             <p className="text-sm text-slate-600">
               {t("user.card2Desc", "MobileNet Model analysis of hooves and mouth lesions for early detection.")}
             </p>
           </div>
-          <div className="rounded-xl border border-emerald-100 bg-white p-6 shadow-sm">
+          <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
             <h3 className="mb-2 font-semibold">{t("user.card3Title", "Preventive Guidance")}</h3>
             <p className="text-sm text-slate-600">
               {t("user.card3Desc", "Treatment and vaccination recommendations after diagnosis.")}

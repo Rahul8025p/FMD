@@ -227,15 +227,15 @@ export default function Analyze() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-gradient-to-br from-lime-50 via-emerald-50 to-white">
+    <div className="flex min-h-screen flex-col bg-[#f8fafc]">
       {/* Header like dashboard */}
-      <header className="sticky top-0 z-10 border-b border-emerald-100 bg-white/95 px-4 py-3 backdrop-blur sm:px-6">
+      <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/95 px-4 py-3 backdrop-blur sm:px-6">
         <div className="mx-auto flex max-w-6xl items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="grid h-9 w-9 place-content-center rounded-md bg-emerald-600 font-bold text-white">
+            <div className="grid h-9 w-9 place-content-center rounded-md bg-[#003366] font-bold text-white">
               CC
             </div>
-            <span className="text-lg font-semibold text-emerald-800">
+            <span className="text-lg font-semibold text-[#003366]">
               CattleCare AI
             </span>
           </div>
@@ -244,7 +244,7 @@ export default function Analyze() {
             <button
               type="button"
               onClick={() => setMenuOpen(!menuOpen)}
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-600 font-semibold text-white focus:outline-none focus:ring-2 focus:ring-emerald-600"
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-[#003366] font-semibold text-white focus:outline-none focus:ring-2 focus:ring-[#003366]"
               aria-haspopup="menu"
               aria-expanded={menuOpen}
             >
@@ -277,16 +277,16 @@ export default function Analyze() {
       </header>
 
       <div className="flex-1 px-4 py-6 sm:px-6 md:py-10">
-      <div className="mx-auto w-full max-w-3xl overflow-hidden rounded-2xl border border-emerald-100 bg-white shadow-sm">
+      <div className="mx-auto w-full max-w-3xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         {/* Header */}
-        <div className="relative bg-gradient-to-r from-emerald-800 via-emerald-700 to-lime-700 px-5 py-7 text-white sm:px-8">
+        <div className="relative bg-gradient-to-r from-[#003366] via-[#0b4c7a] to-[#0f6aa8] px-5 py-7 text-white sm:px-8">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.25),transparent_55%)]" />
           <div className="relative">
-            <p className="text-xs uppercase tracking-widest text-emerald-100">
+            <p className="text-xs uppercase tracking-widest text-[#dbeafe]">
               CattleCare AI
             </p>
             <h2 className="mt-1 text-2xl font-semibold">{t("analyze.title", "Cattle Health Analysis")}</h2>
-            <p className="text-sm text-emerald-100">
+            <p className="text-sm text-[#dbeafe]">
               {t("analyze.subtitle", "Upload or capture an image to detect diseases using AI")}
             </p>
           </div>
@@ -303,7 +303,7 @@ export default function Analyze() {
                 setMode("upload");
               }}
                 className={`px-3 py-2 text-sm font-medium rounded-md transition ${
-                  mode === "upload" ? "bg-white text-emerald-700 shadow-sm" : "text-slate-600 hover:text-slate-800"
+                  mode === "upload" ? "bg-white text-[#003366] shadow-sm" : "text-slate-600 hover:text-slate-800"
                 }`}
               >
                 {t("analyze.fromDevice", "From device")}
@@ -312,7 +312,7 @@ export default function Analyze() {
                 type="button"
               onClick={() => setMode("camera")}
                 className={`px-3 py-2 text-sm font-medium rounded-md transition ${
-                  mode === "camera" ? "bg-white text-emerald-700 shadow-sm" : "text-slate-600 hover:text-slate-800"
+                  mode === "camera" ? "bg-white text-[#003366] shadow-sm" : "text-slate-600 hover:text-slate-800"
                 }`}
               >
                 {t("analyze.useCamera", "Use camera")}
@@ -322,7 +322,7 @@ export default function Analyze() {
             <button
               type="button"
               onClick={() => navigate("/user")}
-              className="text-sm font-medium text-emerald-700 hover:underline"
+              className="text-sm font-medium text-[#003366] hover:underline"
             >
               {t("analyze.backDashboard", "Back to dashboard")}
             </button>

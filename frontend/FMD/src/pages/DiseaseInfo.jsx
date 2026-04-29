@@ -7,12 +7,12 @@ export default function DiseaseInfo() {
   const { t } = useI18n();
 
   return (
-    <div className="flex min-h-screen flex-col bg-gradient-to-br from-lime-50 via-emerald-50 to-white px-4 py-6 sm:px-6 md:py-10">
+    <div className="flex min-h-screen flex-col bg-[#f8fafc] px-4 py-6 sm:px-6 md:py-10">
       <div className="mx-auto max-w-6xl flex-1 space-y-6">
-        <header className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
+        <header className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#003366]">
                 {t("disease.guideTag", "Farmer Guide")}
               </p>
               <h1 className="mt-1 text-2xl font-semibold text-slate-800 sm:text-3xl">
@@ -32,7 +32,7 @@ export default function DiseaseInfo() {
         </header>
 
         <section className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          <article className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
+          <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
             <h2 className="text-lg font-semibold text-slate-800">
               {t("disease.section1Title", "1) What is Foot and Mouth Disease?")}
             </h2>
@@ -44,7 +44,7 @@ export default function DiseaseInfo() {
             </p>
           </article>
 
-          <article className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
+          <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
             <h2 className="text-lg font-semibold text-slate-800">{t("disease.section2Title", "2) Symptoms")}</h2>
             <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-slate-600">
               <li>{t("disease.symptom1", "Fever and sudden drop in appetite")}</li>
@@ -55,7 +55,7 @@ export default function DiseaseInfo() {
             </ul>
           </article>
 
-          <article className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
+          <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
             <h2 className="text-lg font-semibold text-slate-800">{t("disease.section3Title", "3) Causes")}</h2>
             <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-slate-600">
               <li>{t("disease.cause1", "FMD virus transmission through direct animal contact")}</li>
@@ -65,7 +65,7 @@ export default function DiseaseInfo() {
             </ul>
           </article>
 
-          <article className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
+          <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
             <h2 className="text-lg font-semibold text-slate-800">
               {t("disease.section4Title", "4) Prevention Methods")}
             </h2>
@@ -79,7 +79,7 @@ export default function DiseaseInfo() {
           </article>
         </section>
 
-        <section className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
+        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
           <h2 className="text-lg font-semibold text-slate-800">
             {t("disease.section5Title", "5) Treatment Guidance")}
           </h2>

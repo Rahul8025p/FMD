@@ -88,8 +88,8 @@ export default function Signup() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-gradient-to-br from-amber-50 via-lime-50 to-emerald-100 px-4 py-6 sm:px-6 md:py-10">
-      <div className="mx-auto grid w-full max-w-6xl flex-1 overflow-hidden rounded-3xl border border-emerald-100 bg-white shadow-xl lg:grid-cols-2">
+    <div className="flex min-h-screen flex-col bg-gradient-to-br from-[#eef6ff] via-white to-[#f8fafc] px-4 py-6 sm:px-6 md:py-10">
+      <div className="mx-auto grid w-full max-w-6xl flex-1 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl lg:grid-cols-2">
         <section className="px-5 py-6 sm:px-8 sm:py-8 md:px-10 lg:px-12 lg:py-10">
           <div className="mb-3">
             <button
@@ -100,7 +100,7 @@ export default function Signup() {
               {t("common.back", "Back")}
             </button>
           </div>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">{t("signup.createAccountTag", "Create account")}</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#003366]">{t("signup.createAccountTag", "Create account")}</p>
           <h1 className="mt-2 text-3xl font-bold text-slate-800">{t("auth.signUpTitle", "Start managing herd health smarter")}</h1>
           <p className="mt-1 text-sm text-slate-500">{t("signup.subtitle", "Quick setup for farmers, vets, and farm teams.")}</p>
 
@@ -131,7 +131,7 @@ export default function Signup() {
                 autoComplete="name"
                 required
                 onChange={handleChange}
-                className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#003366]"
               />
             </div>
 
@@ -145,7 +145,7 @@ export default function Signup() {
                 autoComplete="email"
                 required
                 onChange={handleChange}
-                className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#003366]"
               />
             </div>
 
@@ -160,7 +160,7 @@ export default function Signup() {
                   autoComplete="new-password"
                   required
                   onChange={handleChange}
-                  className="w-full rounded-xl border border-slate-300 px-3 py-2.5 pr-16 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                  className="w-full rounded-xl border border-slate-300 px-3 py-2.5 pr-16 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#003366]"
                 />
                 <button
                   type="button"
@@ -184,7 +184,7 @@ export default function Signup() {
                   autoComplete="new-password"
                   required
                   onChange={handleChange}
-                  className="w-full rounded-xl border border-slate-300 px-3 py-2.5 pr-16 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                  className="w-full rounded-xl border border-slate-300 px-3 py-2.5 pr-16 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#003366]"
                 />
                 <button
                   type="button"
@@ -209,9 +209,10 @@ export default function Signup() {
                   setAgreeTerms(e.target.checked);
                   setError("");
                 }}
-                className="h-4 w-4 rounded border-slate-300 text-emerald-700 focus:ring-emerald-600"
+                className="h-4 w-4 rounded border-slate-300 text-[#003366] focus:ring-[#003366]"
               />
-              {t("signup.agreePrefix", "I agree to the")} <span className="font-semibold text-emerald-700">{t("signup.terms", "Terms & Conditions")}</span>
+              {t("signup.agreePrefix", "I agree to the")}{" "}
+              <span className="font-semibold text-[#003366]">{t("signup.terms", "Terms & Conditions")}</span>
             </label>
 
             {error && (
@@ -223,7 +224,7 @@ export default function Signup() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-xl bg-gradient-to-r from-emerald-700 to-lime-700 py-3 text-base font-semibold text-white shadow-md transition hover:from-emerald-800 hover:to-lime-800 disabled:opacity-60"
+              className="w-full rounded-xl bg-gradient-to-r from-[#003366] to-[#0f6aa8] py-3 text-base font-semibold text-white shadow-md transition hover:from-[#002a4d] hover:to-[#0b4c7a] disabled:opacity-60"
             >
               {loading ? t("signup.creatingAccount", "Creating account...") : t("signup.createAccount", "Create account")}
             </button>
@@ -234,14 +235,14 @@ export default function Signup() {
             <button
               type="button"
               onClick={() => navigate("/login")}
-              className="font-semibold text-emerald-700 hover:underline"
+              className="font-semibold text-[#003366] hover:underline"
             >
               {t("landing.signIn", "Sign in")}
             </button>
           </div>
         </section>
 
-        <aside className="relative hidden bg-gradient-to-br from-lime-700 via-emerald-700 to-emerald-900 p-8 text-white lg:flex lg:flex-col lg:justify-between">
+        <aside className="relative hidden bg-gradient-to-br from-[#003366] via-[#0b4c7a] to-[#0f6aa8] p-8 text-white lg:flex lg:flex-col lg:justify-between">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.28),transparent_60%)]" />
           <div className="relative">
             <p className="inline-block rounded-full border border-white/30 px-3 py-1 text-xs uppercase tracking-wider">
@@ -252,7 +253,7 @@ export default function Signup() {
               <br />
               {t("signup.heroLine2", "healthier farms.")}
             </h2>
-            <p className="mt-3 text-sm text-emerald-50/95">
+            <p className="mt-3 text-sm text-white/95">
               {t("signup.heroDesc", "Get alerts, record cases, and manage prevention workflows with a clean, field-ready interface.")}
             </p>
           </div>

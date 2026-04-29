@@ -175,7 +175,7 @@ export default function Result() {
   const diseaseStyles = normalizedDisease.includes("fmd")
     ? "bg-red-50 text-red-700 border-red-200"
     : normalizedDisease.includes("healthy")
-      ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+      ? "bg-[#e9f3ff] text-[#003366] border-[#dbeafe]"
       : "bg-amber-50 text-amber-700 border-amber-200";
 
   const generatePdfReport = async () => {

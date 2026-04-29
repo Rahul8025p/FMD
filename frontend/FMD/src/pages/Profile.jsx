@@ -112,11 +112,11 @@ export default function Profile() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-gradient-to-br from-lime-50 via-emerald-50 to-white px-4 py-6 sm:px-6 md:py-10">
+    <div className="flex min-h-screen flex-col bg-[#f8fafc] px-4 py-6 sm:px-6 md:py-10">
       <div className="mx-auto max-w-4xl flex-1 space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#003366]">
               {t("profile.accountTag", "Account")}
             </p>
             <h1 className="text-2xl font-semibold text-slate-800 sm:text-3xl">
@@ -132,15 +132,15 @@ export default function Profile() {
         </div>
 
         <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <div className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm sm:col-span-2">
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:col-span-2">
             <p className="text-sm text-slate-500">{t("profile.loggedInAs", "Logged in as")}</p>
             <p className="mt-1 text-xl font-semibold text-slate-800">{user?.name}</p>
             <p className="text-sm text-slate-500">{user?.email}</p>
-            <span className="mt-3 inline-block rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800">
+            <span className="mt-3 inline-block rounded-full bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-[#003366]">
               {user?.role || "USER"}
             </span>
           </div>
-          <div className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm">
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
             <p className="text-sm text-slate-500">{t("profile.uploadedCases", "Uploaded cases")}</p>
             <p className="mt-2 text-3xl font-semibold text-slate-800">
               {uploadedCasesCount}
@@ -151,7 +151,7 @@ export default function Profile() {
           </div>
         </section>
 
-        <section className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
+        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
           <h2 className="text-lg font-semibold text-slate-800">{t("profile.updateTitle", "Update profile info")}</h2>
           <p className="mt-1 text-sm text-slate-500">
             {t("profile.updateHelp", "Keep your details up to date for a better experience.")}
@@ -167,7 +167,7 @@ export default function Profile() {
                 value={form.name}
                 onChange={handleChange}
                 required
-                className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#003366]"
               />
             </div>
 
@@ -181,7 +181,7 @@ export default function Profile() {
                 value={form.email}
                 onChange={handleChange}
                 required
-                className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#003366]"
               />
             </div>
 
@@ -194,7 +194,7 @@ export default function Profile() {
                 value={form.phone}
                 onChange={handleChange}
                 placeholder={t("common.optional", "Optional")}
-                className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#003366]"
               />
             </div>
 
@@ -206,7 +206,7 @@ export default function Profile() {
                 name="languagePreference"
                 value={form.languagePreference}
                 onChange={handleChange}
-                className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#003366]"
               >
                 <option value="en">{t("lang.english", "English")}</option>
                 <option value="hi">{t("lang.hindi", "Hindi")}</option>
@@ -226,12 +226,12 @@ export default function Profile() {
                 value={form.farmName}
                 onChange={handleChange}
                 placeholder={t("common.optional", "Optional")}
-                className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#003366]"
               />
             </div>
 
             {message && (
-              <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700 sm:col-span-2">
+              <p className="rounded-lg border border-[#dbeafe] bg-[#e9f3ff] px-3 py-2 text-sm text-[#003366] sm:col-span-2">
                 {message}
               </p>
             )}
@@ -240,7 +240,7 @@ export default function Profile() {
               <button
                 type="submit"
                 disabled={saving}
-                className="w-full rounded-xl bg-gradient-to-r from-emerald-700 to-lime-700 px-4 py-3 text-sm font-semibold text-white transition hover:from-emerald-800 hover:to-lime-800 disabled:opacity-60 sm:w-auto"
+                className="w-full rounded-xl bg-gradient-to-r from-[#003366] to-[#0f6aa8] px-4 py-3 text-sm font-semibold text-white transition hover:from-[#002a4d] hover:to-[#0b4c7a] disabled:opacity-60 sm:w-auto"
               >
                 {saving ? t("common.saving", "Saving...") : t("common.saveChanges", "Save changes")}
               </button>

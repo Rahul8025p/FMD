@@ -77,12 +77,12 @@ export default function History() {
   ).length;
 
   return (
-    <div className="flex min-h-screen flex-col bg-gradient-to-br from-lime-50 via-emerald-50 to-white px-4 py-6 sm:px-6 md:py-10">
+    <div className="flex min-h-screen flex-col bg-[#f8fafc] px-4 py-6 sm:px-6 md:py-10">
       <div className="mx-auto max-w-6xl flex-1 space-y-6">
-        <div className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#003366]">
                 {t("history.recordsTag", "Detection Records")}
               </p>
               <h1 className="mt-1 text-2xl font-semibold text-slate-800 sm:text-3xl">
@@ -109,7 +109,7 @@ export default function History() {
               <select
                 value={predictionFilter}
                 onChange={(e) => setPredictionFilter(e.target.value)}
-                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#003366]"
               >
                 <option value="ALL">{t("common.all", "All")}</option>
                 <option value="FMD">FMD</option>
@@ -124,7 +124,7 @@ export default function History() {
               <select
                 value={feverFilter}
                 onChange={(e) => setFeverFilter(e.target.value)}
-                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#003366]"
               >
                 <option value="ALL">{t("common.all", "All")}</option>
                 <option value="YES">{t("common.yes", "Yes")}</option>
@@ -139,7 +139,7 @@ export default function History() {
               <select
                 value={sortOrder}
                 onChange={(e) => setSortOrder(e.target.value)}
-                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#003366]"
               >
                 <option value="DESC">{t("history.newestFirst", "Newest first")}</option>
                 <option value="ASC">{t("history.oldestFirst", "Oldest first")}</option>
@@ -164,7 +164,7 @@ export default function History() {
         </div>
 
         {/* Chart: FMD vs Healthy */}
-        <div className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
           <h2 className="text-lg font-semibold text-slate-800">
             {t("history.fmdVsHealthy", "FMD vs Healthy")}
           </h2>
@@ -205,7 +205,7 @@ export default function History() {
         ) : null}
 
         {!loading && !error && filteredItems.length === 0 ? (
-          <div className="rounded-2xl border border-emerald-100 bg-white p-8 text-center shadow-sm">
+          <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
             <p className="text-slate-600">{t("history.noFilteredRecords", "No records match your filters.")}</p>
             <button
               onClick={() => {
@@ -213,7 +213,7 @@ export default function History() {
                 setFeverFilter("ALL");
                 setSortOrder("DESC");
               }}
-              className="mt-4 rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-800"
+              className="mt-4 rounded-lg bg-[#003366] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#002a4d]"
             >
               {t("history.resetFilters", "Reset filters")}
             </button>
@@ -232,7 +232,7 @@ export default function History() {
               {paginatedItems.map((item) => (
                 <article
                   key={item._id}
-                  className="rounded-2xl border border-emerald-100 bg-white p-4 shadow-sm"
+                  className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
                 >
                   <div className="flex items-start justify-between gap-3">
                     {/* Prediction badge */}
@@ -266,7 +266,7 @@ export default function History() {
                   <button
                     type="button"
                     onClick={() => navigate(`/result?recordId=${encodeURIComponent(item?._id || "")}`)}
-                    className="mt-3 w-full rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100"
+                    className="mt-3 w-full rounded-lg border border-[#dbeafe] bg-[#e9f3ff] px-3 py-2 text-xs font-semibold text-[#003366] transition hover:bg-[#dbeafe]"
                   >
                     {t("history.viewDetails", "View full result")}
                   </button>

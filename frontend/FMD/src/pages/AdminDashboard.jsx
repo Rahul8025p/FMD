@@ -91,8 +91,8 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-gradient-to-br from-slate-100 via-emerald-50 to-white">
-      <header className="sticky top-0 z-10 border-b border-emerald-100 bg-white/95 px-4 py-3 backdrop-blur sm:px-6">
+    <div className="flex min-h-screen flex-col bg-[#f8fafc]">
+      <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/95 px-4 py-3 backdrop-blur sm:px-6">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
           <div className="flex items-center gap-3">
             <button
@@ -102,11 +102,11 @@ export default function AdminDashboard() {
             >
               {t("common.back", "Back")}
             </button>
-            <div className="grid h-9 w-9 place-content-center rounded-md bg-emerald-700 font-bold text-white">
+            <div className="grid h-9 w-9 place-content-center rounded-md bg-[#003366] font-bold text-white">
               CC
             </div>
             <div>
-              <p className="text-lg font-semibold text-emerald-800">CattleCare AI</p>
+              <p className="text-lg font-semibold text-[#003366]">CattleCare AI</p>
               <p className="text-xs text-slate-500">{t("admin.panel", "Admin Monitoring Panel")}</p>
             </div>
           </div>
@@ -122,8 +122,8 @@ export default function AdminDashboard() {
       </header>
 
       <main className="mx-auto max-w-7xl flex-1 px-4 py-6 sm:px-6 md:py-10">
-        <section className="mb-6 rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">
+        <section className="mb-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#003366]">
             {t("admin.dashboardTag", "Admin Dashboard")}
           </p>
           <h1 className="mt-1 text-2xl font-semibold text-slate-800 sm:text-3xl">
@@ -136,7 +136,7 @@ export default function AdminDashboard() {
             <button
               type="button"
               onClick={() => navigate("/admin/heatmap")}
-              className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100"
+              className="rounded-lg border border-[#dbeafe] bg-[#e9f3ff] px-4 py-2 text-sm font-semibold text-[#003366] transition hover:bg-[#dbeafe]"
             >
               {t("admin.openHeatmap", "Open India Heatmap")}
             </button>
@@ -161,11 +161,11 @@ export default function AdminDashboard() {
         {!loading && !error && (
           <>
             <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              <div className="rounded-xl border border-emerald-100 bg-white p-5 shadow-sm">
+              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
                 <p className="text-sm text-slate-500">{t("admin.totalUsers", "Total users")}</p>
                 <p className="mt-2 text-2xl font-semibold text-slate-800">{overview.totalUsers || 0}</p>
               </div>
-              <div className="rounded-xl border border-emerald-100 bg-white p-5 shadow-sm">
+              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
                 <p className="text-sm text-slate-500">{t("admin.totalDetections", "Total detections")}</p>
                 <p className="mt-2 text-2xl font-semibold text-slate-800">{overview.totalCases || 0}</p>
               </div>
@@ -173,14 +173,14 @@ export default function AdminDashboard() {
                 <p className="text-sm text-slate-500">{t("admin.fmdFlagged", "FMD flagged")}</p>
                 <p className="mt-2 text-2xl font-semibold text-red-700">{overview.fmdCases || 0}</p>
               </div>
-              <div className="rounded-xl border border-emerald-100 bg-white p-5 shadow-sm">
+              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
                 <p className="text-sm text-slate-500">{t("admin.healthyCases", "Healthy cases")}</p>
-                <p className="mt-2 text-2xl font-semibold text-emerald-700">{overview.healthyCases || 0}</p>
+                <p className="mt-2 text-2xl font-semibold text-[#003366]">{overview.healthyCases || 0}</p>
               </div>
             </section>
 
             <section className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
-              <div className="lg:col-span-1 rounded-2xl border border-emerald-100 bg-white p-6 shadow-sm">
+              <div className="lg:col-span-1 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
                 <h2 className="text-base font-semibold text-slate-800">
                   {t("admin.recentFmdVsHealthy", "Recent FMD vs Healthy")}
                 </h2>
@@ -219,7 +219,7 @@ export default function AdminDashboard() {
                 </p>
               </div>
 
-              <div className="lg:col-span-2 rounded-2xl border border-emerald-100 bg-white p-6 shadow-sm">
+              <div className="lg:col-span-2 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
                 <h2 className="text-base font-semibold text-slate-800">
                   {t("admin.trend7d", "Trend (last 7 days)")}
                 </h2>
@@ -250,7 +250,7 @@ export default function AdminDashboard() {
               </div>
             </section>
 
-            <section className="mt-6 rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
+            <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
               <h2 className="text-lg font-semibold text-slate-800">{t("admin.recentDetections", "Recent detections")}</h2>
               <p className="mt-1 text-sm text-slate-500">
                 {t("admin.recentDetectionsHelp", "Latest uploaded and analyzed records from users.")}

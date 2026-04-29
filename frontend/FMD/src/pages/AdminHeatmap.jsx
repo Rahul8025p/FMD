@@ -912,8 +912,8 @@ export default function AdminHeatmap() {
   }, [mapExpanded]);
 
   return (
-    <div className="flex min-h-screen flex-col bg-gradient-to-br from-slate-100 via-emerald-50 to-white">
-      <header className="sticky top-0 z-20 border-b border-emerald-100 bg-white/95 px-4 py-3 backdrop-blur sm:px-6">
+    <div className="flex min-h-screen flex-col bg-[#f8fafc]">
+      <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/95 px-4 py-3 backdrop-blur sm:px-6">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <button
@@ -924,7 +924,7 @@ export default function AdminHeatmap() {
               {t("heatmap.backDashboard", "Back to Dashboard")}
             </button>
             <div>
-              <p className="text-lg font-semibold text-emerald-800">{t("heatmap.title", "India Case Heatmap")}</p>
+              <p className="text-lg font-semibold text-[#003366]">{t("heatmap.title", "India Case Heatmap")}</p>
               <p className="text-xs text-slate-500">
                 {t("heatmap.operationalSubtitle", "Operational geospatial monitoring view (state-wise mock data).")}
               </p>
@@ -945,8 +945,8 @@ export default function AdminHeatmap() {
       </header>
 
       <main className="mx-auto max-w-7xl flex-1 px-4 py-6 sm:px-6 md:py-8">
-        <section className="mb-4 rounded-2xl border border-emerald-100 bg-white p-4 shadow-sm sm:p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
+        <section className="mb-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#003366]">
             {t("heatmap.consoleTag", "Monitoring Console")}
           </p>
           <h1 className="mt-1 text-xl font-semibold text-slate-900 sm:text-2xl">
@@ -958,7 +958,7 @@ export default function AdminHeatmap() {
         </section>
 
         <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <div className="rounded-xl border border-emerald-100 bg-white p-4 shadow-sm">
+          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
             <p className="text-xs uppercase tracking-wider text-slate-500">{t("heatmap.totalPlotted", "Total plotted cases")}</p>
             <p className="mt-2 text-2xl font-semibold text-slate-800">{totalCases}</p>
           </div>
@@ -966,9 +966,9 @@ export default function AdminHeatmap() {
             <p className="text-xs uppercase tracking-wider text-slate-500">{t("heatmap.fmdMarkers", "FMD markers")}</p>
             <p className="mt-2 text-2xl font-semibold text-red-700">{totalFmd}</p>
           </div>
-          <div className="rounded-xl border border-emerald-100 bg-white p-4 shadow-sm">
+          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
             <p className="text-xs uppercase tracking-wider text-slate-500">{t("heatmap.healthyMarkers", "Healthy markers")}</p>
-            <p className="mt-2 text-2xl font-semibold text-emerald-700">{totalHealthy}</p>
+            <p className="mt-2 text-2xl font-semibold text-[#003366]">{totalHealthy}</p>
           </div>
         </section>
 
