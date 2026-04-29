@@ -133,6 +133,7 @@ const STATE_MOCK_CASES = STATE_MOCK_SUMMARY.flatMap((stateData, index) => {
   const markerCount = 4 + (index % 4);
   const fmdShare = stateData.affectedCows / stateData.totalCows;
   const fmdCount = Math.max(1, Math.round(markerCount * fmdShare));
+  const districtPool = ["North", "Central", "South", "East", "West"];
 
   return Array.from({ length: markerCount }, (_, markerIndex) => {
     const isFmd = markerIndex < fmdCount;
@@ -141,6 +142,21 @@ const STATE_MOCK_CASES = STATE_MOCK_SUMMARY.flatMap((stateData, index) => {
     const latitude = Math.max(INDIA_LAT_MIN, Math.min(INDIA_LAT_MAX, center[0] + latJitter));
     const longitude = Math.max(INDIA_LNG_MIN, Math.min(INDIA_LNG_MAX, center[1] + lngJitter));
 
+    const markerTotalCows = Math.max(
+      5,
+      Math.round((isFmd ? stateData.affectedCows : stateData.unaffectedCows) / markerCount)
+    );
+    // Small deterministic variation so totals don't look uniform.
+    const maleRatioBase = 0.52;
+    const maleRatioDrift = (((index + markerIndex) % 5) - 2) * 0.02; // -0.04 .. +0.04
+    const maleRatio = Math.max(0.42, Math.min(0.6, maleRatioBase + maleRatioDrift));
+    const maleCount = Math.max(0, Math.round(markerTotalCows * maleRatio));
+    const femaleCount = Math.max(0, markerTotalCows - maleCount);
+
+    const district =
+      `${districtPool[(index + markerIndex) % districtPool.length]} ` +
+      `District ${((markerIndex + 1) % 6) + 1}`;
+
     return {
       id: `mock-${index + 1}-${markerIndex + 1}`,
       latitude: Number(latitude.toFixed(6)),
@@ -148,7 +164,10 @@ const STATE_MOCK_CASES = STATE_MOCK_SUMMARY.flatMap((stateData, index) => {
       prediction: isFmd ? "FMD" : "Healthy",
       ownerName: `${stateData.state} Livestock Cluster ${markerIndex + 1}`,
       createdAt: new Date(Date.now() - (index * 6 + markerIndex) * 3600000).toISOString(),
-      region: stateData.state
+      region: stateData.state,
+      district,
+      maleCount,
+      femaleCount
     };
   });
 });
@@ -888,28 +907,114 @@ function MapPanel({
 export default function AdminHeatmap() {
   const navigate = useNavigate();
   const { t } = useI18n();
-  const [mapExpanded, setMapExpanded] = useState(false);
   const [cases] = useState(STATE_MOCK_CASES);
   const [lastUpdatedAt] = useState(() => new Date().toLocaleString());
-  const [basemapMode, setBasemapMode] = useState("bw");
 
-  const totalFmd = cases.filter((item) => item.prediction === "FMD").length;
-  const totalHealthy = cases.filter((item) => item.prediction === "Healthy").length;
-  const totalCases = cases.length;
-  const legendItems = [
-    { label: t("admin.fmdFlagged", "FMD"), swatch: "bg-red-500", count: totalFmd },
-    { label: t("admin.healthyCases", "Healthy"), swatch: "bg-emerald-500", count: totalHealthy }
-  ];
+  const [selectedState, setSelectedState] = useState("all");
+  const [selectedDistrict, setSelectedDistrict] = useState("all");
+  const years = useMemo(() => {
+    const set = new Set(
+      (cases || []).map((c) => {
+        const d = new Date(c?.createdAt);
+        return Number.isFinite(d?.getFullYear?.()) ? d.getFullYear() : null;
+      })
+    );
+    const out = Array.from(set).filter((x) => typeof x === "number").sort((a, b) => b - a);
+    return out.length ? out : [new Date().getFullYear()];
+  }, [cases]);
+  const [selectedYear, setSelectedYear] = useState(() => years[0] ?? new Date().getFullYear());
 
   useEffect(() => {
-    const previousOverflow = document.body.style.overflow;
-    if (mapExpanded) {
-      document.body.style.overflow = "hidden";
+    if (!years.includes(selectedYear)) setSelectedYear(years[0]);
+  }, [selectedYear, years]);
+
+  const districtOptions = useMemo(() => {
+    const from = (cases || []).filter((c) => selectedState === "all" || normalizeValue(c?.region) === normalizeValue(selectedState));
+    const unique = Array.from(new Set(from.map((c) => c?.district).filter(Boolean)));
+    unique.sort((a, b) => String(a).localeCompare(String(b)));
+    return unique;
+  }, [cases, selectedState]);
+
+  const filteredCases = useMemo(() => {
+    const stateNorm = normalizeValue(selectedState);
+    const districtNorm = normalizeValue(selectedDistrict);
+    const yearNum = Number(selectedYear);
+
+    return (cases || []).filter((c) => {
+      const regionNorm = normalizeValue(c?.region);
+      const districtNormValue = normalizeValue(c?.district);
+      const createdYear = new Date(c?.createdAt).getFullYear();
+
+      const stateOk = selectedState === "all" || regionNorm === stateNorm;
+      const districtOk = selectedDistrict === "all" || districtNormValue === districtNorm;
+      const yearOk = Number.isFinite(yearNum) && createdYear === yearNum;
+
+      return stateOk && districtOk && yearOk;
+    });
+  }, [cases, selectedDistrict, selectedState, selectedYear]);
+
+  const numberFmt = useMemo(() => new Intl.NumberFormat(undefined), []);
+
+  const totals = useMemo(() => {
+    let total = 0;
+    let male = 0;
+    let female = 0;
+    let fmd = 0;
+    for (const c of filteredCases) {
+      total += (c?.maleCount || 0) + (c?.femaleCount || 0);
+      male += c?.maleCount || 0;
+      female += c?.femaleCount || 0;
+      if (c?.prediction === "FMD") fmd += (c?.maleCount || 0) + (c?.femaleCount || 0);
     }
-    return () => {
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [mapExpanded]);
+    return { total, male, female, fmd };
+  }, [filteredCases]);
+
+  const stateAggRows = useMemo(() => {
+    const map = new Map();
+    for (const c of filteredCases) {
+      const key = c?.region || "Unknown";
+      if (!map.has(key)) {
+        map.set(key, {
+          region: key,
+          total: 0,
+          male: 0,
+          female: 0,
+          fmdTotal: 0
+        });
+      }
+      const row = map.get(key);
+      const rowTotal = (c?.maleCount || 0) + (c?.femaleCount || 0);
+      row.total += rowTotal;
+      row.male += c?.maleCount || 0;
+      row.female += c?.femaleCount || 0;
+      if (c?.prediction === "FMD") row.fmdTotal += rowTotal;
+    }
+
+    const rows = Array.from(map.values());
+    // Keep it consistent with the India state order.
+    const order = new Map(INDIA_STATES.map((s, idx) => [s, idx]));
+    rows.sort((a, b) => (order.get(a.region) ?? 9999) - (order.get(b.region) ?? 9999));
+    return rows;
+  }, [filteredCases]);
+
+  const severityLegendItems = useMemo(() => {
+    const severityCounts = { critical: 0, high: 0, moderate: 0, low: 0 };
+    for (const row of stateAggRows) {
+      const ratio = row.total ? row.fmdTotal / row.total : 0;
+      const sev = getSeverityFromRatio(ratio);
+      severityCounts[sev] += 1;
+    }
+
+    return [
+      { label: STATE_SEVERITY_CONFIG.critical.label, swatch: "bg-red-500", count: severityCounts.critical },
+      { label: STATE_SEVERITY_CONFIG.high.label, swatch: "bg-orange-500", count: severityCounts.high },
+      { label: STATE_SEVERITY_CONFIG.moderate.label, swatch: "bg-amber-500", count: severityCounts.moderate },
+      { label: STATE_SEVERITY_CONFIG.low.label, swatch: "bg-emerald-500", count: severityCounts.low }
+    ];
+  }, [stateAggRows]);
+
+  // Map markers dataset follows the same filter set.
+  const mapCases = filteredCases;
 
   return (
     <div className="flex min-h-screen flex-col bg-[#f8fafc]">
@@ -926,66 +1031,237 @@ export default function AdminHeatmap() {
             <div>
               <p className="text-lg font-semibold text-[#003366]">{t("heatmap.title", "India Case Heatmap")}</p>
               <p className="text-xs text-slate-500">
-                {t("heatmap.operationalSubtitle", "Operational geospatial monitoring view (state-wise mock data).")}
+                {t("heatmap.operationalSubtitle", "Operational geospatial monitoring view (mock data).")}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => {
-                localStorage.clear();
-                navigate("/admin/login");
-              }}
-              className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-medium text-red-700 transition hover:bg-red-100"
-            >
-              {t("common.logout", "Logout")}
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => {
+              localStorage.clear();
+              navigate("/admin/login");
+            }}
+            className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-medium text-red-700 transition hover:bg-red-100"
+          >
+            {t("common.logout", "Logout")}
+          </button>
         </div>
       </header>
 
       <main className="mx-auto max-w-7xl flex-1 px-4 py-6 sm:px-6 md:py-8">
-        <section className="mb-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#003366]">
-            {t("heatmap.consoleTag", "Monitoring Console")}
-          </p>
-          <h1 className="mt-1 text-xl font-semibold text-slate-900 sm:text-2xl">
-            {t("heatmap.heading", "India FMD Case Map")}
-          </h1>
-          <p className="mt-2 text-sm text-slate-600">
-            {t("heatmap.instructions", "Hover or tap a case marker to open quick actions. Zoom to expand map into focused mode.")}
-          </p>
-        </section>
+        <div className="grid gap-4 lg:grid-cols-12">
+          {/* Left panel: filters + stats + table */}
+          <section className="lg:col-span-5 space-y-4">
+            <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#003366]">
+                {t("heatmap.consoleTag", "Monitoring Console")}
+              </p>
+              <h1 className="mt-1 text-xl font-semibold text-slate-900 sm:text-2xl">
+                {t("heatmap.heading", "India FMD Case Dashboard")}
+              </h1>
+              <p className="mt-2 text-sm text-slate-600">
+                {t(
+                  "heatmap.instructions",
+                  "Use filters to view mock incidence totals by area. Map shows corresponding cases."
+                )}
+              </p>
+            </div>
 
-        <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-            <p className="text-xs uppercase tracking-wider text-slate-500">{t("heatmap.totalPlotted", "Total plotted cases")}</p>
-            <p className="mt-2 text-2xl font-semibold text-slate-800">{totalCases}</p>
-          </div>
-          <div className="rounded-xl border border-red-100 bg-white p-4 shadow-sm">
-            <p className="text-xs uppercase tracking-wider text-slate-500">{t("heatmap.fmdMarkers", "FMD markers")}</p>
-            <p className="mt-2 text-2xl font-semibold text-red-700">{totalFmd}</p>
-          </div>
-          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-            <p className="text-xs uppercase tracking-wider text-slate-500">{t("heatmap.healthyMarkers", "Healthy markers")}</p>
-            <p className="mt-2 text-2xl font-semibold text-[#003366]">{totalHealthy}</p>
-          </div>
-        </section>
+            <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-slate-600">
+                    {t("heatmap.stateLabel", "State")}
+                  </label>
+                  <select
+                    value={selectedState}
+                    onChange={(e) => {
+                      setSelectedState(e.target.value);
+                      setSelectedDistrict("all");
+                    }}
+                    className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition focus:ring-2 focus:ring-[#003366]"
+                  >
+                    <option value="all">{t("common.all", "All states")}</option>
+                    {INDIA_STATES.map((s) => (
+                      <option key={s} value={s}>
+                        {s}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-        <section className="mt-6 grid grid-cols-1 gap-6">
-          <MapPanel
-            title={t("heatmap.panelTitle", "State-wise confirmed FMD cases in India")}
-            subtitle={t("heatmap.panelSubtitle", "Put your mouse pointer on states for details")}
-            legendItems={legendItems}
-            cases={cases}
-            expanded={mapExpanded}
-            onSetExpanded={setMapExpanded}
-            updatedAt={lastUpdatedAt}
-            basemapMode={basemapMode}
-            onSetBasemapMode={setBasemapMode}
-          />
-        </section>
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-slate-600">
+                    {t("heatmap.districtLabel", "District")}
+                  </label>
+                  <select
+                    value={selectedDistrict}
+                    onChange={(e) => setSelectedDistrict(e.target.value)}
+                    className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition focus:ring-2 focus:ring-[#003366]"
+                  >
+                    <option value="all">{t("common.all", "All districts")}</option>
+                    {districtOptions.map((d) => (
+                      <option key={d} value={d}>
+                        {d}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="mb-1 block text-xs font-medium text-slate-600">
+                    {t("heatmap.yearLabel", "Calendar Year")}
+                  </label>
+                  <select
+                    value={selectedYear}
+                    onChange={(e) => setSelectedYear(Number(e.target.value))}
+                    className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition focus:ring-2 focus:ring-[#003366]"
+                  >
+                    {years.map((y) => (
+                      <option key={y} value={y}>
+                        {y}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
+                <p>
+                  <span className="font-medium text-slate-700">{t("common.updated", "Updated")}:</span>{" "}
+                  {lastUpdatedAt || t("common.na", "N/A")}
+                </p>
+                <p>
+                  <span className="font-medium text-slate-700">{t("heatmap.sourceNote", "Source")}:</span> Mock
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                <p className="text-xs uppercase tracking-wider text-slate-500">{t("heatmap.totalLabel", "Total")}</p>
+                <p className="mt-2 text-2xl font-semibold text-slate-900">{numberFmt.format(totals.total)}</p>
+              </div>
+              <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                <p className="text-xs uppercase tracking-wider text-slate-500">{t("heatmap.maleLabel", "Total Male")}</p>
+                <p className="mt-2 text-2xl font-semibold text-slate-900">{numberFmt.format(totals.male)}</p>
+              </div>
+              <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                <p className="text-xs uppercase tracking-wider text-slate-500">{t("heatmap.femaleLabel", "Total Female")}</p>
+                <p className="mt-2 text-2xl font-semibold text-slate-900">{numberFmt.format(totals.female)}</p>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm font-semibold text-slate-900">{t("heatmap.areaDetails", "Area Details")}</p>
+                <p className="text-xs text-slate-500">
+                  {t("heatmap.rowCount", "Rows")}: {stateAggRows.length}
+                </p>
+              </div>
+
+              <div className="mt-3 overflow-x-auto">
+                <table className="min-w-full text-sm">
+                  <thead>
+                    <tr className="bg-slate-50 text-xs uppercase tracking-wide text-slate-600">
+                      <th className="px-3 py-2 text-left">{t("heatmap.stateCol", "State")}</th>
+                      <th className="px-3 py-2 text-right">{t("heatmap.totalCol", "Total")}</th>
+                      <th className="px-3 py-2 text-right">{t("heatmap.maleCol", "Male")}</th>
+                      <th className="px-3 py-2 text-right">{t("heatmap.femaleCol", "Female")}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {stateAggRows.length ? (
+                      stateAggRows.map((row) => (
+                        <tr key={row.region} className="border-t border-slate-100">
+                          <td className="px-3 py-2 font-medium text-slate-700">{row.region}</td>
+                          <td className="px-3 py-2 text-right text-slate-800">
+                            {numberFmt.format(row.total)}
+                          </td>
+                          <td className="px-3 py-2 text-right text-slate-800">
+                            {numberFmt.format(row.male)}
+                          </td>
+                          <td className="px-3 py-2 text-right text-slate-800">
+                            {numberFmt.format(row.female)}
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td className="px-3 py-4 text-sm text-slate-500" colSpan={4}>
+                          {t("heatmap.noData", "No mock data for the selected filters.")}
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          {/* Right panel: map + legend */}
+          <section className="lg:col-span-7 space-y-4">
+            <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#003366]">
+                    {t("heatmap.mapTag", "Map View")}
+                  </p>
+                  <p className="mt-1 text-base font-semibold text-slate-900">
+                    {t("heatmap.mapHeading", "Corresponding cases on India map")}
+                  </p>
+                  <p className="mt-1 text-sm text-slate-600">
+                    {t(
+                      "heatmap.mapHelp",
+                      "Markers are mock case points. Filter settings also drive this dataset."
+                    )}
+                  </p>
+                </div>
+                <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600">
+                  <span className="font-semibold text-slate-800">
+                    {t("heatmap.currentSelection", "Selection")}:
+                  </span>{" "}
+                  {selectedState === "all" ? "All States" : selectedState} •{" "}
+                  {selectedDistrict === "all" ? "All Districts" : selectedDistrict} •{" "}
+                  {selectedYear}
+                </div>
+              </div>
+
+              <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-2">
+                <div className="h-[420px] w-full overflow-hidden rounded-lg sm:h-[520px] md:h-[620px]">
+                  <MapContainer
+                    center={INDIA_CENTER}
+                    zoom={5}
+                    minZoom={4}
+                    maxZoom={12}
+                    maxBounds={INDIA_BOUNDS}
+                    maxBoundsViscosity={0.8}
+                    zoomControl={false}
+                    className="h-full w-full"
+                    scrollWheelZoom
+                    dragging
+                    touchZoom
+                    doubleClickZoom
+                  >
+                    <TileLayer
+                      attribution={
+                        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                      }
+                      url="https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"
+                    />
+                    <ClusteredCasesLayer cases={mapCases} basemapMode="bw" />
+                  </MapContainer>
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <Legend title={t("heatmap.colorScale", "Severity scale")} items={severityLegendItems} />
+              </div>
+            </div>
+          </section>
+        </div>
       </main>
+
       <PageFooter variant="admin" />
     </div>
   );
