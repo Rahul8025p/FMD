@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useI18n } from "../i18n/I18nProvider";
 import PageFooter from "../components/PageFooter";
 
@@ -46,6 +46,22 @@ export default function Landing() {
       gradient: "from-[#003366] via-[#0f6aa8] to-[#0b4c7a]"
     }
   ];
+
+  const [activeGalleryIdx, setActiveGalleryIdx] = useState(0);
+  const [galleryPaused, setGalleryPaused] = useState(false);
+
+  useEffect(() => {
+    if (galleryPaused) return;
+
+    const mql = window.matchMedia?.("(prefers-reduced-motion: reduce)");
+    if (mql?.matches) return;
+
+    const id = window.setInterval(() => {
+      setActiveGalleryIdx((i) => (i + 1) % galleryItems.length);
+    }, 4200);
+
+    return () => window.clearInterval(id);
+  }, [galleryPaused, galleryItems.length]);
 
   return (
     <div className="flex min-h-screen flex-col bg-gradient-to-b from-[#eef6ff] via-white to-[#f8fafc]">
@@ -123,12 +139,46 @@ export default function Landing() {
           </div>
         </div>
 
-        {/* Hero visual (placeholder artwork) */}
-        <div className="relative">
-          <div className="aspect-[4/3] w-full rounded-2xl border border-slate-200 bg-gradient-to-br from-[#003366] via-[#0b4c7a] to-[#0f6aa8] shadow-lg" />
-          <div className="absolute inset-0 rounded-2xl bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.25),transparent_55%)]" />
-          <div className="pointer-events-none absolute inset-0 grid place-content-center">
-            <span className="rounded-full bg-white/10 px-4 py-2 text-sm font-medium text-white ring-1 ring-white/30">
+        {/* Hero visual floater (auto-rotating multi-image panels) */}
+        <div
+          className="relative"
+          onMouseEnter={() => setGalleryPaused(true)}
+          onMouseLeave={() => setGalleryPaused(false)}
+          onFocus={() => setGalleryPaused(true)}
+          onBlur={() => setGalleryPaused(false)}
+        >
+          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg">
+            <div className="pointer-events-none absolute inset-0 rounded-2xl bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.25),transparent_55%)]" />
+
+            {galleryItems.map((item, idx) => {
+              const isActive = idx === activeGalleryIdx;
+              return (
+                <div
+                  // eslint-disable-next-line react/no-array-index-key
+                  key={`float-slide-${idx}`}
+                  className={`absolute inset-0 transition-all duration-700 ease-in-out ${
+                    isActive
+                      ? "opacity-100 translate-y-0 scale-100"
+                      : "opacity-0 translate-y-4 scale-[0.98] pointer-events-none"
+                  }`}
+                  aria-hidden={!isActive}
+                >
+                  <div className={`h-full w-full bg-gradient-to-br ${item.gradient}`} />
+                  <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(0,0,0,0.35),transparent_45%)]" />
+
+                  <div className="absolute left-4 right-4 bottom-4 rounded-xl border border-white/25 bg-white/90 backdrop-blur px-3 py-2 shadow-sm">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#003366]">
+                      {item.title}
+                    </p>
+                    <p className="mt-1 text-sm text-slate-700">{item.desc}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="pointer-events-none absolute left-4 top-4">
+            <span className="rounded-full bg-white/15 px-4 py-2 text-sm font-medium text-white ring-1 ring-white/30">
               {t("landing.visualBadge", "Livestock AI Imaging")}
             </span>
           </div>
@@ -206,89 +256,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Government-style floating image showcase */}
-      <section className="mx-auto max-w-6xl px-4 pb-16 sm:px-6">
-        <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          {/* Subtle decorative float elements */}
-          <div className="pointer-events-none absolute -right-20 top-0 h-44 w-44 rounded-full bg-[#003366]/10 blur-2xl" />
-          <div className="pointer-events-none absolute -left-20 bottom-0 h-44 w-44 rounded-full bg-[#0f6aa8]/10 blur-2xl" />
-
-          <div className="relative flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-            <div className="max-w-2xl">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#003366]">
-                {t("landing.galleryTag", "Government Portal Showcase")}
-              </p>
-              <h2 className="mt-1 text-2xl font-semibold text-slate-900">
-                {t("landing.galleryHeading", "Official workflow at a glance")}
-              </h2>
-              <p className="mt-2 text-sm text-slate-600">
-                {t(
-                  "landing.gallerySubheading",
-                  "A responsive multi-image panel designed for desktop, tablets, and mobile."
-                )}
-              </p>
-            </div>
-          </div>
-
-          {/* Desktop/Tablet: card grid */}
-          <div className="relative mt-6 hidden md:block">
-            <div className="grid grid-cols-12 gap-4">
-              <figure className="col-span-12 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-                <div className="grid grid-cols-12 gap-4 items-stretch">
-                  <div className="col-span-7 rounded-xl border border-slate-200 overflow-hidden">
-                    <div className={`h-full min-h-[260px] bg-gradient-to-br ${galleryItems[0].gradient}`} />
-                  </div>
-                  <div className="col-span-5 grid grid-rows-2 gap-4">
-                    {[galleryItems[1], galleryItems[2]].map((item, idx) => (
-                      <figcaption
-                        // eslint-disable-next-line react/no-array-index-key
-                        key={`g-${idx + 1}`}
-                        className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
-                      >
-                        <div className={`h-28 rounded-lg bg-gradient-to-br ${item.gradient}`} />
-                        <p className="mt-3 text-sm font-semibold text-slate-900">{item.title}</p>
-                        <p className="mt-1 text-xs text-slate-600">{item.desc}</p>
-                      </figcaption>
-                    ))}
-                  </div>
-                </div>
-                <div className="mt-4 grid grid-cols-12 gap-4">
-                  <figcaption className="col-span-6 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-                    <div className={`h-28 rounded-lg bg-gradient-to-br ${galleryItems[3].gradient}`} />
-                    <p className="mt-3 text-sm font-semibold text-slate-900">{galleryItems[3].title}</p>
-                    <p className="mt-1 text-xs text-slate-600">{galleryItems[3].desc}</p>
-                  </figcaption>
-                  <figcaption className="col-span-6 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-                    <div className={`h-28 rounded-lg bg-gradient-to-br ${galleryItems[2].gradient}`} />
-                    <p className="mt-3 text-sm font-semibold text-slate-900">{galleryItems[2].title}</p>
-                    <p className="mt-1 text-xs text-slate-600">{galleryItems[2].desc}</p>
-                  </figcaption>
-                </div>
-              </figure>
-            </div>
-          </div>
-
-          {/* Mobile: swipeable gallery */}
-          <div className="relative mt-6 md:hidden">
-            <div className="flex gap-3 overflow-x-auto pb-2 scroll-smooth snap-x snap-mandatory">
-              {galleryItems.map((item, idx) => (
-                <figure
-                  // eslint-disable-next-line react/no-array-index-key
-                  key={`g-m-${idx}`}
-                  className="snap-start w-[78%] min-w-[78%] rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
-                >
-                  <div className={`h-40 rounded-lg bg-gradient-to-br ${item.gradient}`} />
-                  <p className="mt-3 text-sm font-semibold text-slate-900">{item.title}</p>
-                  <p className="mt-1 text-xs text-slate-600">{item.desc}</p>
-                </figure>
-              ))}
-            </div>
-            <p className="mt-3 text-xs text-slate-500">
-              {t("landing.gallerySwipeHint", "Swipe to view more panels.")}
-            </p>
-          </div>
-        </div>
-      </section>
       </div>
       <PageFooter variant="public" />
     </div>
