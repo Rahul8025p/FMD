@@ -23,6 +23,30 @@ export default function Landing() {
     }
   };
 
+  const galleryItems = [
+    {
+      title: t("landing.gallery1Title", "Official Screening"),
+      desc: t("landing.gallery1Desc", "Submit an image for AI-assisted disease indication."),
+      // Using gradient-only placeholders so it works without external image files.
+      gradient: "from-[#003366] via-[#0b4c7a] to-[#0f6aa8]"
+    },
+    {
+      title: t("landing.gallery2Title", "Farm-ready Reports"),
+      desc: t("landing.gallery2Desc", "Get a structured result you can download and share."),
+      gradient: "from-[#0f6aa8] via-[#2d9cdb] to-[#7dd3fc]"
+    },
+    {
+      title: t("landing.gallery3Title", "Precaution Guidance"),
+      desc: t("landing.gallery3Desc", "Understand recommended precautions after analysis."),
+      gradient: "from-[#0b4c7a] via-[#003366] to-[#1f7a8c]"
+    },
+    {
+      title: t("landing.gallery4Title", "History & Tracking"),
+      desc: t("landing.gallery4Desc", "Review past cases and monitor trends over time."),
+      gradient: "from-[#003366] via-[#0f6aa8] to-[#0b4c7a]"
+    }
+  ];
+
   return (
     <div className="flex min-h-screen flex-col bg-gradient-to-b from-[#eef6ff] via-white to-[#f8fafc]">
       <div className="flex-1">
@@ -177,6 +201,90 @@ export default function Landing() {
             </p>
             <p className="mt-1 text-2xl font-semibold text-slate-900">
               {t("landing.statsDevicesValue", "Mobile/Web")}
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Government-style floating image showcase */}
+      <section className="mx-auto max-w-6xl px-4 pb-16 sm:px-6">
+        <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          {/* Subtle decorative float elements */}
+          <div className="pointer-events-none absolute -right-20 top-0 h-44 w-44 rounded-full bg-[#003366]/10 blur-2xl" />
+          <div className="pointer-events-none absolute -left-20 bottom-0 h-44 w-44 rounded-full bg-[#0f6aa8]/10 blur-2xl" />
+
+          <div className="relative flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+            <div className="max-w-2xl">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#003366]">
+                {t("landing.galleryTag", "Government Portal Showcase")}
+              </p>
+              <h2 className="mt-1 text-2xl font-semibold text-slate-900">
+                {t("landing.galleryHeading", "Official workflow at a glance")}
+              </h2>
+              <p className="mt-2 text-sm text-slate-600">
+                {t(
+                  "landing.gallerySubheading",
+                  "A responsive multi-image panel designed for desktop, tablets, and mobile."
+                )}
+              </p>
+            </div>
+          </div>
+
+          {/* Desktop/Tablet: card grid */}
+          <div className="relative mt-6 hidden md:block">
+            <div className="grid grid-cols-12 gap-4">
+              <figure className="col-span-12 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                <div className="grid grid-cols-12 gap-4 items-stretch">
+                  <div className="col-span-7 rounded-xl border border-slate-200 overflow-hidden">
+                    <div className={`h-full min-h-[260px] bg-gradient-to-br ${galleryItems[0].gradient}`} />
+                  </div>
+                  <div className="col-span-5 grid grid-rows-2 gap-4">
+                    {[galleryItems[1], galleryItems[2]].map((item, idx) => (
+                      <figcaption
+                        // eslint-disable-next-line react/no-array-index-key
+                        key={`g-${idx + 1}`}
+                        className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
+                      >
+                        <div className={`h-28 rounded-lg bg-gradient-to-br ${item.gradient}`} />
+                        <p className="mt-3 text-sm font-semibold text-slate-900">{item.title}</p>
+                        <p className="mt-1 text-xs text-slate-600">{item.desc}</p>
+                      </figcaption>
+                    ))}
+                  </div>
+                </div>
+                <div className="mt-4 grid grid-cols-12 gap-4">
+                  <figcaption className="col-span-6 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                    <div className={`h-28 rounded-lg bg-gradient-to-br ${galleryItems[3].gradient}`} />
+                    <p className="mt-3 text-sm font-semibold text-slate-900">{galleryItems[3].title}</p>
+                    <p className="mt-1 text-xs text-slate-600">{galleryItems[3].desc}</p>
+                  </figcaption>
+                  <figcaption className="col-span-6 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                    <div className={`h-28 rounded-lg bg-gradient-to-br ${galleryItems[2].gradient}`} />
+                    <p className="mt-3 text-sm font-semibold text-slate-900">{galleryItems[2].title}</p>
+                    <p className="mt-1 text-xs text-slate-600">{galleryItems[2].desc}</p>
+                  </figcaption>
+                </div>
+              </figure>
+            </div>
+          </div>
+
+          {/* Mobile: swipeable gallery */}
+          <div className="relative mt-6 md:hidden">
+            <div className="flex gap-3 overflow-x-auto pb-2 scroll-smooth snap-x snap-mandatory">
+              {galleryItems.map((item, idx) => (
+                <figure
+                  // eslint-disable-next-line react/no-array-index-key
+                  key={`g-m-${idx}`}
+                  className="snap-start w-[78%] min-w-[78%] rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
+                >
+                  <div className={`h-40 rounded-lg bg-gradient-to-br ${item.gradient}`} />
+                  <p className="mt-3 text-sm font-semibold text-slate-900">{item.title}</p>
+                  <p className="mt-1 text-xs text-slate-600">{item.desc}</p>
+                </figure>
+              ))}
+            </div>
+            <p className="mt-3 text-xs text-slate-500">
+              {t("landing.gallerySwipeHint", "Swipe to view more panels.")}
             </p>
           </div>
         </div>
