@@ -9,14 +9,61 @@ const {
   detectLanguageFromCoordinates
 } = require("../services/language.service");
 
-function buildDynamicExplanation({ disease, fever, confidence, severity }) {
+function toPercent(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return "N/A";
+  return `${(n * 100).toFixed(1)}%`;
+}
+
+function normalizeProbabilityMap(classProbabilities = {}) {
+  const entries = Object.entries(classProbabilities)
+    .map(([label, value]) => [String(label || "").trim(), Number(value)])
+    .filter(([label, value]) => label && Number.isFinite(value));
+
+  return Object.fromEntries(entries);
+}
+
+function getTopProbabilitySummary(classProbabilities = {}) {
+  const pairs = Object.entries(normalizeProbabilityMap(classProbabilities)).sort(
+    (a, b) => Number(b[1]) - Number(a[1])
+  );
+
+  const top = pairs[0] || null;
+  const second = pairs[1] || null;
+  const margin = top && second ? Math.max(0, Number(top[1]) - Number(second[1])) : null;
+
+  return { top, second, margin };
+}
+
+function buildDynamicExplanation({
+  disease,
+  fever,
+  confidence,
+  severity,
+  classProbabilities,
+  breed,
+  age,
+  sex,
+  temperature
+}) {
   const visual = [];
   const texture = [];
   const thermal = [];
+  const { top, second, margin } = getTopProbabilitySummary(classProbabilities);
+  const confidencePercent = toPercent(confidence);
+  const ageText = Number.isFinite(Number(age)) ? `${Number(age)} year(s)` : "unknown age";
+  const breedText = breed || "unknown breed";
+  const sexText = sex || "unknown sex";
 
   if (disease === "FMD") {
-    visual.push("Visible lesion-like patterns were detected around mouth/hoof regions.");
-    visual.push("Inflammation hotspots appear in key symptom zones.");
+    visual.push(
+      `Model confidence for this image is ${confidencePercent}${top ? ` (${top[0]} probability ${toPercent(top[1])})` : ""}.`
+    );
+    visual.push(
+      margin !== null
+        ? `Class separation margin is ${toPercent(margin)}, indicating ${margin >= 0.2 ? "clear" : "close"} visual distinction in this scan.`
+        : "Only one class score was available from this scan; interpret with clinical verification."
+    );
     texture.push("Surface texture differs from healthy baseline samples.");
     texture.push(
       confidence >= 0.85
@@ -24,15 +71,30 @@ function buildDynamicExplanation({ disease, fever, confidence, severity }) {
         : "Pattern confidence is moderate; monitor with follow-up scan."
     );
   } else if (disease === "Healthy") {
+    visual.push(
+      `Model confidence for this image is ${confidencePercent}${top ? ` (${top[0]} probability ${toPercent(top[1])})` : ""}.`
+    );
     visual.push("No lesion-like visual markers were detected in major risk regions.");
     texture.push("Texture profile remains close to healthy baseline.");
   } else {
+    visual.push(
+      `Model confidence for this image is ${confidencePercent}${top ? ` (${top[0]} probability ${toPercent(top[1])})` : ""}.`
+    );
     visual.push("The model found mixed visual signals that are not class-specific.");
     texture.push("Texture variation is present but not strongly diagnostic.");
   }
 
+  texture.push(`Scan context: ${breedText}, ${sexText}, ${ageText}.`);
+
+  if (second) {
+    texture.push(`Second-most likely class was ${second[0]} (${toPercent(second[1])}).`);
+  }
+
   if (fever === true) {
     thermal.push("Recorded fever metadata supports possible active infection.");
+    if (Number.isFinite(Number(temperature))) {
+      thermal.push(`Submitted body temperature: ${Number(temperature).toFixed(1)}°C.`);
+    }
   } else if (fever === false) {
     thermal.push("No fever metadata was reported for this scan.");
   } else {
@@ -88,12 +150,23 @@ function serializeResultPayload(record) {
   const confidence = Number(record?.confidence || 0);
   const severity = record?.severity || (disease === "FMD" ? "Moderate" : "Low");
   const fever = record?.fever;
+  const classProbabilities = normalizeProbabilityMap(record?.inferenceDetails?.classProbabilities || {});
 
   return {
     disease,
     confidence,
     severity,
-    explanation: buildDynamicExplanation({ disease, fever, confidence, severity }),
+    explanation: buildDynamicExplanation({
+      disease,
+      fever,
+      confidence,
+      severity,
+      classProbabilities,
+      breed: record?.breed,
+      age: record?.age,
+      sex: record?.sex,
+      temperature: record?.temperature
+    }),
     recommendations: buildDynamicRecommendations({ disease, severity, fever }),
     location: {
       latitude: Number(record?.location?.latitude),
@@ -105,6 +178,10 @@ function serializeResultPayload(record) {
       age: record?.age,
       sex: record?.sex || "",
       fever
+    },
+    inferenceDetails: {
+      classProbabilities,
+      source: record?.inferenceDetails?.source || "ml"
     }
   };
 }
@@ -201,7 +278,11 @@ exports.analyzeCow = async (req, res) => {
       },
       prediction: disease,
       confidence,
-      severity
+      severity,
+      inferenceDetails: {
+        classProbabilities: inference?.allProbabilities || {},
+        source: inference?.source || "ml"
+      }
     });
     const result = serializeResultPayload(imageRecord);
 
@@ -233,7 +314,7 @@ exports.getResultById = async (req, res) => {
       _id: imageRecordId,
       user: req.user.id
     })
-      .select("imageUrl prediction confidence severity createdAt fever temperature location rfidTag breed age sex")
+      .select("imageUrl prediction confidence severity createdAt fever temperature location rfidTag breed age sex inferenceDetails")
       .lean();
 
     if (!record) {

@@ -2,25 +2,17 @@ import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
-import { Circle, MapContainer, TileLayer } from "react-leaflet";
-import "leaflet/dist/leaflet.css";
 import { useI18n } from "../i18n/I18nProvider";
 import PageFooter from "../components/PageFooter";
 import { api } from "../services/api";
 import { translateTexts } from "../services/runtimeTranslation";
 
-function getBoundaryRadiusMeters(severity, confidence) {
-  const normalized = String(severity || "").toLowerCase();
-  const baseBySeverity = normalized.includes("critical") || normalized.includes("severe")
-    ? 5500
-    : normalized.includes("high")
-      ? 3800
-      : normalized.includes("moderate")
-        ? 2400
-        : 1400;
-
-  const confidenceBoost = Math.round((Number(confidence) || 0) * 1200);
-  return baseBySeverity + confidenceBoost;
+function resolveImageUrl(imageUrl, backendHost) {
+  const raw = String(imageUrl || "").trim();
+  if (!raw) return "";
+  if (/^https?:\/\//i.test(raw)) return raw;
+  if (raw.startsWith("//")) return `http:${raw}`;
+  return `${backendHost}${raw.startsWith("/") ? raw : `/${raw}`}`;
 }
 
 export default function Result() {
@@ -65,8 +57,10 @@ export default function Result() {
 
   const resolvedPayload = liveData || state || null;
   const resolvedResult = resolvedPayload?.result || null;
-  const uploadedImage = state?.uploadedImage
-    || (resolvedPayload?.imageUrl ? `${backendHost}${resolvedPayload.imageUrl}` : null);
+  const uploadedImage = resolveImageUrl(
+    resolvedPayload?.imageUrl || state?.imageUrl || state?.uploadedImage,
+    backendHost
+  );
 
   useEffect(() => {
     const translateDynamicPayloadText = async () => {
@@ -131,7 +125,7 @@ export default function Result() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen flex-col bg-slate-50">
+      <div className="flex min-h-screen flex-col bg-[#f8fafc]">
         <div className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-6">
           <div className="h-48 animate-pulse rounded-2xl border border-slate-200 bg-white" />
         </div>
@@ -142,14 +136,14 @@ export default function Result() {
 
   if (!resolvedResult) {
     return (
-      <div className="flex min-h-screen flex-col bg-slate-50">
+      <div className="flex min-h-screen flex-col bg-[#f8fafc]">
         <div className="flex flex-1 items-center px-4 py-10 sm:px-6">
           <div className="mx-auto w-full max-w-xl rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm">
             <p className="text-slate-600">
               {fetchError || t("result.notFound", "No analysis result found.")}
             </p>
             <button
-              className="mt-4 rounded-lg bg-emerald-700 px-4 py-2 font-medium text-white transition hover:bg-emerald-800"
+              className="mt-4 rounded-lg bg-[#003366] px-4 py-2 font-medium text-white transition hover:bg-[#002a4d]"
               onClick={() => navigate("/analyze")}
             >
               {t("result.goAnalyze", "Go to Analyze")}
@@ -161,10 +155,7 @@ export default function Result() {
     );
   }
 
-  const { disease, confidence, severity, explanation, recommendations, location } = resolvedResult;
-  const hasLocation =
-    Number.isFinite(Number(location?.latitude)) && Number.isFinite(Number(location?.longitude));
-  const boundaryRadius = getBoundaryRadiusMeters(severity, confidence);
+  const { disease, confidence, severity, explanation, recommendations } = resolvedResult;
 
   const normalizedDisease = (disease || "").toLowerCase();
   const diseaseLabel = normalizedDisease.includes("fmd")
@@ -220,62 +211,92 @@ export default function Result() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-gradient-to-br from-lime-50 via-emerald-50 to-white px-4 py-6 sm:px-6 md:py-10">
+    <div className="flex min-h-screen flex-col bg-[#f8fafc] px-4 py-6 sm:px-6 md:py-10">
+      <a
+        href="#result-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:shadow"
+      >
+        {t("common.skipToContent", "Skip to content")}
+      </a>
       <div className="mx-auto w-full max-w-5xl flex-1 space-y-6">
-        <div className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">
-                {t("result.complete", "Analysis Complete")}
-              </p>
-              <h2 className="mt-1 text-2xl font-semibold text-slate-800">
-                {t("result.title", "Cattle Health Result")}
-              </h2>
+        <header className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex items-start gap-4">
+              <div className="grid h-11 w-11 shrink-0 place-content-center rounded-lg bg-[#003366] text-white font-bold shadow-sm">
+                CC
+              </div>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#003366]">
+                  {t("result.complete", "Analysis Complete")}
+                </p>
+                <h2 className="mt-1 text-2xl font-semibold text-slate-900">
+                  {t("result.title", "Cattle Health Result")}
+                </h2>
+                <p className="mt-1 text-sm text-slate-600">
+                  {t(
+                    "result.govSubtitle",
+                    "Official preview of your analysis output. Download to share or archive."
+                  )}
+                </p>
+              </div>
             </div>
-            <button
-              onClick={() => navigate("/analyze")}
-              className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
-            >
-              {t("result.backAnalyze", "Back to Analyze")}
-            </button>
-            <button
-              onClick={generatePdfReport}
-              disabled={downloading}
-              className="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-800 disabled:opacity-60"
-            >
-              {downloading ? t("result.preparingPdf", "Preparing PDF...") : t("result.downloadPdf", "Download PDF Report")}
-            </button>
-          </div>
-        </div>
 
-        <div ref={reportRef} className="space-y-6 rounded-2xl border border-slate-200 bg-white/40 p-3 sm:p-4">
+            <div className="flex flex-wrap gap-2 sm:justify-end">
+              <button
+                type="button"
+                onClick={() => navigate("/analyze")}
+                className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-800 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#003366]/20"
+              >
+                {t("result.backAnalyze", "Back to Analyze")}
+              </button>
+              <button
+                type="button"
+                onClick={generatePdfReport}
+                disabled={downloading}
+                className="rounded-lg bg-[#003366] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#002a4d] disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[#003366]/25"
+              >
+                {downloading
+                  ? t("result.preparingPdf", "Preparing PDF...")
+                  : t("result.downloadPdf", "Download PDF Report")}
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <div
+          id="result-content"
+          ref={reportRef}
+          className="space-y-6 rounded-2xl border border-slate-200 bg-white p-4 sm:p-6"
+        >
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <section className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
-            <h3 className="text-lg font-semibold text-slate-800">{t("result.uploadedImage", "Uploaded image")}</h3>
+          <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+            <h3 className="text-lg font-semibold text-slate-900">{t("result.uploadedImage", "Uploaded image")}</h3>
             <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
               {uploadedImage ? (
                 <div className="relative">
-                  <img
-                    src={uploadedImage}
-                    alt={t("result.uploadedCattleAlt", "Uploaded cattle")}
-                    className="h-64 w-full object-cover sm:h-72"
-                    crossOrigin="anonymous"
-                  />
+                  <div className="aspect-[4/3] w-full sm:aspect-[16/10]">
+                    <img
+                      src={uploadedImage}
+                      alt={t("result.uploadedCattleAlt", "Uploaded cattle")}
+                      className="h-full w-full object-cover"
+                      crossOrigin="anonymous"
+                    />
+                  </div>
                   <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-red-500/20 via-yellow-400/10 to-transparent" />
-                  <div className="absolute right-2 top-2 rounded bg-black/60 px-2 py-1 text-[11px] font-medium text-white">
+                  <div className="absolute right-3 top-3 rounded bg-black/60 px-2 py-1 text-[11px] font-medium text-white">
                     {t("result.overlayBadge", "Heatmap Overlay (Visual)")}
                   </div>
                 </div>
               ) : (
-                <div className="grid h-64 place-content-center text-sm text-slate-500 sm:h-72">
+                <div className="grid min-h-[220px] place-content-center text-sm text-slate-500 sm:min-h-[280px]">
                   {t("result.previewUnavailable", "Image preview unavailable")}
                 </div>
               )}
             </div>
           </section>
 
-          <section className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
-            <h3 className="text-lg font-semibold text-slate-800">{t("result.prediction", "Prediction result")}</h3>
+          <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+            <h3 className="text-lg font-semibold text-slate-900">{t("result.prediction", "Prediction result")}</h3>
             <div className={`mt-4 inline-flex rounded-full border px-3 py-1 text-sm font-semibold ${diseaseStyles}`}>
               {t("result.diseaseDetected", "Disease detected")}: {diseaseLabel}
             </div>
@@ -303,9 +324,9 @@ export default function Result() {
         </div>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <section className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
-            <h4 className="text-base font-semibold text-slate-800">{t("result.whyDetected", "Why this was detected")}</h4>
-            <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-slate-600">
+          <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+            <h4 className="text-base font-semibold text-slate-900">{t("result.whyDetected", "Why this was detected")}</h4>
+            <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-slate-700">
               {(translatedDynamicText?.visual || explanation?.visual || []).map((v, i) => (
                 <li key={`v-${i}`}>{v}</li>
               ))}
@@ -318,17 +339,17 @@ export default function Result() {
             </ul>
           </section>
 
-          <section className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
-            <h4 className="text-base font-semibold text-slate-800">{t("result.recommendedActions", "Recommended actions")}</h4>
+          <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+            <h4 className="text-base font-semibold text-slate-900">{t("result.recommendedActions", "Recommended actions")}</h4>
             <p className="mt-3 text-sm font-semibold text-slate-700">{t("result.precautions", "Precautions")}</p>
-            <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-slate-600">
+            <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-slate-700">
               {(translatedDynamicText?.precautions || recommendations?.precautions || []).map((p, i) => (
                 <li key={`p-${i}`}>{p}</li>
               ))}
             </ul>
 
             <p className="mt-4 text-sm font-semibold text-slate-700">{t("result.treatment", "Treatment")}</p>
-            <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-slate-600">
+            <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-slate-700">
               {(translatedDynamicText?.treatment || recommendations?.treatment || []).map((treatmentItem, i) => (
                 <li key={`tr-${i}`}>{treatmentItem}</li>
               ))}
@@ -340,43 +361,6 @@ export default function Result() {
             </p>
           </section>
         </div>
-        {hasLocation ? (
-          <section className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
-            <h4 className="text-base font-semibold text-slate-800">
-              {t("result.affectedBoundary", "Affected region boundary")}
-            </h4>
-            <p className="mt-1 text-sm text-slate-600">
-              {t(
-                "result.affectedBoundaryHelp",
-                "Boundary is estimated from real record location, severity, and confidence."
-              )}
-            </p>
-            <div className="mt-4 overflow-hidden rounded-xl border border-slate-200">
-              <div className="h-72 w-full">
-                <MapContainer
-                  center={[Number(location.latitude), Number(location.longitude)]}
-                  zoom={11}
-                  className="h-full w-full"
-                  scrollWheelZoom
-                >
-                  <TileLayer
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                  />
-                  <Circle
-                    center={[Number(location.latitude), Number(location.longitude)]}
-                    radius={boundaryRadius}
-                    pathOptions={{
-                      color: normalizedDisease.includes("fmd") ? "#dc2626" : "#059669",
-                      fillColor: normalizedDisease.includes("fmd") ? "#ef4444" : "#10b981",
-                      fillOpacity: 0.2
-                    }}
-                  />
-                </MapContainer>
-              </div>
-            </div>
-          </section>
-        ) : null}
         </div>
       </div>
       <PageFooter variant="user" />

@@ -6,6 +6,10 @@ const mockInference = () => ({
   disease: "Foot and Mouth Disease",
   confidence: 0.934,
   severity: "Moderate",
+  allProbabilities: {
+    Healthy: 0.066,
+    "Foot and Mouth Disease": 0.934
+  },
   source: "mock"
 });
 
@@ -29,11 +33,13 @@ const inferWithML = async (imagePath) => {
 
     const prediction = response?.data?.prediction || "Other";
     const confidence = Number(response?.data?.confidence || 0);
+    const allProbabilities = response?.data?.all_probabilities || {};
 
     return {
       disease: prediction,
       confidence,
       severity: getSeverityFromConfidence(confidence),
+      allProbabilities,
       source: "ml"
     };
   } catch (err) {

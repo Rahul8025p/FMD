@@ -76,6 +76,16 @@ const ImageRecordSchema = new mongoose.Schema(
     severity: {
       type: String,
       trim: true
+    },
+    inferenceDetails: {
+      classProbabilities: {
+        type: mongoose.Schema.Types.Mixed,
+        default: {}
+      },
+      source: {
+        type: String,
+        trim: true
+      }
     }
   },
   { timestamps: true }
