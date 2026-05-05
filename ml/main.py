@@ -106,11 +106,6 @@ import tensorflow as tf
 import numpy as np
 import cv2
 import os
-from tensorflow.keras.applications.mobilenet_v2 import (
-    MobileNetV2,
-    preprocess_input as mbv2_preprocess,
-    decode_predictions as mbv2_decode
-)
 
 from preprocessing.preprocess import preprocess_image
 
@@ -150,38 +145,6 @@ MODEL_PATH = resolve_model_path()
 # ⚠️ IMPORTANT: Match EXACT alphabetical order from your training dataset folders
 CLASSES = ["Healthy", "Foot and Mouth Disease"]
 
-# Validation model and thresholds (high-confidence non-cattle rejection gate)
-REJECT_THRESHOLD = 0.70
-ACCEPT_THRESHOLD = 0.35
-
-# Cattle/farm-like ImageNet classes to accept when confidence is meaningful
-CATTLE_IDS = {
-    340, 341, 342, 343, 344,
-    345, 347, 349, 350,
-    354, 355, 356,
-    296, 388
-}
-
-# Non-animal/objects to reject only at high confidence
-NON_ANIMAL_IDS = set(range(407, 445))
-NON_ANIMAL_IDS.update(set(range(470, 530)))
-NON_ANIMAL_IDS.update(set(range(530, 600)))
-NON_ANIMAL_IDS.update(set(range(895, 1000)))
-
-# Extra keyword-based guard catches ImageNet labels not covered by the
-# coarse numeric ranges above (e.g. many vehicle classes like sports car).
-NON_CATTLE_REJECT_LABEL_KEYWORDS = {
-    "car", "cab", "taxi", "truck", "trailer", "van", "bus", "minibus",
-    "jeep", "limousine", "sports car", "race car", "ambulance", "fire engine",
-    "motorcycle", "moped", "scooter", "bicycle", "pickup", "tractor",
-    "train", "locomotive", "airplane", "airliner", "warplane", "ship", "boat"
-}
-
-# Cattle label keywords for positive allow checks.
-CATTLE_LABEL_KEYWORDS = {
-    "ox", "bull", "cow", "calf", "yak", "water buffalo", "buffalo", "bison"
-}
-
 # Global dictionary to hold the loaded model
 ml_models = {}
 ml_models["mock_mode"] = False
@@ -204,8 +167,6 @@ async def lifespan(app: FastAPI):
     # Load model into the global dictionary
     ml_models["cow_disease_model"] = tf.keras.models.load_model(MODEL_PATH, compile=False)
     print("[ML] Model loaded successfully")
-    ml_models["validation_model"] = MobileNetV2(weights="imagenet", include_top=True)
-    print("[ML] Validation model (ImageNet MobileNetV2) loaded")
     
     yield # App is now running and accepting requests
     
@@ -263,16 +224,6 @@ async def predict(file: UploadFile = File(...)):
         if img is None:
             raise HTTPException(status_code=400, detail="Invalid image file or corrupted data.")
 
-        validation = validate_cattle_image(img)
-        if validation["decision"] == "REJECT":
-            raise HTTPException(
-                status_code=422,
-                detail={
-                    "message": "Non-cattle image rejected by validation gate.",
-                    "validation": validation
-                }
-            )
-
         # Preprocess the image (Raw pixels only!)
         processed_img = preprocess_image(img)
 
@@ -295,99 +246,9 @@ async def predict(file: UploadFile = File(...)):
             "confidence": round(confidence, 4),
             "all_probabilities": {
                 CLASSES[i]: round(float(probabilities[i]), 4) for i in range(len(CLASSES))
-            },
-            "validation": validation
+            }
         }
 
     except Exception as e:
         print(f"[ML] Prediction Error: {e}")
         raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
-
-
-def validate_cattle_image(img_bgr: np.ndarray) -> dict:
-    """
-    Smart cattle validation gate.
-
-    - REJECT: high-confidence non-animal/object
-    - ACCEPT: high-confidence cattle/farm animal
-    - PASS: low-confidence or ambiguous (allow to FMD model)
-    """
-    validator = ml_models.get("validation_model")
-    if validator is None:
-        return {
-            "decision": "PASS",
-            "confidence": 0.0,
-            "top_label": "validator_unavailable",
-            "top_idx": -1,
-            "message": "Validation model unavailable; passing to FMD model."
-        }
-
-    resized = cv2.resize(img_bgr, (224, 224), interpolation=cv2.INTER_AREA)
-    rgb = cv2.cvtColor(resized, cv2.COLOR_BGR2RGB).astype(np.float32)
-    batch = np.expand_dims(rgb, axis=0)
-    batch = mbv2_preprocess(batch)
-
-    preds = validator.predict(batch, verbose=0)
-    top_idx = int(np.argmax(preds[0]))
-    top_conf = float(preds[0][top_idx])
-    decoded_top3 = mbv2_decode(preds, top=3)[0]
-    top3_ids = np.argsort(preds[0])[-3:][::-1]
-    top_label = decoded_top3[0][1].replace("_", " ")
-    top_label_norm = top_label.lower().strip()
-    has_non_cattle_keyword = any(
-        keyword in top_label_norm for keyword in NON_CATTLE_REJECT_LABEL_KEYWORDS
-    )
-    top3_summary = []
-    for class_id, item in zip(top3_ids, decoded_top3):
-        top3_summary.append(
-            {
-                "idx": int(class_id),
-                "label": item[1].replace("_", " "),
-                "confidence": round(float(item[2]), 4)
-            }
-        )
-
-    def is_cattle_candidate(class_id: int, label: str, conf: float) -> bool:
-        label_norm = label.lower().strip()
-        label_match = any(keyword in label_norm for keyword in CATTLE_LABEL_KEYWORDS)
-        return conf >= ACCEPT_THRESHOLD and (class_id in CATTLE_IDS or label_match)
-
-    has_cattle_match = False
-    cattle_pick_label = None
-    cattle_pick_conf = 0.0
-    for class_id, item in zip(top3_ids, decoded_top3):
-        label = item[1].replace("_", " ")
-        conf = float(item[2])
-        if is_cattle_candidate(int(class_id), label, conf):
-            has_cattle_match = True
-            cattle_pick_label = label
-            cattle_pick_conf = conf
-            break
-
-    if has_cattle_match:
-        decision = "ACCEPT"
-        message = (
-            f'Cattle confirmed: "{cattle_pick_label}" '
-            f'({cattle_pick_conf * 100:.1f}%). Proceeding with FMD analysis.'
-        )
-    elif (top_idx in NON_ANIMAL_IDS or has_non_cattle_keyword) and top_conf >= REJECT_THRESHOLD:
-        decision = "REJECT"
-        message = (
-            f'Non-cattle image rejected. Detected "{top_label}" '
-            f'with {top_conf * 100:.1f}% confidence.'
-        )
-    else:
-        decision = "PASS"
-        message = (
-            f'Validation uncertain: "{top_label}" ({top_conf * 100:.1f}%). '
-            "Allowing image to proceed for FMD analysis."
-        )
-
-    return {
-        "decision": decision,
-        "confidence": round(top_conf, 4),
-        "top_label": top_label,
-        "top_idx": top_idx,
-        "message": message,
-        "top3": top3_summary
-    }

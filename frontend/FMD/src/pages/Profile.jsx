@@ -48,9 +48,14 @@ export default function Profile() {
         });
         localStorage.setItem("language", preferredLanguage);
         setLanguage(preferredLanguage);
-      } catch {
-        localStorage.clear();
-        navigate("/login");
+      } catch (err) {
+        const status = err?.response?.status;
+        if (status === 401 || status === 403) {
+          localStorage.clear();
+          navigate("/login");
+          return;
+        }
+        setMessage(t("profile.loadFailed", "Unable to load profile right now. Please retry."));
       } finally {
         setLoading(false);
       }

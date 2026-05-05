@@ -19,6 +19,7 @@ export default function Analyze() {
   const [loading, setLoading] = useState(false);
   const [mode, setMode] = useState("upload"); // 'upload' | 'camera'
   const [error, setError] = useState("");
+  const [toast, setToast] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
   const [userName, setUserName] = useState(localStorage.getItem("name") || "U");
 
@@ -54,6 +55,12 @@ export default function Analyze() {
       if (preview) URL.revokeObjectURL(preview);
     };
   }, [navigate, preview]);
+
+  useEffect(() => {
+    if (!toast) return undefined;
+    const id = window.setTimeout(() => setToast(""), 3200);
+    return () => window.clearTimeout(id);
+  }, [toast]);
 
   /* 🧠 Input handler */
   const handleChange = (e) => {
@@ -211,9 +218,15 @@ export default function Analyze() {
       });
     } catch (err) {
       console.error(err);
+      const status = Number(err?.response?.status || 0);
+      const serverMessage = err?.response?.data?.message || err?.response?.data?.detail || "";
+      if (status === 422 && /cow|cattle/i.test(String(serverMessage))) {
+        setError("");
+        setToast(t("analyze.validCowOnly", "Enter a valid cow image."));
+        return;
+      }
       setError(
-        err?.response?.data?.message ||
-        err?.response?.data?.detail ||
+        serverMessage ||
         t("analyze.analysisFailed", "Analysis failed. Please try again.")
       );
     } finally {
@@ -228,6 +241,11 @@ export default function Analyze() {
 
   return (
     <div className="flex min-h-screen flex-col bg-[#f8fafc]">
+      {toast ? (
+        <div className="pointer-events-none fixed right-4 top-4 z-50 max-w-sm rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800 shadow-lg">
+          {toast}
+        </div>
+      ) : null}
       {/* Header like dashboard */}
       <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/95 px-4 py-3 backdrop-blur sm:px-6">
         <div className="mx-auto flex max-w-6xl items-center justify-between">

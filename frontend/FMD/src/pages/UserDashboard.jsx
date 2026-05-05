@@ -54,10 +54,15 @@ export default function UserDashboard() {
         } finally {
           setHistoryLoading(false);
         }
-      } catch {
-        setSessionError(t("user.sessionExpired", "Your session has expired. Please sign in again."));
-        localStorage.clear();
-        navigate("/login");
+      } catch (err) {
+        const status = err?.response?.status;
+        if (status === 401 || status === 403) {
+          setSessionError(t("user.sessionExpired", "Your session has expired. Please sign in again."));
+          localStorage.clear();
+          navigate("/login");
+          return;
+        }
+        setSessionError(t("user.dashboardLoadFailed", "Unable to load dashboard right now. Please retry."));
       } finally {
         setLoading(false);
       }
