@@ -4,8 +4,6 @@ import { api } from "../services/api";
 import { useI18n } from "../i18n/I18nProvider";
 import PageFooter from "../components/PageFooter";
 
-const API_HOST = "http://localhost:5000";
-
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const { t } = useI18n();

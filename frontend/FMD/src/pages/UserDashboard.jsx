@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import { api } from "../services/api";
 import { useI18n } from "../i18n/I18nProvider";
 import PageFooter from "../components/PageFooter";
@@ -32,11 +31,7 @@ export default function UserDashboard() {
       }
 
       try {
-        const res = await axios.get("http://localhost:5000/api/user/home", {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
+        const res = await api.get("/user/home");
 
         setUser(res.data.user);
 
