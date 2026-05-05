@@ -250,6 +250,14 @@ exports.analyzeCow = async (req, res) => {
 
     const imagePath = req.file.path;
     const inference = await inferWithML(imagePath);
+    if (inference?.rejected) {
+      return res.status(422).json({
+        message: inference.reason || "Non-cattle image rejected.",
+        validation: inference.validation || null,
+        inferenceSource: inference.source || "ml-validation"
+      });
+    }
+
     const rawDisease = (inference?.disease || "").toLowerCase();
     const disease = rawDisease.includes("mouth")
       ? "FMD"

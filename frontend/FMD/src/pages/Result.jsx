@@ -282,10 +282,6 @@ export default function Result() {
                       crossOrigin="anonymous"
                     />
                   </div>
-                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-red-500/20 via-yellow-400/10 to-transparent" />
-                  <div className="absolute right-3 top-3 rounded bg-black/60 px-2 py-1 text-[11px] font-medium text-white">
-                    {t("result.overlayBadge", "Heatmap Overlay (Visual)")}
-                  </div>
                 </div>
               ) : (
                 <div className="grid min-h-[220px] place-content-center text-sm text-slate-500 sm:min-h-[280px]">

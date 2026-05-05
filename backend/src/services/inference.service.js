@@ -43,6 +43,17 @@ const inferWithML = async (imagePath) => {
       source: "ml"
     };
   } catch (err) {
+    const status = Number(err?.response?.status || 0);
+    const validationPayload = err?.response?.data?.detail?.validation;
+    if (status === 422 && validationPayload?.decision === "REJECT") {
+      return {
+        rejected: true,
+        reason: err?.response?.data?.detail?.message || "Non-cattle image rejected.",
+        validation: validationPayload,
+        source: "ml-validation"
+      };
+    }
+
     console.error("ML inference failed, using mock fallback:", err.message);
     return mockInference();
   }
