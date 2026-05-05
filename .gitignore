@@ -55,6 +55,7 @@ ENV/
 *.keras
 *.pt
 *.pth
+!ml/models/FMD_Preprocessed_Data_Augmentation.keras
 
 # =========================
 # UPLOADS / GENERATED FILES
