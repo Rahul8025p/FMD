@@ -2,7 +2,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   MapContainer,
-  TileLayer,
+  GeoJSON,
+  ImageOverlay,
   useMap
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -18,6 +19,13 @@ const INDIA_BOUNDS = [
   [6, 68],
   [38.5, 97.5]
 ];
+const INDIA_HEATMAP_OVERLAY = "/india-map-only.png";
+const INDIA_STATES_GEOJSON_URL = "/india-states.geojson";
+const MOCK_CHOROPLETH_DATA = {
+  "Uttar Pradesh": 12000000,
+  Rajasthan: 8500000,
+  "Madhya Pradesh": 8100000
+};
 const INDIA_LAT_MIN = INDIA_BOUNDS[0][0];
 const INDIA_LNG_MIN = INDIA_BOUNDS[0][1];
 const INDIA_LAT_MAX = INDIA_BOUNDS[1][0];
@@ -728,6 +736,211 @@ function ClusteredCasesLayer({ cases, basemapMode }) {
   return null;
 }
 
+function IndiaReferenceOverlay() {
+  return (
+    <ImageOverlay
+      url={INDIA_HEATMAP_OVERLAY}
+      bounds={INDIA_BOUNDS}
+      opacity={1}
+      interactive={false}
+      zIndex={200}
+    />
+  );
+}
+
+function getFeatureStateName(feature) {
+  const props = feature?.properties || {};
+  return (
+    props.st_nm ||
+    props.STATE ||
+    props.NAME_1 ||
+    props.NAME ||
+    props.state ||
+    ""
+  );
+}
+
+function canonicalStateName(value) {
+  const normalized = normalizeValue(value);
+  const aliasMap = {
+    "andaman and nicobar": "Andaman and Nicobar Islands",
+    "andaman & nicobar islands": "Andaman and Nicobar Islands",
+    nct: "Delhi",
+    "nct of delhi": "Delhi",
+    "dadra and nagar haveli": "Dadra and Nagar Haveli and Daman and Diu",
+    daman: "Dadra and Nagar Haveli and Daman and Diu",
+    diu: "Dadra and Nagar Haveli and Daman and Diu",
+    orissa: "Odisha",
+    pondicherry: "Puducherry",
+    uttaranchal: "Uttarakhand"
+  };
+
+  if (aliasMap[normalized]) return aliasMap[normalized];
+  const exact = INDIA_STATES.find((stateName) => normalizeValue(stateName) === normalized);
+  if (exact) return exact;
+  return value || "";
+}
+
+function interpolateColor(startRgb, endRgb, ratio) {
+  const clamp = Math.max(0, Math.min(1, ratio));
+  const rgb = startRgb.map((start, idx) => Math.round(start + (endRgb[idx] - start) * clamp));
+  return `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
+}
+
+function ChoroplethGeoJsonLayer({ geoData, totalsMap, valueRange }) {
+  const geoJsonRef = useRef(null);
+  const minValue = valueRange?.min ?? 0;
+  const maxValue = valueRange?.max ?? 0;
+
+  const getFillColor = (value) => {
+    if (!Number.isFinite(value)) return "rgb(248, 250, 252)";
+    if (maxValue <= minValue) return "rgb(34, 177, 76)";
+    const ratio = (value - minValue) / (maxValue - minValue);
+    return interpolateColor([214, 240, 220], [42, 169, 73], ratio);
+  };
+
+  const styleFeature = (feature) => {
+    const rawStateName = getFeatureStateName(feature);
+    const canonical = canonicalStateName(rawStateName);
+    const value = totalsMap.get(canonical);
+
+    return {
+      fillColor: getFillColor(value),
+      weight: 0.9,
+      opacity: 1,
+      color: "#aeb8c5",
+      dashArray: "",
+      fillOpacity: 1,
+      lineJoin: "round"
+    };
+  };
+
+  const onEachFeature = (feature, layer) => {
+    const rawStateName = getFeatureStateName(feature);
+    const canonical = canonicalStateName(rawStateName);
+    const value = totalsMap.get(canonical) ?? 0;
+
+    layer.bindTooltip(
+      `<div style="min-width:160px;">
+        <p style="margin:0;font-size:12px;color:#475569;">State Name</p>
+        <p style="margin:0 0 6px 0;font-weight:700;color:#0f172a;">${escapeHtml(canonical || rawStateName || "Unknown")}</p>
+        <p style="margin:0;font-size:12px;color:#475569;">Total Count</p>
+        <p style="margin:0;font-weight:700;color:#166534;">${new Intl.NumberFormat().format(value)}</p>
+      </div>`,
+      { sticky: true, direction: "top", opacity: 0.96 }
+    );
+
+    layer.on({
+      mouseover: () => {
+        layer.setStyle({
+          weight: 1.4,
+          color: "#6b7280",
+          fillOpacity: 1
+        });
+        layer.bringToFront();
+        layer.openTooltip();
+      },
+      mouseout: () => {
+        geoJsonRef.current?.resetStyle(layer);
+        layer.closeTooltip();
+      }
+    });
+  };
+
+  return (
+    <GeoJSON
+      ref={geoJsonRef}
+      data={geoData}
+      style={styleFeature}
+      onEachFeature={onEachFeature}
+    />
+  );
+}
+
+function IndiaChoroplethMap({ dataByState }) {
+  const [geoData, setGeoData] = useState(null);
+  const [geoError, setGeoError] = useState("");
+  const mapRef = useRef(null);
+
+  useEffect(() => {
+    let ignore = false;
+    async function loadGeoJson() {
+      try {
+        const res = await fetch(INDIA_STATES_GEOJSON_URL);
+        if (!res.ok) throw new Error("geojson fetch failed");
+        const json = await res.json();
+        if (!ignore) setGeoData(json);
+      } catch {
+        if (!ignore) setGeoError("Unable to load India GeoJSON.");
+      }
+    }
+    loadGeoJson();
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
+  const totalsMap = useMemo(() => {
+    const map = new Map();
+    for (const [stateName, total] of Object.entries(MOCK_CHOROPLETH_DATA)) {
+      map.set(canonicalStateName(stateName), Number(total) || 0);
+    }
+    for (const [stateName, total] of Object.entries(dataByState || {})) {
+      map.set(canonicalStateName(stateName), Number(total) || 0);
+    }
+    return map;
+  }, [dataByState]);
+
+  const valueRange = useMemo(() => {
+    const values = Array.from(totalsMap.values()).filter((x) => Number.isFinite(x));
+    if (!values.length) return { min: 0, max: 0 };
+    return { min: Math.min(...values), max: Math.max(...values) };
+  }, [totalsMap]);
+
+  useEffect(() => {
+    if (!geoData || !mapRef.current) return;
+    const bounds = L.geoJSON(geoData).getBounds();
+    if (bounds.isValid()) mapRef.current.fitBounds(bounds, { padding: [18, 18] });
+  }, [geoData]);
+
+  return (
+    <div className="relative h-full w-full">
+      <MapContainer
+        center={INDIA_CENTER}
+        zoom={5}
+        minZoom={4}
+        maxZoom={12}
+        maxBounds={INDIA_BOUNDS}
+        maxBoundsViscosity={0.85}
+        zoomControl={false}
+        attributionControl={false}
+        className="h-full w-full"
+        style={{ background: "#d8dde6" }}
+        scrollWheelZoom
+        dragging
+        touchZoom
+        doubleClickZoom
+        whenCreated={(mapInstance) => {
+          mapRef.current = mapInstance;
+        }}
+      >
+        {geoData ? (
+          <ChoroplethGeoJsonLayer
+            geoData={geoData}
+            totalsMap={totalsMap}
+            valueRange={valueRange}
+          />
+        ) : null}
+      </MapContainer>
+      {geoError ? (
+        <p className="absolute left-2 top-2 rounded-md border border-red-200 bg-white/95 px-2 py-1 text-xs text-red-600">
+          {geoError}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
 function MapPanel({
   title,
   subtitle,
@@ -852,21 +1065,7 @@ function MapPanel({
                   touchZoom
                   doubleClickZoom
                 >
-                  <TileLayer
-                    attribution={
-                      basemapMode === "bw"
-                        ? '&copy; <a href="https://carto.com/attributions">CARTO</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                        : '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://opentopomap.org/">OpenTopoMap</a>'
-                    }
-                    url={
-                      basemapMode === "bw"
-                        ? "https://{s}.basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}{r}.png"
-                        : "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"
-                    }
-                    detectRetina={basemapMode === "bw"}
-                    maxZoom={mapMaxZoom}
-                    maxNativeZoom={isBW ? 18 : 13}
-                  />
+                  <IndiaReferenceOverlay />
                   <MapLeafletRefBridge mapRef={mapRef} />
                   <MapLiveFocus filteredCases={filteredCases} />
                   <MapZoomControls
@@ -1011,6 +1210,12 @@ export default function AdminHeatmap() {
       { label: STATE_SEVERITY_CONFIG.moderate.label, swatch: "bg-amber-500", count: severityCounts.moderate },
       { label: STATE_SEVERITY_CONFIG.low.label, swatch: "bg-emerald-500", count: severityCounts.low }
     ];
+  }, [stateAggRows]);
+
+  const choroplethDataByState = useMemo(() => {
+    const out = {};
+    for (const row of stateAggRows) out[row.region] = row.total;
+    return out;
   }, [stateAggRows]);
 
   // Map markers dataset follows the same filter set.
@@ -1217,40 +1422,41 @@ export default function AdminHeatmap() {
                     )}
                   </p>
                 </div>
-                <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600">
-                  <span className="font-semibold text-slate-800">
-                    {t("heatmap.currentSelection", "Selection")}:
-                  </span>{" "}
-                  {selectedState === "all" ? "All States" : selectedState} •{" "}
-                  {selectedDistrict === "all" ? "All Districts" : selectedDistrict} •{" "}
-                  {selectedYear}
+                <div className="space-y-2">
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600">
+                    <span className="font-semibold text-slate-800">
+                      {t("heatmap.currentSelection", "Selection")}:
+                    </span>{" "}
+                    {selectedState === "all" ? "All States" : selectedState} •{" "}
+                    {selectedDistrict === "all" ? "All Districts" : selectedDistrict} •{" "}
+                    {selectedYear}
+                  </div>
+                  <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">
+                    <label className="mb-1 block text-[11px] font-medium uppercase tracking-wide text-slate-500">
+                      {t("heatmap.stateLabel", "State")}
+                    </label>
+                    <select
+                      value={selectedState}
+                      onChange={(e) => {
+                        setSelectedState(e.target.value);
+                        setSelectedDistrict("all");
+                      }}
+                      className="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs text-slate-800 outline-none transition focus:ring-2 focus:ring-[#003366]"
+                    >
+                      <option value="all">{t("common.all", "All states")}</option>
+                      {INDIA_STATES.map((s) => (
+                        <option key={`map-state-${s}`} value={s}>
+                          {s}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               </div>
 
-              <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-2">
+              <div className="mt-4 rounded-xl border border-slate-200 bg-transparent p-2">
                 <div className="h-[420px] w-full overflow-hidden rounded-lg sm:h-[520px] md:h-[620px]">
-                  <MapContainer
-                    center={INDIA_CENTER}
-                    zoom={5}
-                    minZoom={4}
-                    maxZoom={12}
-                    maxBounds={INDIA_BOUNDS}
-                    maxBoundsViscosity={0.8}
-                    zoomControl={false}
-                    className="h-full w-full"
-                    scrollWheelZoom
-                    dragging
-                    touchZoom
-                    doubleClickZoom
-                  >
-                    <TileLayer
-                      attribution={
-                        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                      }
-                      url="https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"
-                    />
-                    <ClusteredCasesLayer cases={mapCases} basemapMode="bw" />
-                  </MapContainer>
+                  <IndiaChoroplethMap dataByState={choroplethDataByState} />
                 </div>
               </div>
 
