@@ -14,7 +14,7 @@ from preprocessing.preprocess import preprocess_image
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Update this string if your model file has a different name
-MODEL_PATH = os.path.join(BASE_DIR, "models", "FMD_Preprocessed_Data_Augmentation.keras")
+MODEL_PATH = os.path.join(BASE_DIR, "models", "cow_disease_stable_no_aug.keras")
 
 # ⚠️ IMPORTANT: Match EXACT alphabetical order from your training dataset folders
 CLASSES = ["Healthy", "Foot and Mouth Disease"]
