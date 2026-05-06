@@ -16,7 +16,7 @@ exports.analyzeCow = async (req, res) => {
       longitude,
     } = req.body;
 
-    // ✅ Validate required fields
+    // Validate required fields
     if (!rfid || !req.file) {
       return res.status(400).json({
         message: "RFID and image are required",
@@ -24,6 +24,16 @@ exports.analyzeCow = async (req, res) => {
     }
 
     const imageUrl = `/uploads/${req.file.filename}`;
+
+    const inference = await inferWithML(req.file.path);
+
+    // ✅ CHECK REJECTION — this was missing, cars/bikes were slipping through
+    if (inference.rejected) {
+      return res.status(400).json({
+        message: inference.reason || "Image does not appear to be cattle. Please upload a valid cow image.",
+        rejected: true,
+      });
+    }
 
     /* 🐄 Find or create cow */
     let cow = await Cow.findOne({ rfidTag: rfid });
@@ -44,7 +54,6 @@ exports.analyzeCow = async (req, res) => {
       });
     }
 
-    const inference = await inferWithML(req.file.path);
     const rawDisease = (inference?.disease || "").toLowerCase();
     const disease = rawDisease.includes("mouth")
       ? "FMD"
