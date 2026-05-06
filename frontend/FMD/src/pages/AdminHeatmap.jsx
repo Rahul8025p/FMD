@@ -920,7 +920,7 @@ function IndiaChoroplethMap({ dataByState }) {
         dragging
         touchZoom
         doubleClickZoom
-        whenCreated={(mapInstance) => {
+        ref={(mapInstance) => {
           mapRef.current = mapInstance;
         }}
       >
